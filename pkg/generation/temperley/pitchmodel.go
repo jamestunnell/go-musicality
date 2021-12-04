@@ -6,7 +6,7 @@ import (
 
 	"gonum.org/v1/gonum/stat/distuv"
 
-	"github.com/jamestunnell/go-musicality/pkg/notation"
+	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/pkg/util"
 	"github.com/jamestunnell/go-musicality/pkg/util/stats"
 )
@@ -15,7 +15,7 @@ const (
 	// NumOctaves is the number of octaves to support (starting with C0 - B0)
 	NumOctaves = 10
 	// NumSemitones is the number of octaves to support (starting with C0)
-	NumSemitones = NumOctaves * notation.SemitonesPerOctave
+	NumSemitones = NumOctaves * pitch.SemitonesPerOctave
 )
 
 var (
@@ -73,13 +73,13 @@ func newPitchModel(keySemitone uint, cKeyBaseProbs []float64) (*PitchModel, erro
 
 // MakeStartingPitch uses the range and key profiles to determine a
 // starting pitch
-func (pm *PitchModel) MakeStartingPitch() *notation.Pitch {
+func (pm *PitchModel) MakeStartingPitch() *pitch.Pitch {
 	rangeProbs := stats.GetIntProbs(pm.RangeProfile, SemitoneRange)
 
 	return pm.makePitch([][]float64{rangeProbs, pm.KeyProbs})
 }
 
-func (pm *PitchModel) MakeNextPitch(currentPitch *notation.Pitch) *notation.Pitch {
+func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 	proximityProfile := distuv.Normal{
 		Mu:    float64(currentPitch.TotalSemitoneOffset()), // semitone offset from C0
 		Sigma: 2.68,                                        // stddev - corresponds to variance of about 7.2 semitones
@@ -91,7 +91,7 @@ func (pm *PitchModel) MakeNextPitch(currentPitch *notation.Pitch) *notation.Pitc
 	return pm.makePitch([][]float64{proximityProbs, rangeProbs, pm.KeyProbs})
 }
 
-func (pm *PitchModel) makePitch(probArrays [][]float64) *notation.Pitch {
+func (pm *PitchModel) makePitch(probArrays [][]float64) *pitch.Pitch {
 	probs, err := stats.CombineAndNormalizeProbs(probArrays)
 	if err != nil {
 		log.Fatal(err)
@@ -104,22 +104,22 @@ func (pm *PitchModel) makePitch(probArrays [][]float64) *notation.Pitch {
 
 	i := cdf.Rand()
 
-	return notation.NewPitch(0, i, 0)
+	return pitch.New(0, i, 0)
 }
 
-func (pm *PitchModel) MakePitches(n uint) []*notation.Pitch {
+func (pm *PitchModel) MakePitches(n uint) []*pitch.Pitch {
 	return pm.MakePitchesStartingAt(pm.MakeStartingPitch(), n)
 }
 
-func (pm *PitchModel) MakePitchesStartingAt(p *notation.Pitch, n uint) []*notation.Pitch {
+func (pm *PitchModel) MakePitchesStartingAt(p *pitch.Pitch, n uint) []*pitch.Pitch {
 	switch n {
 	case 0:
-		return []*notation.Pitch{}
+		return []*pitch.Pitch{}
 	case 1:
-		return []*notation.Pitch{p}
+		return []*pitch.Pitch{p}
 	}
 
-	pitches := make([]*notation.Pitch, n)
+	pitches := make([]*pitch.Pitch, n)
 
 	pitches[0] = p
 

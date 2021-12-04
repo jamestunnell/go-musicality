@@ -1,4 +1,4 @@
-package notation
+package pitch
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 const (
 	// BaseFreq is frequency of C0
-	BaseFreq = 16.351597831287414
+	BaseFreq = 16.351597831287414667365624595207
 	// SemitonesPerOctave is the number of semitones per octave
 	SemitonesPerOctave = 12
 	// Cents per semitone is the number of cents per semitone
@@ -25,8 +25,8 @@ type Pitch struct {
 	totalCent int
 }
 
-// NewPitch returns a balance pitch
-func NewPitch(octave, semitone, cent int) *Pitch {
+// New returns a balance pitch
+func New(octave, semitone, cent int) *Pitch {
 	p := &Pitch{Octave: octave, Semitone: semitone, Cent: cent}
 
 	if p.IsBalanced() {
@@ -68,16 +68,16 @@ func (p *Pitch) Freq() float64 {
 }
 
 func (p *Pitch) Transpose(semitones int) *Pitch {
-	return NewPitch(p.Octave, p.Semitone+semitones, p.Cent)
+	return New(p.Octave, p.Semitone+semitones, p.Cent)
 }
 
 // Round rounds to the nearest semitone
 func (p *Pitch) Round() *Pitch {
 	if p.Cent < 50 {
-		return NewPitch(p.Octave, p.Semitone, 0)
+		return New(p.Octave, p.Semitone, 0)
 	}
 
-	return NewPitch(p.Octave, p.Semitone+1, 0)
+	return New(p.Octave, p.Semitone+1, 0)
 }
 
 // TotalSemitoneOffset() converts the (semitone-rounded) pitch to a total semitone offset from C0

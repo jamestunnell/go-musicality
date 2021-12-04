@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/jamestunnell/go-musicality/pkg/notation"
+	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
 type Element struct {
 	Duration *big.Rat
-	Pitch    *notation.Pitch
+	Pitch    *pitch.Pitch
 	Attack   Attack
 }
 
