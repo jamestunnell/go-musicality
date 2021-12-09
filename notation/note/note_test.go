@@ -2,18 +2,18 @@ package note_test
 
 import (
 	"encoding/json"
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jamestunnell/go-musicality/notation/duration"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
-func TestNoteNonPositiveDuration(t *testing.T) {
-	durs := []*duration.Duration{duration.Zero(), duration.New(-1, 16)}
+func TestNewNonPositiveDuration(t *testing.T) {
+	durs := []*big.Rat{big.NewRat(0, 1), big.NewRat(-1, 16)}
 	for _, dur := range durs {
 		note := note.New(dur)
 
@@ -21,21 +21,52 @@ func TestNoteNonPositiveDuration(t *testing.T) {
 	}
 }
 
-func TestNoteIsRestIsMonophonic(t *testing.T) {
-	rest, mono, poly := testNoteSetup(t)
+func TestNewPositiveDuration(t *testing.T) {
+	durs := []*big.Rat{big.NewRat(1, 2), big.NewRat(1, 16)}
+	for _, dur := range durs {
+		note := note.New(dur)
 
+		assert.NoError(t, note.Validate())
+	}
+}
+
+func TestNoteArticulation(t *testing.T) {
+	n := note.New(big.NewRat(1, 2), pitch.D6)
+
+	assert.Equal(t, "", n.Articulation)
+
+	n.Articulation = "unknown"
+
+	assert.Error(t, n.Validate())
+
+	n.Articulation = note.Accent
+
+	assert.NoError(t, n.Validate())
+}
+
+func TestNoteIsRestIsMonophonic(t *testing.T) {
+	dur := big.NewRat(3, 2)
+	p1 := pitch.New(3, 2, 0)
+	p2 := pitch.New(4, 0, 0)
+	rest := note.New(dur)
+	mono := note.New(dur, p1)
+	poly := note.New(dur, p1, p2)
+
+	require.NoError(t, rest.Validate())
 	assert.True(t, rest.IsRest())
 	assert.False(t, rest.IsMonophonic())
 
+	require.NoError(t, mono.Validate())
 	assert.False(t, mono.IsRest())
 	assert.True(t, mono.IsMonophonic())
 
+	require.NoError(t, poly.Validate())
 	assert.False(t, poly.IsRest())
 	assert.False(t, poly.IsMonophonic())
 }
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
-	dur := duration.New(3, 2)
+	dur := big.NewRat(3, 2)
 	p1 := pitch.New(3, 2, 0)
 	p2 := pitch.New(4, 0, 0)
 
@@ -58,42 +89,27 @@ func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 
 		assert.Greater(t, len(d), 0)
 
-		n2 := &note.Note{Duration: duration.Zero()}
-		err = json.Unmarshal(d, n2)
+		var n2 note.Note
+		err = json.Unmarshal(d, &n2)
 
 		require.Nil(t, err)
 
-		compareNotes(t, n, n2)
+		compareNotes(t, n, &n2)
 	})
 }
 
 func TestNoteDot(t *testing.T) {
 	n := note.Quarter(pitch.C4)
-	n2 := n.Dot()
-	n3 := n2.Dot()
 
-	assert.True(t, n.Duration.Equal(duration.New(1, 4)))
-	assert.True(t, n2.Duration.Equal(duration.New(3, 8)))
-	assert.True(t, n3.Duration.Equal(duration.New(9, 16)))
-}
+	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(1, 4)))
 
-func testNoteSetup(t *testing.T) (rest, mono, poly *note.Note) {
-	dur := duration.New(3, 2)
-	p1 := pitch.New(3, 2, 0)
-	p2 := pitch.New(4, 0, 0)
-	rest = note.New(dur)
+	n.Dot()
 
-	require.NoError(t, rest.Validate())
+	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(3, 8)))
 
-	mono = note.New(dur, p1)
+	n.Dot()
 
-	require.NoError(t, mono.Validate())
-
-	poly = note.New(dur, p1, p2)
-
-	require.NoError(t, poly.Validate())
-
-	return rest, mono, poly
+	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(9, 16)))
 }
 
 func compareNotes(t *testing.T, n1, n2 *note.Note) bool {
