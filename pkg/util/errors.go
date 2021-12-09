@@ -2,7 +2,8 @@ package util
 
 import (
 	"fmt"
-	"math/big"
+
+	"github.com/jamestunnell/go-musicality/notation/duration"
 )
 
 type NonPositiveError struct {
@@ -13,8 +14,8 @@ func NewNonPositiveFloatError(val float64) *NonPositiveError {
 	return &NonPositiveError{ValueStr: fmt.Sprintf("%e", val)}
 }
 
-func NewNonPositiveRatError(val *big.Rat) *NonPositiveError {
-	return &NonPositiveError{ValueStr: val.String()}
+func NewNonPositiveDurationError(d *duration.Duration) *NonPositiveError {
+	return &NonPositiveError{ValueStr: d.String()}
 }
 
 func (e *NonPositiveError) Error() string {

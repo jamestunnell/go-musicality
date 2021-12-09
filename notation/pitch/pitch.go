@@ -36,6 +36,16 @@ func New(octave, semitone, cent int) *Pitch {
 	return p.Balance()
 }
 
+func (p *Pitch) Clone() *Pitch {
+	return &Pitch{
+		Octave:   p.Octave,
+		Semitone: p.Semitone,
+		Cent:     p.Cent,
+
+		totalCent: p.totalCent,
+	}
+}
+
 func (p *Pitch) IsBalanced() bool {
 	return isIntInRange(p.Semitone, 0, SemitonesPerOctave) &&
 		isIntInRange(p.Cent, 0, CentsPerSemitone)

@@ -2,18 +2,18 @@ package note_test
 
 import (
 	"encoding/json"
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/jamestunnell/go-musicality/notation/duration"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
 func TestNoteNonPositiveDuration(t *testing.T) {
-	durs := []*big.Rat{big.NewRat(0, 1), big.NewRat(-1, 16)}
+	durs := []*duration.Duration{duration.Zero(), duration.New(-1, 16)}
 	for _, dur := range durs {
 		note := note.New(dur)
 
@@ -35,45 +35,50 @@ func TestNoteIsRestIsMonophonic(t *testing.T) {
 }
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
-	dur := big.NewRat(3, 2)
+	dur := duration.New(3, 2)
 	p1 := pitch.New(3, 2, 0)
 	p2 := pitch.New(4, 0, 0)
-	rest := note.New(dur)
 
-	require.NoError(t, rest.Validate())
+	testNoteMarshalUnmarshalJSON(t, "rest", note.New(dur))
+	testNoteMarshalUnmarshalJSON(t, "mono", note.New(dur, p1))
+	testNoteMarshalUnmarshalJSON(t, "poly", note.New(dur, p1, p2))
+}
 
-	mono := note.New(dur, p1)
+func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
+	t.Run(name, func(t *testing.T) {
+		t.Log(n.Duration.String())
 
-	require.NoError(t, mono.Validate())
+		require.NoError(t, n.Validate())
 
-	poly := note.New(dur, p1, p2)
-
-	require.NoError(t, poly.Validate())
-
-	for _, n := range []*note.Note{rest, mono, poly} {
 		d, err := json.Marshal(n)
 
-		if !assert.Nil(t, err) {
-			continue
-		}
+		require.Nil(t, err)
 
 		t.Log(string(d))
 
 		assert.Greater(t, len(d), 0)
 
-		var n2 note.Note
-		err = json.Unmarshal(d, &n2)
+		n2 := &note.Note{Duration: duration.Zero()}
+		err = json.Unmarshal(d, n2)
 
-		if !assert.Nil(t, err) {
-			continue
-		}
+		require.Nil(t, err)
 
-		compareNotes(t, n, &n2)
-	}
+		compareNotes(t, n, n2)
+	})
+}
+
+func TestNoteDot(t *testing.T) {
+	n := note.Quarter(pitch.C4)
+	n2 := n.Dot()
+	n3 := n2.Dot()
+
+	assert.True(t, n.Duration.Equal(duration.New(1, 4)))
+	assert.True(t, n2.Duration.Equal(duration.New(3, 8)))
+	assert.True(t, n3.Duration.Equal(duration.New(9, 16)))
 }
 
 func testNoteSetup(t *testing.T) (rest, mono, poly *note.Note) {
-	dur := big.NewRat(3, 2)
+	dur := duration.New(3, 2)
 	p1 := pitch.New(3, 2, 0)
 	p2 := pitch.New(4, 0, 0)
 	rest = note.New(dur)

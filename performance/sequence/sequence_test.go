@@ -1,33 +1,68 @@
-package performance_test
+package sequence_test
 
 import (
 	"math/big"
 	"testing"
 
-	p "github.com/jamestunnell/go-musicality/pkg/performance"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/jamestunnell/go-musicality/notation/duration"
+	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/performance/sequence"
 )
 
 var (
-	zero = big.NewRat(0, 1)
+	half = big.NewRat(1, 2)
 	one  = big.NewRat(1, 1)
-	// elemA  = &p.Element{Duration: n.Half, Pitch: n.C4, Attack: p.Attack1}
-	// elemB1 = &p.Element{Duration: n.One, Pitch: n.D2, Attack: p.Attack2}
-	// elemB2 = &p.Element{Duration: n.Quarter, Pitch: n.F3, Attack: p.Attack2}
-	// startA = zero
-	// startB = one
+	zero = big.NewRat(0, 1)
 )
 
-func TestNewSequence(t *testing.T) {
-	// c3 := n.NewPitch(3, 0, 0)
-	// zeroDurElem := &p.Element{Duration: zero, Pitch: c3, Attack: p.Attack2}
-	// nonRestElem := &p.Element{Duration: n.Quarter, Pitch: c3, Attack: p.Attack2}
-	// tiedElem := &p.Element{Duration: n.Quarter, Pitch: c3, Attack: p.Attack0}
+func TestNewEmpty(t *testing.T) {
+	s := sequence.New(zero)
 
-	// Should fail with no elements
-	ns, err := p.NewSequence(zero, []*p.Element{}, p.Separation0)
-	assert.Nil(t, ns)
-	assert.NotNil(t, err)
+	assert.Equal(t, s.Duration().Cmp(zero), 0)
+	assert.Equal(t, s.End().Cmp(zero), 0)
+	assert.NoError(t, s.Validate())
+	assert.NoError(t, s.Simplify())
+}
+
+func TestSequenceInvalid(t *testing.T) {
+	e1 := &sequence.Element{Duration: duration.New(1, 4), Pitch: pitch.D4}
+	e2 := &sequence.Element{Duration: duration.Zero(), Pitch: pitch.C4}
+	e3 := &sequence.Element{Duration: duration.New(1, 2), Pitch: pitch.E4}
+	s := sequence.New(half, e1, e2, e3)
+	expectedDur := big.NewRat(3, 4)
+	expectedEnd := new(big.Rat).Add(half, expectedDur)
+
+	assert.Equal(t, s.Duration().Cmp(expectedDur), 0)
+	assert.Equal(t, s.End().Cmp(expectedEnd), 0)
+	assert.Error(t, s.Validate())
+	assert.Error(t, s.Simplify())
+}
+
+func TestValidSequenceValid(t *testing.T) {
+	e1 := &sequence.Element{Duration: duration.New(1, 8), Pitch: pitch.D4, Attack: 0.5}
+	e2 := &sequence.Element{Duration: duration.New(1, 8), Pitch: pitch.D4, Attack: 0.0}
+	e3 := &sequence.Element{Duration: duration.New(1, 2), Pitch: pitch.D4, Attack: 0.5}
+	e4 := &sequence.Element{Duration: duration.New(1, 1), Pitch: pitch.E4, Attack: 0.0}
+	s := sequence.New(one, e1, e2, e3, e4)
+	expectedDur := big.NewRat(7, 4)
+	expectedEnd := new(big.Rat).Add(one, expectedDur)
+
+	assert.Equal(t, s.Duration().Cmp(expectedDur), 0)
+	assert.Equal(t, s.End().Cmp(expectedEnd), 0)
+	assert.NoError(t, s.Validate())
+
+	assert.NoError(t, s.Simplify())
+
+	assert.Equal(t, s.Duration().Cmp(expectedDur), 0)
+	assert.Equal(t, s.End().Cmp(expectedEnd), 0)
+
+	require.Len(t, s.Elements, 3)
+	assert.True(t, s.Elements[0].Duration.Equal(duration.New(1, 4)))
+	assert.True(t, s.Elements[1].Duration.Equal(duration.New(1, 2)))
+	assert.True(t, s.Elements[2].Duration.Equal(duration.New(1, 1)))
 }
 
 // 	// Should fail without a zero duration element
