@@ -17,7 +17,7 @@ func TestNewNonPositiveDuration(t *testing.T) {
 	for _, dur := range durs {
 		note := note.New(dur)
 
-		assert.Error(t, note.Validate())
+		assert.NotNil(t, note.Validate())
 	}
 }
 
@@ -26,7 +26,7 @@ func TestNewPositiveDuration(t *testing.T) {
 	for _, dur := range durs {
 		note := note.New(dur)
 
-		assert.NoError(t, note.Validate())
+		assert.Nil(t, note.Validate())
 	}
 }
 
@@ -37,11 +37,11 @@ func TestNoteArticulation(t *testing.T) {
 
 	n.Articulation = "unknown"
 
-	assert.Error(t, n.Validate())
+	assert.NotNil(t, n.Validate())
 
 	n.Articulation = note.Accent
 
-	assert.NoError(t, n.Validate())
+	assert.Nil(t, n.Validate())
 }
 
 func TestNoteIsRestIsMonophonic(t *testing.T) {
@@ -52,15 +52,15 @@ func TestNoteIsRestIsMonophonic(t *testing.T) {
 	mono := note.New(dur, p1)
 	poly := note.New(dur, p1, p2)
 
-	require.NoError(t, rest.Validate())
+	require.Nil(t, rest.Validate())
 	assert.True(t, rest.IsRest())
 	assert.False(t, rest.IsMonophonic())
 
-	require.NoError(t, mono.Validate())
+	require.Nil(t, mono.Validate())
 	assert.False(t, mono.IsRest())
 	assert.True(t, mono.IsMonophonic())
 
-	require.NoError(t, poly.Validate())
+	require.Nil(t, poly.Validate())
 	assert.False(t, poly.IsRest())
 	assert.False(t, poly.IsMonophonic())
 }
@@ -73,13 +73,29 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 	testNoteMarshalUnmarshalJSON(t, "rest", note.New(dur))
 	testNoteMarshalUnmarshalJSON(t, "mono", note.New(dur, p1))
 	testNoteMarshalUnmarshalJSON(t, "poly", note.New(dur, p1, p2))
+
+	n := note.New(dur, p1)
+
+	n.Articulation = note.Accent
+
+	testNoteMarshalUnmarshalJSON(t, "accented", n)
+
+	n.Articulation = ""
+	n.BeginSlur = true
+
+	testNoteMarshalUnmarshalJSON(t, "begins slur", n)
+
+	n.BeginSlur = false
+	n.EndSlur = true
+
+	testNoteMarshalUnmarshalJSON(t, "ends slur", n)
 }
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 	t.Run(name, func(t *testing.T) {
 		t.Log(n.Duration.String())
 
-		require.NoError(t, n.Validate())
+		require.Nil(t, n.Validate())
 
 		d, err := json.Marshal(n)
 

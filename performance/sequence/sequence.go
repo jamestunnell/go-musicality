@@ -1,64 +1,79 @@
 package sequence
 
 import (
-	"math/big"
+	"errors"
+	"fmt"
 
-	"github.com/jamestunnell/go-musicality/notation/duration"
+	"github.com/jamestunnell/go-musicality/validation"
 )
 
 // Sequence is a sequence of elements, starting at an offset, and with some
 // kind of separation at the end.
 type Sequence struct {
-	Start    *big.Rat
+	Start    float64
 	Elements []*Element
 }
 
-func New(start *big.Rat, elements ...*Element) *Sequence {
+var errInvalidSeq = errors.New("sequence is invalid, validate for details")
+
+func New(start float64, elements ...*Element) *Sequence {
 	return &Sequence{
 		Start:    start,
 		Elements: elements,
 	}
 }
 
-func (s *Sequence) Validate() error {
-	for _, elem := range s.Elements {
-		if err := elem.Validate(); err != nil {
-			return err
+func (s *Sequence) Validate() *validation.Result {
+	results := []*validation.Result{}
+
+	for i, elem := range s.Elements {
+		if result := elem.Validate(); result != nil {
+			result.Context = fmt.Sprintf("%s %d", result.Context, i)
+
+			results = append(results, result)
 		}
 	}
 
-	return nil
+	if len(results) == 0 {
+		return nil
+	}
+
+	return &validation.Result{
+		Context:    "sequence",
+		Errors:     []error{},
+		SubResults: results,
+	}
 }
 
-func (seq *Sequence) Offsets() []*big.Rat {
-	offsets := make([]*big.Rat, len(seq.Elements))
-	currentOffset := new(big.Rat).Set(seq.Start)
+func (seq *Sequence) Offsets() []float64 {
+	offsets := make([]float64, len(seq.Elements))
+	currentOffset := seq.Start
 
 	for i, e := range seq.Elements {
-		offsets[i] = new(big.Rat).Set(currentOffset)
-		currentOffset = new(big.Rat).Add(currentOffset, e.Duration.Rat)
+		offsets[i] = currentOffset
+		currentOffset += e.Duration
 	}
 
 	return offsets
 }
 
-func (seq *Sequence) Duration() *big.Rat {
-	dur := duration.Zero()
+func (seq *Sequence) Duration() float64 {
+	dur := 0.0
 
 	for _, e := range seq.Elements {
-		dur.Add(e.Duration)
+		dur += e.Duration
 	}
 
-	return dur.Rat
+	return dur
 }
 
-func (seq *Sequence) End() *big.Rat {
-	return new(big.Rat).Add(seq.Start, seq.Duration())
+func (seq *Sequence) End() float64 {
+	return seq.Start + seq.Duration()
 }
 
 func (seq *Sequence) Simplify() error {
-	if err := seq.Validate(); err != nil {
-		return err
+	if result := seq.Validate(); result != nil {
+		return errInvalidSeq
 	}
 
 	if len(seq.Elements) == 0 {
@@ -73,7 +88,7 @@ func (seq *Sequence) Simplify() error {
 
 		if (cur.Pitch == prev.Pitch) && (cur.Attack == 0.0) {
 			// combine current with previous element
-			prev.Duration.Add(cur.Duration)
+			prev.Duration += cur.Duration
 
 			seq.Elements = append(seq.Elements[:i], seq.Elements[i+1:]...)
 		} else {

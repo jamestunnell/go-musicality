@@ -33,9 +33,9 @@ func TestNewPitch(t *testing.T) {
 // creates balanced pitches.
 func TestPitchIsBalanced(t *testing.T) {
 	balancedPitches := []*pitch.Pitch{
-		&pitch.Pitch{Octave: 5, Semitone: 0, Cent: 0},
-		&pitch.Pitch{Octave: 3, Semitone: 11, Cent: 65},
-		&pitch.Pitch{Octave: 6, Semitone: 4, Cent: 99},
+		{Octave: 5, Semitone: 0, Cent: 0},
+		{Octave: 3, Semitone: 11, Cent: 65},
+		{Octave: 6, Semitone: 4, Cent: 99},
 	}
 
 	for _, p := range balancedPitches {
@@ -43,12 +43,12 @@ func TestPitchIsBalanced(t *testing.T) {
 	}
 
 	imbalancedPitches := []*pitch.Pitch{
-		&pitch.Pitch{Octave: 5, Semitone: -1, Cent: 0},
-		&pitch.Pitch{Octave: 5, Semitone: 7, Cent: -1},
-		&pitch.Pitch{Octave: 5, Semitone: 0, Cent: 101},
-		&pitch.Pitch{Octave: 3, Semitone: 12, Cent: 0},
-		&pitch.Pitch{Octave: 3, Semitone: -4, Cent: -223},
-		&pitch.Pitch{Octave: 3, Semitone: 14, Cent: 132},
+		{Octave: 5, Semitone: -1, Cent: 0},
+		{Octave: 5, Semitone: 7, Cent: -1},
+		{Octave: 5, Semitone: 0, Cent: 101},
+		{Octave: 3, Semitone: 12, Cent: 0},
+		{Octave: 3, Semitone: -4, Cent: -223},
+		{Octave: 3, Semitone: 14, Cent: 132},
 	}
 
 	for _, p := range imbalancedPitches {
@@ -60,8 +60,8 @@ func TestPitchIsBalanced(t *testing.T) {
 // a balanced pitch, which is equivalent but not equal.
 func TestPitchBalance(t *testing.T) {
 	imbalancedPitches := []*pitch.Pitch{
-		&pitch.Pitch{Octave: 5, Semitone: -1, Cent: 0},
-		&pitch.Pitch{Octave: 3, Semitone: 4, Cent: 101},
+		{Octave: 5, Semitone: -1, Cent: 0},
+		{Octave: 3, Semitone: 4, Cent: 101},
 	}
 
 	for _, p := range imbalancedPitches {

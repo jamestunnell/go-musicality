@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/pkg/util"
+	"github.com/jamestunnell/go-musicality/validation"
 )
 
 const (
@@ -22,6 +22,8 @@ type Note struct {
 	Pitches      []*pitch.Pitch `json:"pitches,omitempty"`
 	Duration     *big.Rat       `json:"duration"`
 	Articulation string         `json:"articulation,omitempty"`
+	BeginSlur    bool           `json:"beginSlur,omitempty"`
+	EndSlur      bool           `json:"endSlur,omitempty"`
 }
 
 func New(dur *big.Rat, pitches ...*pitch.Pitch) *Note {
@@ -29,22 +31,34 @@ func New(dur *big.Rat, pitches ...*pitch.Pitch) *Note {
 		Pitches:      pitches,
 		Duration:     dur,
 		Articulation: "",
+		BeginSlur:    false,
+		EndSlur:      false,
 	}
 }
 
-func (n *Note) Validate() error {
+func (n *Note) Validate() *validation.Result {
+	errs := []error{}
+
 	if n.Duration.Cmp(big.NewRat(0, 1)) != 1 {
-		return util.NewNonPositiveRatError(n.Duration)
+		errs = append(errs, validation.NewErrNonPositiveRat("duration", n.Duration))
 	}
 
 	switch n.Articulation {
 	case "", Legato, Tenuto, Accent, Marcato, Portato, Staccato, Staccatissimo:
 		// do nothing
 	default:
-		return fmt.Errorf("unknown articulation %s", n.Articulation)
+		errs = append(errs, fmt.Errorf("unknown articulation %s", n.Articulation))
 	}
 
-	return nil
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return &validation.Result{
+		Context:    "note",
+		Errors:     errs,
+		SubResults: []*validation.Result{},
+	}
 }
 
 func (n *Note) Dot() {
