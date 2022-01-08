@@ -1,7 +1,7 @@
 package validation
 
 type Result struct {
-	Context    string
-	Errors     []error
-	SubResults []*Result
+	Context    string    `json:"context"`
+	Errors     []error   `json:"errors"`
+	SubResults []*Result `json:"subresults"`
 }
