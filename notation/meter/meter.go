@@ -5,33 +5,25 @@ import (
 )
 
 type Meter struct {
-	numerator, denominator uint
+	Numerator, Denominator uint
 }
 
 func New(num, denom uint) *Meter {
 	return &Meter{
-		numerator:   num,
-		denominator: denom,
+		Numerator:   num,
+		Denominator: denom,
 	}
-}
-
-func (m *Meter) Numerator() uint {
-	return m.numerator
-}
-
-func (m *Meter) Denominator() uint {
-	return m.denominator
 }
 
 func (m *Meter) Validate() *validation.Result {
 	errs := []error{}
 
-	if m.numerator == 0 {
-		errs = append(errs, validation.NewErrNonPositiveUInt("numerator", 0))
+	if m.Numerator == 0 {
+		errs = append(errs, validation.NewErrNonPositiveUInt("Numerator", 0))
 	}
 
-	if m.denominator == 0 {
-		errs = append(errs, validation.NewErrNonPositiveUInt("denominator", 0))
+	if m.Denominator == 0 {
+		errs = append(errs, validation.NewErrNonPositiveUInt("Denominator", 0))
 	}
 
 	if len(errs) == 0 {
