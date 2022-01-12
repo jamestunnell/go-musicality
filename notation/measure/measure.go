@@ -2,6 +2,7 @@ package measure
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
@@ -29,6 +30,10 @@ func NewN(n int, met *meter.Meter) []*Measure {
 	}
 
 	return measures
+}
+
+func (m *Measure) Duration() *big.Rat {
+	return big.NewRat(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
 }
 
 func (m *Measure) Validate() *validation.Result {

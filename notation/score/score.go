@@ -8,8 +8,9 @@ import (
 )
 
 type Score struct {
-	Start    *State             `json:"start"`
-	Sections []*section.Section `json:"sections"`
+	Start    *State                 `json:"start"`
+	Sections []*section.Section     `json:"sections"`
+	Settings map[string]interface{} `json:"settings"`
 }
 
 type OptFunc func(*Score)
@@ -71,4 +72,31 @@ func (s *Score) Validate() *validation.Result {
 		Errors:     []error{},
 		SubResults: results,
 	}
+}
+
+func (s *Score) PartNames() []string {
+	nameMap := map[string]struct{}{}
+
+	for _, section := range s.Sections {
+		for _, m := range section.Measures {
+			for name, notes := range m.PartNotes {
+				if len(notes) > 0 {
+					if _, found := nameMap[name]; !found {
+						nameMap[name] = struct{}{}
+					}
+				}
+			}
+		}
+	}
+
+	names := make([]string, len(nameMap))
+	i := 0
+
+	for name := range nameMap {
+		names[i] = name
+
+		i++
+	}
+
+	return names
 }

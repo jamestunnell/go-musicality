@@ -1,18 +1,28 @@
 package meter
 
 import (
+	"fmt"
+
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Meter struct {
-	Numerator, Denominator uint
+	Numerator, Denominator uint8
 }
 
-func New(num, denom uint) *Meter {
+func New(num, denom uint8) *Meter {
 	return &Meter{
 		Numerator:   num,
 		Denominator: denom,
 	}
+}
+
+func (m *Meter) String() string {
+	return fmt.Sprintf("%d/%d", m.Numerator, m.Denominator)
+}
+
+func (m *Meter) Equal(other *Meter) bool {
+	return m.Numerator == other.Numerator && m.Denominator == other.Denominator
 }
 
 func (m *Meter) Validate() *validation.Result {

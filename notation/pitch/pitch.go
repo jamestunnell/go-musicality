@@ -20,7 +20,7 @@ const (
 type Pitch struct {
 	Octave   int `json:"octave"`
 	Semitone int `json:"semitone"`
-	Cent     int `json:"cent"`
+	Cent     int `json:"cent,omitempty"`
 
 	totalCent int
 }
@@ -98,7 +98,7 @@ func (p *Pitch) TotalSemitoneOffset() int {
 
 // MIDINote converts the (semitone-rounded) pitch to a MIDI note number.
 // If the
-func (p *Pitch) MIDINote() (uint, error) {
+func (p *Pitch) MIDINote() (uint8, error) {
 	const (
 		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
 		minTotalSemitone = -12
@@ -112,7 +112,7 @@ func (p *Pitch) MIDINote() (uint, error) {
 		return 0, fmt.Errorf("semitone total %d is outside of MIDI note number range", totalSemitone)
 	}
 
-	return uint(totalSemitone + 12), nil
+	return uint8(totalSemitone + 12), nil
 }
 
 // isIntInRange checks if the given value is in the range [min,max)

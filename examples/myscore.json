@@ -1,0 +1,103 @@
+{
+  "settings": {
+    "midi": {
+      "partChannels": {
+        "piano": 1,
+        "bass": 2
+      }
+    }
+  },
+  "start": {
+    "tempo": 120,
+    "volume": 0.75
+  },
+  "sections": [
+    {
+      "name": "intro",
+      "measures": [
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/2",
+                "pitches": [
+                  {
+                    "octave": 4,
+                    "semitone": 0
+                  }
+                ]
+              },
+              {
+                "duration": "1/4",
+                "pitches": [
+                  {
+                    "octave": 3,
+                    "semitone": 10
+                  }
+                ]
+              },
+              {
+                "duration": "1/4",
+                "pitches": [
+                  {
+                    "octave": 3,
+                    "semitone": 8
+                  }
+                ]
+              }
+            ],
+            "bass": [
+              {
+                "duration": "1/2",
+                "pitches": [
+                  {
+                    "octave": 2,
+                    "semitone": 5
+                  }
+                ]
+              },
+              {
+                "duration": "1/2",
+                "pitches": [
+                  {
+                    "octave": 2,
+                    "semitone": 7
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 3, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        },
+        {
+          "meter": {"numerator": 4, "denominator": 4},
+          "partNotes": {}
+        }
+      ]
+    }
+  ]
+}
