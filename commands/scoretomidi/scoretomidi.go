@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
+
+	"github.com/jamestunnell/go-musicality/performance/midi"
 )
 
 type ScoreToMIDI struct {
@@ -66,7 +68,7 @@ func (cmd *ScoreToMIDI) Execute() error {
 	}
 
 	// Convert the scores to MIDI
-	for fpath, score := range scores {
+	for fpath, s := range scores {
 		ext := filepath.Ext(fpath)
 		base := filepath.Base(fpath)
 		baseWithoutExt := strings.Replace(base, ext, "", 1)
@@ -83,7 +85,7 @@ func (cmd *ScoreToMIDI) Execute() error {
 			Str("output", midiFPath).
 			Msg("converting score")
 
-		if err = score.WriteSMF(midiFPath); err != nil {
+		if err = midi.WriteSMF(s, midiFPath); err != nil {
 			return fmt.Errorf("failed to convert '%s' to MIDI: %w", fpath, err)
 		}
 	}
