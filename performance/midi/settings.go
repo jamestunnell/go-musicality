@@ -1,9 +1,11 @@
-package score
+package midi
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/jamestunnell/go-musicality/notation/score"
 )
 
 type MIDISettings struct {
@@ -12,7 +14,7 @@ type MIDISettings struct {
 
 var errMIDISettingsNotFound = errors.New("MIDI settings not found")
 
-func (s *Score) MIDISettings() (*MIDISettings, error) {
+func Settings(s *score.Score) (*MIDISettings, error) {
 	obj, found := s.Settings["midi"]
 	if !found {
 		return nil, errMIDISettingsNotFound
