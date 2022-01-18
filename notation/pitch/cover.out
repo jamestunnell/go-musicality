@@ -1,0 +1,18 @@
+mode: set
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:26.39,27.52 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:31.2,31.51 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:27.52,29.3 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:34.47,38.2 2 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:40.47,44.16 3 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:48.2,48.55 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:55.2,55.12 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:44.16,46.3 1 0
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:48.55,50.3 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:50.8,53.3 2 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:58.30,60.2 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:62.32,64.2 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:66.46,68.2 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:70.57,75.2 3 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:77.33,81.2 2 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:83.32,85.2 1 1
+github.com/jamestunnell/go-musicality/notation/pitch/pitch.go:87.49,89.2 1 1

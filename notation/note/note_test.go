@@ -46,8 +46,8 @@ func TestNoteArticulation(t *testing.T) {
 
 func TestNoteIsRestIsMonophonic(t *testing.T) {
 	dur := big.NewRat(3, 2)
-	p1 := pitch.New(3, 2, 0)
-	p2 := pitch.New(4, 0, 0)
+	p1 := pitch.New(3, 2)
+	p2 := pitch.New(4, 0)
 	rest := note.New(dur)
 	mono := note.New(dur, p1)
 	poly := note.New(dur, p1, p2)
@@ -67,8 +67,8 @@ func TestNoteIsRestIsMonophonic(t *testing.T) {
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 	dur := big.NewRat(3, 2)
-	p1 := pitch.New(3, 2, 0)
-	p2 := pitch.New(4, 0, 0)
+	p1 := pitch.New(3, 2)
+	p2 := pitch.New(4, 0)
 
 	testNoteMarshalUnmarshalJSON(t, "rest", note.New(dur))
 	testNoteMarshalUnmarshalJSON(t, "mono", note.New(dur, p1))
