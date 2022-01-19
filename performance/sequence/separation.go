@@ -10,6 +10,6 @@ const (
 	Separation4
 )
 
-func Separation(articulation string, slurring bool) SeparationLevel {
-
-}
+// func Separation(articulation string, slurring bool) SeparationLevel {
+// 	return Separation0
+// }

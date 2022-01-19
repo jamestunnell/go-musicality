@@ -10,6 +10,6 @@ const (
 	Attack4
 )
 
-func Attack(articulation string) AttackLevel {
-
-}
+// func Attack(articulation string) AttackLevel {
+// 	return Attack0
+// }

@@ -39,6 +39,24 @@ func (p *Pitch) Equal(other *Pitch) bool {
 	return p.semitone == other.semitone && p.octave == other.octave
 }
 
+func (p *Pitch) Diff(other *Pitch) int {
+	return p.totalSemitone() - other.totalSemitone()
+}
+
+func (p *Pitch) Compare(other *Pitch) int {
+	diff := p.Diff(other)
+
+	if diff < 0 {
+		return -1
+	}
+
+	if diff > 0 {
+		return 1
+	}
+
+	return 0
+}
+
 func (p *Pitch) MarshalJSON() ([]byte, error) {
 	j := pitchJSON{Octave: p.octave, Semitone: p.semitone}
 
@@ -72,7 +90,7 @@ func (p *Pitch) Semitone() int {
 }
 
 func (p *Pitch) Ratio() float64 {
-	totalSem := totalSemitone(p.octave, p.semitone)
+	totalSem := p.totalSemitone()
 
 	return math.Pow(2.0, float64(totalSem)/float64(SemitonesPerOctave))
 }
@@ -99,13 +117,17 @@ func MIDINote(p *Pitch) (uint8, error) {
 		maxTotalSemitone = 115
 	)
 
-	totalSemitone := totalSemitone(p.octave, p.semitone)
+	totalSemitone := p.totalSemitone()
 
 	if totalSemitone < minTotalSemitone || totalSemitone > maxTotalSemitone {
 		return 0, fmt.Errorf("pitch %s is outside of MIDI note number range", p.String())
 	}
 
 	return uint8(totalSemitone + 12), nil
+}
+
+func (p *Pitch) totalSemitone() int {
+	return totalSemitone(p.octave, p.semitone)
 }
 
 func totalSemitone(octave, semitone int) int {

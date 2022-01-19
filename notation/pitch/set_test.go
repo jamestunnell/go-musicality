@@ -15,11 +15,24 @@ func TestSetEmpty(t *testing.T) {
 	assert.False(t, s.Remove(pitch.C0))
 }
 
-func TestSetUnion(t *testing.T) {
-	s1 := pitch.NewSet(pitch.A1)
-	s2 := pitch.NewSet(pitch.A0, pitch.A2)
-	u := s1.Union(s2)
+func TestSetOperations(t *testing.T) {
+	s1 := pitch.NewSet(pitch.A1, pitch.A2, pitch.A3)
+	s2 := pitch.NewSet(pitch.A0, pitch.A2, pitch.A3)
+	union := s1.Union(s2)
+	intersect := s1.Intersect(s2)
+	diff := s1.Diff(s2)
 
-	assert.Len(t, u, 3)
-	assert.ElementsMatch(t, u, []*pitch.Pitch{pitch.A0, pitch.A1, pitch.A2})
+	assert.Equal(t, 4, union.Len())
+	assert.ElementsMatch(t, union.Pitches(), pitch.Pitches{pitch.A0, pitch.A1, pitch.A2, pitch.A3})
+
+	assert.Equal(t, 2, intersect.Len())
+	assert.ElementsMatch(t, intersect.Pitches(), pitch.Pitches{pitch.A2, pitch.A3})
+
+	assert.Equal(t, 1, diff.Len())
+	assert.ElementsMatch(t, diff.Pitches(), pitch.Pitches{pitch.A1})
+
+	diff = s2.Diff(s1)
+
+	assert.Equal(t, 1, diff.Len())
+	assert.ElementsMatch(t, diff.Pitches(), pitch.Pitches{pitch.A0})
 }

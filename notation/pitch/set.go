@@ -1,12 +1,14 @@
 package pitch
 
+import "sort"
+
 type Set struct {
-	pitches []*Pitch
+	pitches Pitches
 }
 
 func NewSet(pitches ...*Pitch) *Set {
 	ps := &Set{
-		pitches: make([]*Pitch, 0, len(pitches)),
+		pitches: make(Pitches, 0, len(pitches)),
 	}
 
 	for _, p := range pitches {
@@ -16,12 +18,16 @@ func NewSet(pitches ...*Pitch) *Set {
 	return ps
 }
 
+func (ps *Set) Pitches() Pitches {
+	return ps.pitches
+}
+
 func (ps *Set) Len() int {
 	return len(ps.pitches)
 }
 
 func (ps *Set) Union(other *Set) *Set {
-	union := make([]*Pitch, len(ps.pitches))
+	union := make(Pitches, len(ps.pitches))
 
 	for i, p := range ps.pitches {
 		union[i] = p
@@ -37,7 +43,7 @@ func (ps *Set) Union(other *Set) *Set {
 }
 
 func (ps *Set) Intersect(other *Set) *Set {
-	intersect := []*Pitch{}
+	intersect := Pitches{}
 
 	for _, p := range ps.pitches {
 		if other.Contains(p) {
@@ -49,7 +55,7 @@ func (ps *Set) Intersect(other *Set) *Set {
 }
 
 func (ps *Set) Diff(other *Set) *Set {
-	diff := []*Pitch{}
+	diff := Pitches{}
 
 	for _, p := range ps.pitches {
 		if !other.Contains(p) {
@@ -79,6 +85,12 @@ func (ps *Set) Remove(p *Pitch) bool {
 	return true
 }
 
+func (ps *Set) Sorted() Pitches {
+	sort.Sort(ps.pitches)
+
+	return ps.pitches
+}
+
 func (ps *Set) Contains(tgt *Pitch) bool {
 	return ps.indexOf(tgt) != -1
 }
@@ -87,7 +99,7 @@ func (ps *Set) indexOf(tgt *Pitch) int {
 	return indexOf(ps.pitches, tgt)
 }
 
-func indexOf(pitches []*Pitch, tgt *Pitch) int {
+func indexOf(pitches Pitches, tgt *Pitch) int {
 	for i, p := range pitches {
 		if p.Equal(tgt) {
 			return i
