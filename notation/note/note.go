@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	// Articulations
 	Legato        = "legato"
 	Tenuto        = "tenuto"
 	Accent        = "accent"
@@ -19,20 +20,20 @@ const (
 )
 
 type Note struct {
-	Pitches      []*pitch.Pitch `json:"pitches,omitempty"`
-	Duration     *big.Rat       `json:"duration"`
-	Articulation string         `json:"articulation,omitempty"`
-	BeginSlur    bool           `json:"beginSlur,omitempty"`
-	EndSlur      bool           `json:"endSlur,omitempty"`
+	Pitches      *pitch.Set             `json:"pitches,omitempty"`
+	Duration     *big.Rat               `json:"duration"`
+	Articulation string                 `json:"articulation,omitempty"`
+	Slurs        bool                   `json:"slurs,omitempty"`
+	Links        map[*pitch.Pitch]*Link `json: "links,omitempty"`
 }
 
 func New(dur *big.Rat, pitches ...*pitch.Pitch) *Note {
 	return &Note{
-		Pitches:      pitches,
+		Pitches:      pitch.NewSet(pitches...),
 		Duration:     dur,
 		Articulation: "",
-		BeginSlur:    false,
-		EndSlur:      false,
+		Slurs:        false,
+		Links:        make(map[*pitch.Pitch]*Link),
 	}
 }
 
@@ -66,9 +67,9 @@ func (n *Note) Dot() {
 }
 
 func (n *Note) IsRest() bool {
-	return len(n.Pitches) == 0
+	return n.Pitches.Len() == 0
 }
 
 func (n *Note) IsMonophonic() bool {
-	return len(n.Pitches) == 1
+	return n.Pitches.Len() == 1
 }

@@ -35,6 +35,10 @@ func New(octave, semitone int) *Pitch {
 	return &Pitch{octave: octave, semitone: semitone}
 }
 
+func (p *Pitch) Equal(other *Pitch) bool {
+	return p.semitone == other.semitone && p.octave == other.octave
+}
+
 func (p *Pitch) MarshalJSON() ([]byte, error) {
 	j := pitchJSON{Octave: p.octave, Semitone: p.semitone}
 
@@ -65,17 +69,6 @@ func (p *Pitch) Octave() int {
 
 func (p *Pitch) Semitone() int {
 	return p.semitone
-}
-
-func totalSemitone(octave, semitone int) int {
-	return octave*SemitonesPerOctave + semitone
-}
-
-func balanced(totalSemitone int) (octave, semitone int) {
-	octave = totalSemitone / SemitonesPerOctave
-	semitone = totalSemitone - (octave * SemitonesPerOctave)
-
-	return octave, semitone
 }
 
 func (p *Pitch) Ratio() float64 {
@@ -113,4 +106,15 @@ func MIDINote(p *Pitch) (uint8, error) {
 	}
 
 	return uint8(totalSemitone + 12), nil
+}
+
+func totalSemitone(octave, semitone int) int {
+	return octave*SemitonesPerOctave + semitone
+}
+
+func balanced(totalSemitone int) (octave, semitone int) {
+	octave = totalSemitone / SemitonesPerOctave
+	semitone = totalSemitone - (octave * SemitonesPerOctave)
+
+	return octave, semitone
 }
