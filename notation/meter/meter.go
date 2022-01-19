@@ -7,10 +7,10 @@ import (
 )
 
 type Meter struct {
-	Numerator, Denominator uint8
+	Numerator, Denominator uint
 }
 
-func New(num, denom uint8) *Meter {
+func New(num, denom uint) *Meter {
 	return &Meter{
 		Numerator:   num,
 		Denominator: denom,

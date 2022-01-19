@@ -35,7 +35,10 @@ func WriteSMF(s *score.Score, fpath string) error {
 	}
 
 	write := func(wr *writer.SMF) error {
-		metEvents := collectMeterEvents(s)
+		metEvents, err := collectMeterEvents(s)
+		if err != nil {
+			return fmt.Errorf("failed to collect meter events: %w", err)
+		}
 
 		for _, part := range partNames {
 			log.Info().Str("name", part).Msg("processing part")
@@ -78,7 +81,7 @@ func WriteSMF(s *score.Score, fpath string) error {
 	return nil
 }
 
-func collectMeterEvents(s *score.Score) []*Event {
+func collectMeterEvents(s *score.Score) ([]*Event, error) {
 	events := []*Event{}
 
 	offset := big.NewRat(0, 0)
@@ -88,9 +91,11 @@ func collectMeterEvents(s *score.Score) []*Event {
 	for _, section := range s.Sections {
 		for _, m := range section.Measures {
 			if met == nil || !met.Equal(m.Meter) {
-				met = m.Meter
+				if met.Numerator >= 256 || met.Denominator >= 256 {
+					return []*Event{}, fmt.Errorf("meter %s is not valid for MIDI", met.String())
+				}
 
-				metEvent := NewMeterEvent(offset, met)
+				metEvent := NewMeterEvent(offset, uint8(met.Numerator), uint8(met.Denominator))
 
 				events = append(events, metEvent)
 
@@ -99,7 +104,7 @@ func collectMeterEvents(s *score.Score) []*Event {
 		}
 	}
 
-	return events
+	return events, nil
 }
 
 func collectNoteEvents(s *score.Score, part string) []*Event {

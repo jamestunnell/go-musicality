@@ -14,16 +14,16 @@ type NoteOffWriter struct {
 	key uint8
 }
 
-func NoteOnEvent(offset *big.Rat, key, velocity uint8) *Event {
-	w := &NoteOnWriter{key: key, velocity: velocity}
-
-	return NewEvent(offset, w)
+// NewNoteOnEvent makes a new note on event.
+// Returns a non-nil error if the pitch is not in range for MIDI.
+func NewNoteOnEvent(offset *big.Rat, key uint8, velocity uint8) *Event {
+	return NewEvent(offset, &NoteOnWriter{key: key, velocity: velocity})
 }
 
+// NewNoteOffEvent makes a new note off event.
+// Returns a non-nil error if the pitch is not in range for MIDI.
 func NewNoteOffEvent(offset *big.Rat, key uint8) *Event {
-	w := &NoteOffWriter{key: key}
-
-	return NewEvent(offset, w)
+	return NewEvent(offset, &NoteOffWriter{key: key})
 }
 
 func (e *NoteOnWriter) Write(wr *writer.SMF) error {

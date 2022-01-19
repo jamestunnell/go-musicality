@@ -3,18 +3,17 @@ package midi
 import (
 	"math/big"
 
-	"github.com/jamestunnell/go-musicality/notation/meter"
 	"gitlab.com/gomidi/midi/writer"
 )
 
 type MeterWriter struct {
-	met *meter.Meter
+	num, denom uint8
 }
 
-func NewMeterEvent(offset *big.Rat, met *meter.Meter) *Event {
-	return NewEvent(offset, &MeterWriter{met: met})
+func NewMeterEvent(offset *big.Rat, num, denom uint8) *Event {
+	return NewEvent(offset, &MeterWriter{num: num, denom: denom})
 }
 
 func (e *MeterWriter) Write(wr *writer.SMF) error {
-	return writer.Meter(wr, e.met.Numerator, e.met.Denominator)
+	return writer.Meter(wr, e.num, e.denom)
 }

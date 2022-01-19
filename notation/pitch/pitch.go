@@ -2,7 +2,9 @@ package pitch
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
+	"strconv"
 )
 
 const (
@@ -11,6 +13,8 @@ const (
 	// SemitonesPerOctave is the number of semitones per octave
 	SemitonesPerOctave = 12
 )
+
+var semitoneNames = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
 
 // Pitch represents a musical pitch using octave, semitone, and cent.
 type Pitch struct {
@@ -86,4 +90,27 @@ func (p *Pitch) Freq() float64 {
 
 func (p *Pitch) Transpose(semitones int) *Pitch {
 	return New(p.octave, p.semitone+semitones)
+}
+
+func (p *Pitch) String() string {
+	return semitoneNames[p.semitone] + strconv.Itoa(p.octave)
+}
+
+// MIDINote converts the pitch to a MIDI note number.
+// Returns a non-nil error if the pitch is not in range for MIDI.
+func MIDINote(p *Pitch) (uint8, error) {
+	const (
+		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
+		minTotalSemitone = -12
+		// maxTotalSemitone is the total semitone value of MIDI note 127 (G9)
+		maxTotalSemitone = 115
+	)
+
+	totalSemitone := totalSemitone(p.octave, p.semitone)
+
+	if totalSemitone < minTotalSemitone || totalSemitone > maxTotalSemitone {
+		return 0, fmt.Errorf("pitch %s is outside of MIDI note number range", p.String())
+	}
+
+	return uint8(totalSemitone + 12), nil
 }
