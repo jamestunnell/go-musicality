@@ -36,6 +36,8 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 	write := func(wr *writer.SMF) error {
 		for _, track := range tracks {
+			log.Info().Str("name", track.Name).Msg("writing track")
+
 			writer.TrackSequenceName(wr, track.Name)
 			wr.SetChannel(track.Channel)
 			writer.ProgramChange(wr, track.Instrument)
@@ -56,8 +58,12 @@ func WriteSMF(s *score.Score, fpath string) error {
 					prev = current
 				}
 
-				if err := event.Write(wr); err != nil {
+				err := event.Write(wr)
+				if err != nil {
 					return fmt.Errorf("failed to write event at %s: %w", event.Offset.String(), err)
+				} else {
+					offsetFlt, _ := current.Float64()
+					log.Debug().Float64("offset", offsetFlt).Msg("wrote event")
 				}
 			}
 
@@ -92,8 +98,6 @@ func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 	tracks := []*Track{}
 
 	for _, part := range partNames {
-		log.Info().Str("name", part).Msg("processing part")
-
 		noteEvents, err := collectNoteEvents(s, part)
 		if err != nil {
 			return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
