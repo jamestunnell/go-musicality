@@ -84,20 +84,22 @@ func WriteSMF(s *score.Score, fpath string) error {
 func collectMeterEvents(s *score.Score) ([]*Event, error) {
 	events := []*Event{}
 
-	offset := big.NewRat(0, 0)
+	offset := big.NewRat(0, 1)
 
 	var met *meter.Meter
 
 	for _, section := range s.Sections {
 		for _, m := range section.Measures {
 			if met == nil || !met.Equal(m.Meter) {
-				if met.Numerator >= 256 || met.Denominator >= 256 {
+				if m.Meter.Numerator >= 256 || m.Meter.Denominator >= 256 {
 					return []*Event{}, fmt.Errorf("meter %s is not valid for MIDI", met.String())
 				}
 
-				metEvent := NewMeterEvent(offset, uint8(met.Numerator), uint8(met.Denominator))
+				metEvent := NewMeterEvent(offset, uint8(m.Meter.Numerator), uint8(m.Meter.Denominator))
 
 				events = append(events, metEvent)
+
+				met = m.Meter
 
 				offset.Add(offset, m.Duration())
 			}

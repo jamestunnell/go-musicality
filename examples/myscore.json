@@ -21,50 +21,25 @@
             "piano": [
               {
                 "duration": "1/2",
-                "pitches": [
-                  {
-                    "octave": 4,
-                    "semitone": 0
-                  }
-                ]
+                "pitches": ["C4"]
               },
               {
                 "duration": "1/4",
-                "pitches": [
-                  {
-                    "octave": 3,
-                    "semitone": 10
-                  }
-                ]
+                "pitches": ["Bb3"]
               },
               {
                 "duration": "1/4",
-                "pitches": [
-                  {
-                    "octave": 3,
-                    "semitone": 8
-                  }
-                ]
+                "pitches": ["Ab3"]
               }
             ],
             "bass": [
               {
                 "duration": "1/2",
-                "pitches": [
-                  {
-                    "octave": 2,
-                    "semitone": 5
-                  }
-                ]
+                "pitches": ["F2"]
               },
               {
                 "duration": "1/2",
-                "pitches": [
-                  {
-                    "octave": 2,
-                    "semitone": 7
-                  }
-                ]
+                "pitches": ["G2"]
               }
             ]
           }
