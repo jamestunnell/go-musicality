@@ -81,8 +81,36 @@ func elements(n *note.Note, p *pitch.Pitch, attack float64) []*Element {
 
 	if l != nil {
 		switch l.Type {
-		case note.Glissando, note.Portamento:
+		case note.Portamento:
 			panic("not supported")
+		case note.Glissando:
+			// reserve 25% of the original note duration for the starting pitch
+			elems = []*Element{
+				{
+					Duration: new(big.Rat).Mul(d, big.NewRat(1,4)),
+					Pitch:    p,
+					Attack:   attack,
+				},
+			}
+
+			diff := l.Target.Diff(p)
+			semitones := Abs(diff)
+			incr := diff / semitones
+			subdur := new(big.Rat).Mul(d, big.NewRat(3,4*int64(semitones)))
+			lastElem := elems[0]
+
+			for i := 0; i < semitones; i++ {
+				elem := &Element{
+					Duration: subdur,
+					Pitch:    lastElem.Pitch.Transpose(incr),
+					Attack:   AttackNone,
+				}
+
+				elems = append(elems, elem)
+
+				lastElem = elem
+			}
+
 		case note.Tie:
 			elems = []*Element{
 				{
