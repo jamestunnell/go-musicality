@@ -44,10 +44,16 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 			for _, event := range track.Events {
 				current := event.Offset
-				diff := new(big.Rat).Sub(current, prev)
 
-				if diff.Cmp(big.NewRat(0, 1)) == 1 {
-					writer.Forward(wr, 0, uint32(diff.Num().Uint64()), uint32(diff.Denom().Uint64()))
+				if current.Cmp(prev) == 1 {
+					diff := new(big.Rat).Sub(current, prev)
+
+					flt, _ := diff.Float64()
+					num := uint32(math.Round(math.MaxUint32 * flt))
+
+					writer.Forward(wr, 0, num, math.MaxUint32)
+
+					prev = current
 				}
 
 				if err := event.Write(wr); err != nil {
@@ -109,7 +115,7 @@ func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 			Name:       part,
 			Channel:    settings.PartChannels[part],
 			Events:     events,
-			Instrument: DefaultInstrument,
+			Instrument: 1,
 		}
 
 		tracks = append(tracks, track)
