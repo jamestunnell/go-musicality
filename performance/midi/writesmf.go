@@ -142,7 +142,7 @@ func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
 				return []*Event{}, err
 			}
 
-			NewNoteOnEvent(offsets[i], key, vel)
+			events = append(events, NewNoteOnEvent(offsets[i], key, vel))
 
 			lastElem := i == (len(seq.Elements) - 1)
 
@@ -156,76 +156,15 @@ func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
 
 				endOffset := new(big.Rat).Add(offsets[i], newDur)
 
-				NewNoteOffEvent(endOffset, key)
+				events = append(events, NewNoteOffEvent(endOffset, key))
 			} else {
-				NewNoteOffEvent(offsets[i+1], key)
+				events = append(events, NewNoteOffEvent(offsets[i+1], key))
 			}
 		}
 	}
 
 	return events, nil
 }
-
-// func writePartSMF(s *score.Score, wr *writer.SMF, settings *MIDISettings, part string) error {
-// 	zero := big.NewRat(0, 0)
-
-// 	writer.TrackSequenceName(wr, part)
-// 	wr.SetChannel(settings.PartChannels[part])
-
-// 	var met *meter.Meter
-
-// 	for i, section := range s.Sections {
-// 		log.Info().
-// 			Str("name", section.Name).
-// 			Int("index", i).
-// 			Msg("processing section")
-
-// 		for j, m := range section.Measures {
-// 			if met == nil || !met.Equal(m.Meter) {
-// 				met = m.Meter
-
-// 				log.Info().
-// 					Int("measure index", j).
-// 					Str("meter", met.String()).
-// 					Msg("setting meter")
-
-// 				writer.Meter(wr, met.Numerator, met.Denominator)
-// 			}
-
-// 			notes, found := m.PartNotes[part]
-// 			if found {
-// 				remaining := m.Duration()
-// 				for _, n := range notes {
-// 					switch {
-// 					case n.IsRest():
-// 					case n.IsMonophonic():
-// 						key, err := n.Pitches[0].MIDINote()
-// 						if err != nil {
-// 							return fmt.Errorf("failed to get MIDI key for note: %w", err)
-// 						}
-// 						writer.NoteOn(wr, key, 50)
-// 						writer.Forward(wr, 0, uint32(n.Duration.Num().Uint64()), uint32(n.Duration.Denom().Uint64()))
-// 						writer.NoteOff(wr, key)
-
-// 						remaining.Sub(remaining, n.Duration)
-// 					default:
-// 						return fmt.Errorf("polyphonic notes not supported")
-// 					}
-// 				}
-
-// 				if remaining.Cmp(zero) == 1 {
-// 					writer.Forward(wr, 0, uint32(remaining.Num().Uint64()), uint32(remaining.Denom().Uint64()))
-// 				}
-// 			} else {
-// 				writer.Forward(wr, 1, 0, 0)
-// 			}
-// 		}
-// 	}
-
-// 	writer.EndOfTrack(wr)
-
-// 	return nil
-// }
 
 // Key converts the pitch to a MIDI note number.
 // Returns a non-nil error if the pitch is not in the range [C-1, G9].
