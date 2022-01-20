@@ -30,15 +30,15 @@ func WriteSMF(s *score.Score, fpath string) error {
 	}
 
 	tracks, err := makeTracks(s, settings)
-    if err != nil {
-        return fmt.Errorf("failed to make MIDI tracks: %w", err)
-    }
+	if err != nil {
+		return fmt.Errorf("failed to make MIDI tracks: %w", err)
+	}
 
 	write := func(wr *writer.SMF) error {
-        for _, track := range tracks {
-            writer.TrackSequenceName(wr, track.Name)
-            wr.SetChannel(track.Channel)
-            writer.ProgramChange(wr, track.Instrument)
+		for _, track := range tracks {
+			writer.TrackSequenceName(wr, track.Name)
+			wr.SetChannel(track.Channel)
+			writer.ProgramChange(wr, track.Instrument)
 
 			prev := big.NewRat(0, 1)
 
@@ -70,7 +70,7 @@ func WriteSMF(s *score.Score, fpath string) error {
 }
 
 func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
-    partNames := s.PartNames()
+	partNames := s.PartNames()
 
 	for _, part := range partNames {
 		if _, found := settings.PartChannels[part]; !found {
@@ -78,43 +78,44 @@ func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 		}
 	}
 
-    metEvents, err := collectMeterEvents(s)
-    if err != nil {
-        return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
-    }
+	metEvents, err := collectMeterEvents(s)
+	if err != nil {
+		return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
+	}
 
-    tracks := []*Track{}
+	tracks := []*Track{}
 
-    for _, part := range partNames {
-        log.Info().Str("name", part).Msg("processing part")
+	for _, part := range partNames {
+		log.Info().Str("name", part).Msg("processing part")
 
-        noteEvents, err := collectNoteEvents(s, part)
-        if err != nil {
-            return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
-        }
+		noteEvents, err := collectNoteEvents(s, part)
+		if err != nil {
+			return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
+		}
 
-        events := []*Event{}
+		events := []*Event{}
 
-        events = append(events, metEvents...)
+		events = append(events, metEvents...)
 
-        events = append(events, noteEvents...)
+		events = append(events, noteEvents...)
 
-        if len(events) == 0 {
-            break
-        }
+		if len(events) == 0 {
+			break
+		}
 
-        SortEvents(events)
+		SortEvents(events)
 
-        track := &Track{
-            Name: part,
-            Channel: settings.PartChannels[part],
-            Events: events,
-        }
+		track := &Track{
+			Name:       part,
+			Channel:    settings.PartChannels[part],
+			Events:     events,
+			Instrument: DefaultInstrument,
+		}
 
-        tracks = append(tracks, track)
-    }
+		tracks = append(tracks, track)
+	}
 
-    return tracks, nil
+	return tracks, nil
 }
 
 func collectMeterEvents(s *score.Score) ([]*Event, error) {
