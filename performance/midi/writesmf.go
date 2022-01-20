@@ -23,48 +23,26 @@ func WriteSMF(s *score.Score, fpath string) error {
 		smfwriter.NoRunningStatus(),
 		smfwriter.TimeFormat(smf.MetricTicks(ticksPerQuarter)),
 	}
-	partNames := s.PartNames()
-	numTracks := uint16(len(partNames))
 
 	settings, err := Settings(s)
 	if err != nil {
 		return fmt.Errorf("failed to get MIDI settings: %w", err)
 	}
 
-	for _, part := range partNames {
-		if _, found := settings.PartChannels[part]; !found {
-			return fmt.Errorf("part '%s' channel is missing from MIDI settings", part)
-		}
-	}
+	tracks, err := makeTracks(s, settings)
+    if err != nil {
+        return fmt.Errorf("failed to make MIDI tracks: %w", err)
+    }
 
 	write := func(wr *writer.SMF) error {
-		metEvents, err := collectMeterEvents(s)
-		if err != nil {
-			return fmt.Errorf("failed to collect meter events: %w", err)
-		}
-
-		for _, part := range partNames {
-			log.Info().Str("name", part).Msg("processing part")
-
-			noteEvents, err := collectNoteEvents(s, part)
-			if err != nil {
-				return fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
-			}
-
-			writer.TrackSequenceName(wr, part)
-			wr.SetChannel(settings.PartChannels[part])
-
-			events := append(metEvents, noteEvents...)
-
-			if len(events) == 0 {
-				break
-			}
-
-			SortEvents(events)
+        for _, track := range tracks {
+            writer.TrackSequenceName(wr, track.Name)
+            wr.SetChannel(track.Channel)
+            writer.ProgramChange(wr, track.Instrument)
 
 			prev := big.NewRat(0, 1)
 
-			for _, event := range events {
+			for _, event := range track.Events {
 				current := event.Offset
 				diff := new(big.Rat).Sub(current, prev)
 
@@ -76,17 +54,67 @@ func WriteSMF(s *score.Score, fpath string) error {
 					return fmt.Errorf("failed to write event at %s: %w", event.Offset.String(), err)
 				}
 			}
+
+			writer.EndOfTrack(wr)
 		}
 
 		return nil
 	}
 
-	err = writer.WriteSMF(fpath, numTracks, write, opts...)
+	err = writer.WriteSMF(fpath, uint16(len(tracks)), write, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to write SMF: %w", err)
 	}
 
 	return nil
+}
+
+func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
+    partNames := s.PartNames()
+
+	for _, part := range partNames {
+		if _, found := settings.PartChannels[part]; !found {
+			return []*Track{}, fmt.Errorf("part '%s' channel is missing from MIDI settings", part)
+		}
+	}
+
+    metEvents, err := collectMeterEvents(s)
+    if err != nil {
+        return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
+    }
+
+    tracks := []*Track{}
+
+    for _, part := range partNames {
+        log.Info().Str("name", part).Msg("processing part")
+
+        noteEvents, err := collectNoteEvents(s, part)
+        if err != nil {
+            return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
+        }
+
+        events := []*Event{}
+
+        events = append(events, metEvents...)
+
+        events = append(events, noteEvents...)
+
+        if len(events) == 0 {
+            break
+        }
+
+        SortEvents(events)
+
+        track := &Track{
+            Name: part,
+            Channel: settings.PartChannels[part],
+            Events: events,
+        }
+
+        tracks = append(tracks, track)
+    }
+
+    return tracks, nil
 }
 
 func collectMeterEvents(s *score.Score) ([]*Event, error) {
