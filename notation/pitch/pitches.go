@@ -37,7 +37,7 @@ func (ps Pitches) SemitoneSum() int {
 	sum := 0
 
 	for _, p := range ps {
-		sum += p.totalSemitone()
+		sum += p.TotalSemitone()
 	}
 
 	return sum

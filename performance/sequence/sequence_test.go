@@ -1,6 +1,7 @@
 package sequence_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,23 +11,28 @@ import (
 	"github.com/jamestunnell/go-musicality/performance/sequence"
 )
 
-func TestNewEmpty(t *testing.T) {
-	s := sequence.New(0.0)
+func zero() *big.Rat {
+	return big.NewRat(0, 1)
+}
 
-	assert.Equal(t, 0.0, s.Duration())
-	assert.Equal(t, 0.0, s.End())
+func TestNewEmpty(t *testing.T) {
+
+	s := sequence.New(zero())
+
+	assert.Equal(t, zero(), s.Duration())
+	assert.Equal(t, zero(), s.End())
 	assert.Nil(t, s.Validate())
 	assert.NoError(t, s.Simplify())
 }
 
 func TestSequenceInvalid(t *testing.T) {
-	e1 := &sequence.Element{Duration: 0.25, Pitch: pitch.D4}
-	e2 := &sequence.Element{Duration: 0.0, Pitch: pitch.C4}
-	e3 := &sequence.Element{Duration: 0.5, Pitch: pitch.E4}
-	start := 0.5
+	e1 := &sequence.Element{Duration: big.NewRat(1, 4), Pitch: pitch.D4}
+	e2 := &sequence.Element{Duration: zero(), Pitch: pitch.C4}
+	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.E4}
+	start := big.NewRat(1, 2)
 	s := sequence.New(start, e1, e2, e3)
-	expectedDur := 0.75
-	expectedEnd := start + expectedDur
+	expectedDur := big.NewRat(3, 4)
+	expectedEnd := new(big.Rat).Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
@@ -35,14 +41,14 @@ func TestSequenceInvalid(t *testing.T) {
 }
 
 func TestValidSequenceValid(t *testing.T) {
-	e1 := &sequence.Element{Duration: 0.125, Pitch: pitch.D4, Attack: 0.5}
-	e2 := &sequence.Element{Duration: 0.125, Pitch: pitch.D4, Attack: 0.0}
-	e3 := &sequence.Element{Duration: 0.5, Pitch: pitch.D4, Attack: 0.5}
-	e4 := &sequence.Element{Duration: 1.0, Pitch: pitch.E4, Attack: 0.0}
-	start := 1.0
+	e1 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: 0.5}
+	e2 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: 0.0}
+	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.D4, Attack: 0.5}
+	e4 := &sequence.Element{Duration: big.NewRat(1, 1), Pitch: pitch.E4, Attack: 0.0}
+	start := big.NewRat(1, 1)
 	s := sequence.New(start, e1, e2, e3, e4)
-	expectedDur := 1.75
-	expectedEnd := start + expectedDur
+	expectedDur := big.NewRat(7, 4)
+	expectedEnd := new(big.Rat).Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())

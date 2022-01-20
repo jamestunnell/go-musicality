@@ -3,6 +3,7 @@ package sequence
 import (
 	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/validation"
 )
@@ -10,16 +11,18 @@ import (
 // Sequence is a sequence of elements, starting at an offset, and with some
 // kind of separation at the end.
 type Sequence struct {
-	Start    float64
-	Elements []*Element
+	Start      *big.Rat
+	Elements   []*Element
+	Separation float64
 }
 
 var errInvalidSeq = errors.New("sequence is invalid, validate for details")
 
-func New(start float64, elements ...*Element) *Sequence {
+func New(start *big.Rat, elements ...*Element) *Sequence {
 	return &Sequence{
-		Start:    start,
-		Elements: elements,
+		Start:      start,
+		Elements:   elements,
+		Separation: SeparationNormal,
 	}
 }
 
@@ -45,30 +48,34 @@ func (s *Sequence) Validate() *validation.Result {
 	}
 }
 
-func (seq *Sequence) Offsets() []float64 {
-	offsets := make([]float64, len(seq.Elements))
-	currentOffset := seq.Start
+func (seq *Sequence) Offsets() []*big.Rat {
+	offsets := make([]*big.Rat, len(seq.Elements))
+	currentOffset := new(big.Rat).Set(seq.Start)
 
 	for i, e := range seq.Elements {
 		offsets[i] = currentOffset
-		currentOffset += e.Duration
+		currentOffset = new(big.Rat).Add(currentOffset, e.Duration)
 	}
 
 	return offsets
 }
 
-func (seq *Sequence) Duration() float64 {
-	dur := 0.0
+// Duration is not modified to account for sequence separation.
+func (seq *Sequence) Duration() *big.Rat {
+	dur := big.NewRat(0, 1)
 
 	for _, e := range seq.Elements {
-		dur += e.Duration
+		dur = dur.Add(dur, e.Duration)
 	}
 
 	return dur
 }
 
-func (seq *Sequence) End() float64 {
-	return seq.Start + seq.Duration()
+// End is not modified to account for separation
+func (seq *Sequence) End() *big.Rat {
+	end := new(big.Rat).Add(seq.Start, seq.Duration())
+
+	return end
 }
 
 func (seq *Sequence) Simplify() error {
@@ -88,7 +95,7 @@ func (seq *Sequence) Simplify() error {
 
 		if (cur.Pitch == prev.Pitch) && (cur.Attack == 0.0) {
 			// combine current with previous element
-			prev.Duration += cur.Duration
+			prev.Duration = prev.Duration.Add(prev.Duration, cur.Duration)
 
 			seq.Elements = append(seq.Elements[:i], seq.Elements[i+1:]...)
 		} else {

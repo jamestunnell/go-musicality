@@ -2,6 +2,7 @@ package midi
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 
 	"github.com/rs/zerolog/log"
@@ -10,7 +11,9 @@ import (
 	"gitlab.com/gomidi/midi/writer"
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
+	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/score"
+	"github.com/jamestunnell/go-musicality/performance/sequence"
 )
 
 const ticksPerQuarter = 960
@@ -43,7 +46,10 @@ func WriteSMF(s *score.Score, fpath string) error {
 		for _, part := range partNames {
 			log.Info().Str("name", part).Msg("processing part")
 
-			noteEvents := collectNoteEvents(s, part)
+			noteEvents, err := collectNoteEvents(s, part)
+			if err != nil {
+				return fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
+			}
 
 			writer.TrackSequenceName(wr, part)
 			wr.SetChannel(settings.PartChannels[part])
@@ -62,7 +68,9 @@ func WriteSMF(s *score.Score, fpath string) error {
 				current := event.Offset
 				diff := new(big.Rat).Sub(current, prev)
 
-				writer.Forward(wr, 0, uint32(diff.Num().Uint64()), uint32(diff.Denom().Uint64()))
+				if diff.Cmp(big.NewRat(0, 1)) == 1 {
+					writer.Forward(wr, 0, uint32(diff.Num().Uint64()), uint32(diff.Denom().Uint64()))
+				}
 
 				if err := event.Write(wr); err != nil {
 					return fmt.Errorf("failed to write event at %s: %w", event.Offset.String(), err)
@@ -109,8 +117,53 @@ func collectMeterEvents(s *score.Score) ([]*Event, error) {
 	return events, nil
 }
 
-func collectNoteEvents(s *score.Score, part string) []*Event {
-	return []*Event{}
+func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
+	events := []*Event{}
+
+	notes := s.PartNotes(part)
+	seqs := sequence.Extract(notes)
+
+	for _, seq := range seqs {
+		offsets := seq.Offsets()
+
+		for i, elem := range seq.Elements {
+			p := elem.Pitch
+			key, err := Key(p)
+			if err != nil {
+				err = fmt.Errorf("failed to get MIDI note for pitch '%s': %w", p.String(), err)
+
+				return []*Event{}, err
+			}
+
+			vel, err := Velocity(elem.Attack)
+			if err != nil {
+				err = fmt.Errorf("failed to get MIDI velocity: %w", err)
+
+				return []*Event{}, err
+			}
+
+			NewNoteOnEvent(offsets[i], key, vel)
+
+			lastElem := i == (len(seq.Elements) - 1)
+
+			if lastElem {
+				newDur, err := sequence.AdjustDuration(elem.Duration, seq.Separation)
+				if err != nil {
+					err = fmt.Errorf("failed to adjust duration: %w", err)
+
+					return []*Event{}, err
+				}
+
+				endOffset := new(big.Rat).Add(offsets[i], newDur)
+
+				NewNoteOffEvent(endOffset, key)
+			} else {
+				NewNoteOffEvent(offsets[i+1], key)
+			}
+		}
+	}
+
+	return events, nil
 }
 
 // func writePartSMF(s *score.Score, wr *writer.SMF, settings *MIDISettings, part string) error {
@@ -173,3 +226,34 @@ func collectNoteEvents(s *score.Score, part string) []*Event {
 
 // 	return nil
 // }
+
+// Key converts the pitch to a MIDI note number.
+// Returns a non-nil error if the pitch is not in the range [C-1, G9].
+func Key(p *pitch.Pitch) (uint8, error) {
+	const (
+		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
+		minTotalSemitone = -12
+		// maxTotalSemitone is the total semitone value of MIDI note 127 (G9)
+		maxTotalSemitone = 115
+	)
+
+	totalSemitone := p.TotalSemitone()
+
+	if totalSemitone < minTotalSemitone || totalSemitone > maxTotalSemitone {
+		return 0, fmt.Errorf("pitch %s is outside of MIDI note number range", p.String())
+	}
+
+	return uint8(totalSemitone + 12), nil
+}
+
+// Velocity converts the attack to a MIDI velocity.
+// Returns a non-nil error if the attack is not in the range [0.0, 1.0]
+func Velocity(attack float64) (uint8, error) {
+	if attack < 0.0 || attack > 1.0 {
+		return 0, fmt.Errorf("attack '%v' not in range [0.0, 1.0]", attack)
+	}
+
+	vel := uint8(math.Round(attack * 127))
+
+	return vel, nil
+}

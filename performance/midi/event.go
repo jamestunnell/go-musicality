@@ -27,7 +27,7 @@ func (e *Event) Write(wr *writer.SMF) error {
 	return e.Writer.Write(wr)
 }
 
-// Sort by offset, keeping original order or equal elements.
+// Sort by offset, keeping original order for equal elements.
 func SortEvents(events []*Event) {
 	sort.SliceStable(events, func(i, j int) bool {
 		return events[i].Offset.Cmp(events[j].Offset) == -1

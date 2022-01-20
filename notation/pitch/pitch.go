@@ -1,7 +1,6 @@
 package pitch
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 )
@@ -48,7 +47,7 @@ func (p *Pitch) Equal(other *Pitch) bool {
 }
 
 func (p *Pitch) Diff(other *Pitch) int {
-	return p.totalSemitone() - other.totalSemitone()
+	return p.TotalSemitone() - other.TotalSemitone()
 }
 
 func (p *Pitch) Compare(other *Pitch) int {
@@ -74,7 +73,7 @@ func (p *Pitch) Semitone() int {
 }
 
 func (p *Pitch) Ratio() float64 {
-	totalSem := p.totalSemitone()
+	totalSem := p.TotalSemitone()
 
 	return math.Pow(2.0, float64(totalSem)/float64(SemitonesPerOctave))
 }
@@ -91,32 +90,13 @@ func (p *Pitch) String() string {
 	return semitoneNames[p.semitone] + strconv.Itoa(p.octave)
 }
 
-// MIDINote converts the pitch to a MIDI note number.
-// Returns a non-nil error if the pitch is not in range for MIDI.
-func MIDINote(p *Pitch) (uint8, error) {
-	const (
-		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
-		minTotalSemitone = -12
-		// maxTotalSemitone is the total semitone value of MIDI note 127 (G9)
-		maxTotalSemitone = 115
-	)
-
-	totalSemitone := p.totalSemitone()
-
-	if totalSemitone < minTotalSemitone || totalSemitone > maxTotalSemitone {
-		return 0, fmt.Errorf("pitch %s is outside of MIDI note number range", p.String())
-	}
-
-	return uint8(totalSemitone + 12), nil
-}
-
-func (p *Pitch) totalSemitone() int {
+func (p *Pitch) TotalSemitone() int {
 	return totalSemitone(p.octave, p.semitone)
 }
 
 func (p *Pitch) balance() {
 	if p.semitone < 0 || p.semitone >= SemitonesPerOctave {
-		totalSemitone := p.totalSemitone()
+		totalSemitone := p.TotalSemitone()
 		p.octave = totalSemitone / SemitonesPerOctave
 		p.semitone = totalSemitone - (p.octave * SemitonesPerOctave)
 	}

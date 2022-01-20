@@ -7,7 +7,7 @@ import (
 
 type PitchMap map[*pitch.Pitch]*pitch.Pitch
 
-func NewContinuationMap(currentNote, nextNote *note.Note, sep SeparationLevel) PitchMap {
+func NewContinuationMap(currentNote, nextNote *note.Note, sep float64) PitchMap {
 	m := PitchMap{}
 	linked := pitch.NewSet()
 	targeted := pitch.NewSet()
@@ -21,7 +21,7 @@ func NewContinuationMap(currentNote, nextNote *note.Note, sep SeparationLevel) P
 		}
 	}
 
-	if sep == Separation0 {
+	if sep == SeparationNone {
 		unlinked := currentNote.Pitches.Diff(linked)
 		untargeted := nextNote.Pitches.Diff(targeted)
 		pm := OptimizeLinks(unlinked, untargeted)
