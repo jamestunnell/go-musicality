@@ -24,8 +24,9 @@ func NewContinuationMap(currentNote, nextNote *note.Note, sep SeparationLevel) P
 	if sep == Separation0 {
 		unlinked := currentNote.Pitches.Diff(linked)
 		untargeted := nextNote.Pitches.Diff(targeted)
+		pm := OptimizeLinks(unlinked, untargeted)
 
-		for src, tgt := range OptimizeLinks(unlinked, untargeted) {
+		for src, tgt := range pm {
 			m[src] = tgt
 		}
 	}

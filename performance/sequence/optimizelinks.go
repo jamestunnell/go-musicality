@@ -10,15 +10,18 @@ func OptimizeLinks(unlinked, untargeted *pitch.Set) PitchMap {
 	n := min(unlinked.Len(), untargeted.Len())
 	bestScore := math.MaxInt
 
-	var bestComb pitch.Pitches
+	var bestComb1 pitch.Pitches
 
-	var bestPerm pitch.Pitches
+	var bestComb2 pitch.Pitches
 
-	unlinked.Pitches().Combination(n, func(comb pitch.Pitches) {
-		untargeted.Pitches().Permutation(n, func(perm pitch.Pitches) {
-			if newScore := ScoreLinking(comb, perm); newScore < bestScore {
-				bestComb = comb.Clone()
-				bestPerm = perm.Clone()
+	unlinked.Pitches().Combination(n, func(comb1 pitch.Pitches) {
+		untargeted.Pitches().Combination(n, func(comb2 pitch.Pitches) {
+			comb1.Sort()
+			comb2.Sort()
+
+			if newScore := ScoreLinking(comb1, comb2); newScore < bestScore {
+				bestComb1 = comb1.Clone()
+				bestComb2 = comb2.Clone()
 				bestScore = newScore
 			}
 		})
@@ -27,7 +30,7 @@ func OptimizeLinks(unlinked, untargeted *pitch.Set) PitchMap {
 	pm := PitchMap{}
 
 	for i := 0; i < n; i++ {
-		pm[bestComb[i]] = bestPerm[i]
+		pm[bestComb1[i]] = bestComb2[i]
 	}
 
 	return pm
@@ -38,7 +41,7 @@ func ScoreLinking(a, b pitch.Pitches) int {
 	n := min(len(a), len(b))
 
 	for i := 0; i < n; i++ {
-		score += abs(a[i].Diff(b[i]))
+		score += Abs(a[i].Diff(b[i]))
 	}
 
 	return score
@@ -52,7 +55,7 @@ func min(a, b int) int {
 	return b
 }
 
-func abs(x int) int {
+func Abs(x int) int {
 	if x < 0 {
 		return -x
 	}

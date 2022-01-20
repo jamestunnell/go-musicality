@@ -1,6 +1,16 @@
 package pitch
 
+import "sort"
+
 type Pitches []*Pitch
+
+func (ps Pitches) Sort() {
+	sort.Sort(ps)
+}
+
+func (ps Pitches) Set() *Set {
+	return NewSet(ps...)
+}
 
 func (ps Pitches) Clone() Pitches {
 	ps2 := make(Pitches, len(ps))
@@ -21,6 +31,16 @@ func (ps Pitches) Strings() []string {
 	}
 
 	return strs
+}
+
+func (ps Pitches) SemitoneSum() int {
+	sum := 0
+
+	for _, p := range ps {
+		sum += p.totalSemitone()
+	}
+
+	return sum
 }
 
 func (ps Pitches) Swap(i, j int) {
@@ -55,22 +75,4 @@ func (ps Pitches) Combination(n int, f func(comb Pitches)) {
 			ps2.Combination(n-1, f2)
 		}
 	}
-}
-
-func (ps Pitches) Permutation(r int, f func(perm Pitches)) {
-	if r <= 0 || ps.Len() < r {
-		return
-	}
-
-	ps2 := make(Pitches, r)
-
-	ps.Combination(r, func(comb Pitches) {
-		Permutation(r, func(perm []int) {
-			for destIdx, srcIdx := range perm {
-				ps2[destIdx] = comb[srcIdx]
-			}
-
-			f(ps2)
-		})
-	})
 }
