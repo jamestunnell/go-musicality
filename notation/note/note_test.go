@@ -81,14 +81,9 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 	testNoteMarshalUnmarshalJSON(t, "accented", n)
 
 	n.Articulation = ""
-	n.BeginSlur = true
+	n.Slurs = true
 
-	testNoteMarshalUnmarshalJSON(t, "begins slur", n)
-
-	n.BeginSlur = false
-	n.EndSlur = true
-
-	testNoteMarshalUnmarshalJSON(t, "ends slur", n)
+	testNoteMarshalUnmarshalJSON(t, "slurs", n)
 }
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
@@ -99,7 +94,9 @@ func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 
 		d, err := json.Marshal(n)
 
-		require.Nil(t, err)
+		if !assert.Nil(t, err) {
+			t.Fatal(err.Error())
+		}
 
 		t.Log(string(d))
 
@@ -128,15 +125,9 @@ func TestNoteDot(t *testing.T) {
 	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(9, 16)))
 }
 
-func compareNotes(t *testing.T, n1, n2 *note.Note) bool {
-	ok := assert.Equal(t, len(n1.Pitches), len(n2.Pitches))
-	if ok {
-		for i, p := range n2.Pitches {
-			if !assert.Equal(t, *n1.Pitches[i], *p) {
-				ok = false
-			}
-		}
-	}
-
-	return assert.Equal(t, n1.Duration, n2.Duration) && ok
+func compareNotes(t *testing.T, n1, n2 *note.Note) {
+	intersect := n1.Pitches.Intersect(n2.Pitches)
+	assert.Equal(t, intersect.Len(), n1.Pitches.Len())
+	assert.Equal(t, n1.Duration, n2.Duration)
+	assert.Equal(t, n1.Slurs, n2.Slurs)
 }

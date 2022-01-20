@@ -1,12 +1,10 @@
 package pitch_test
 
 import (
-	"encoding/json"
 	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
@@ -76,49 +74,6 @@ func TestPitchTranpose(t *testing.T) {
 	for semitones, newPitch := range testCases {
 		assert.Equal(t, newPitch, startPitch.Transpose(semitones))
 	}
-}
-
-func TestPitchMarshalUnmarshal(t *testing.T) {
-	p := pitch.New(4, 3)
-
-	d, err := json.Marshal(p)
-
-	require.NoError(t, err)
-
-	var p2 pitch.Pitch
-
-	err = json.Unmarshal(d, &p2)
-
-	require.NoError(t, err)
-
-	assert.Equal(t, p.Octave(), (&p2).Octave())
-	assert.Equal(t, p.Semitone(), (&p2).Semitone())
-}
-
-func TestPitchUnmarshalBadJSON(t *testing.T) {
-	var p pitch.Pitch
-
-	assert.Error(t, json.Unmarshal([]byte(`{bad json}`), &p))
-}
-
-func TestPitchUnmarshalUnbalanced(t *testing.T) {
-	obj := map[string]interface{}{
-		"octave":   5,
-		"semitone": 13,
-	}
-
-	d, err := json.Marshal(obj)
-
-	require.NoError(t, err)
-
-	var p pitch.Pitch
-
-	err = json.Unmarshal(d, &p)
-
-	require.NoError(t, err)
-
-	assert.Equal(t, 6, p.Octave())
-	assert.Equal(t, 1, p.Semitone())
 }
 
 // func TestPitchMIDINoteInvalid(t *testing.T) {

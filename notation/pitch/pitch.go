@@ -1,7 +1,6 @@
 package pitch
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"strconv"
@@ -14,7 +13,7 @@ const (
 	SemitonesPerOctave = 12
 )
 
-var semitoneNames = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
+var semitoneNames = []string{"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"}
 
 // Pitch represents a musical pitch using octave, semitone, and cent.
 type Pitch struct {
@@ -28,11 +27,20 @@ type pitchJSON struct {
 
 // New returns a balance pitch
 func New(octave, semitone int) *Pitch {
-	if semitone < 0 || semitone >= SemitonesPerOctave {
-		octave, semitone = balanced(totalSemitone(octave, semitone))
+	p := &Pitch{octave: octave, semitone: semitone}
+
+	p.balance()
+
+	return p
+}
+
+func Parse(str string) (*Pitch, error) {
+	octave, semitone, err := parse(str)
+	if err != nil {
+		return nil, err
 	}
 
-	return &Pitch{octave: octave, semitone: semitone}
+	return New(octave, semitone), nil
 }
 
 func (p *Pitch) Equal(other *Pitch) bool {
@@ -55,30 +63,6 @@ func (p *Pitch) Compare(other *Pitch) int {
 	}
 
 	return 0
-}
-
-func (p *Pitch) MarshalJSON() ([]byte, error) {
-	j := pitchJSON{Octave: p.octave, Semitone: p.semitone}
-
-	return json.Marshal(j)
-}
-
-func (p *Pitch) UnmarshalJSON(d []byte) error {
-	var j pitchJSON
-
-	err := json.Unmarshal(d, &j)
-	if err != nil {
-		return err
-	}
-
-	if j.Semitone < 0 || j.Semitone > SemitonesPerOctave {
-		p.octave, p.semitone = balanced(totalSemitone(j.Octave, j.Semitone))
-	} else {
-		p.octave = j.Octave
-		p.semitone = j.Semitone
-	}
-
-	return nil
 }
 
 func (p *Pitch) Octave() int {
@@ -130,13 +114,14 @@ func (p *Pitch) totalSemitone() int {
 	return totalSemitone(p.octave, p.semitone)
 }
 
-func totalSemitone(octave, semitone int) int {
-	return octave*SemitonesPerOctave + semitone
+func (p *Pitch) balance() {
+	if p.semitone < 0 || p.semitone >= SemitonesPerOctave {
+		totalSemitone := p.totalSemitone()
+		p.octave = totalSemitone / SemitonesPerOctave
+		p.semitone = totalSemitone - (p.octave * SemitonesPerOctave)
+	}
 }
 
-func balanced(totalSemitone int) (octave, semitone int) {
-	octave = totalSemitone / SemitonesPerOctave
-	semitone = totalSemitone - (octave * SemitonesPerOctave)
-
-	return octave, semitone
+func totalSemitone(octave, semitone int) int {
+	return octave*SemitonesPerOctave + semitone
 }
