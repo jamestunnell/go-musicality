@@ -16,8 +16,8 @@ type Element struct {
 func (e *Element) Validate() *validation.Result {
 	errs := []error{}
 
-	if e.Duration.Cmp(big.NewRat(0, 1)) < 1 {
-		errs = append(errs, validation.NewErrNonPositiveRat("duration", e.Duration))
+	if err := validation.VerifyPositiveRat("duration", e.Duration); err != nil {
+		errs = append(errs, err)
 	}
 
 	if len(errs) == 0 {

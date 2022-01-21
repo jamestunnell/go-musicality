@@ -9,20 +9,10 @@ import (
 
 func Extract(notes []*note.Note) []*Sequence {
 	offset := big.NewRat(0, 1)
-	slurring := false
-
 	completedSeqs := []*Sequence{}
 	continuingSequences := map[*pitch.Pitch]*Sequence{}
 
 	for i, currentNote := range notes {
-		if currentNote.Slurs {
-			slurring = true
-		}
-
-		dur := currentNote.Duration
-		attack := Attack(currentNote.Articulation)
-		separation := Separation(currentNote.Articulation, slurring)
-
 		var nextNote *note.Note
 
 		if i == (len(notes) - 1) {
@@ -32,7 +22,7 @@ func Extract(notes []*note.Note) []*Sequence {
 			nextNote = notes[i+1]
 		}
 
-		continuationMap := NewContinuationMap(currentNote, nextNote, separation)
+		continuationMap := NewContinuationMap(currentNote, nextNote, currentNote.Separation)
 
 		newContinuingSequences := map[*pitch.Pitch]*Sequence{}
 
@@ -42,11 +32,15 @@ func Extract(notes []*note.Note) []*Sequence {
 			if continuingSeq, found := continuingSequences[p]; found {
 				seq = continuingSeq
 
-				seq.Elements = append(seq.Elements, elements(currentNote, p, AttackNone)...)
+				elems := elements(currentNote.Duration, p, note.AttackMin, currentNote.Links[p])
+
+				seq.Elements = append(seq.Elements, elems...)
 
 				delete(continuingSequences, p)
 			} else {
-				seq = New(offset, elements(currentNote, p, attack)...)
+				elems := elements(currentNote.Duration, p, currentNote.Attack, currentNote.Links[p])
+
+				seq = New(offset, elems...)
 			}
 
 			if tgt, found := continuationMap[p]; found {
@@ -62,8 +56,7 @@ func Extract(notes []*note.Note) []*Sequence {
 
 		continuingSequences = newContinuingSequences
 
-		// Update the offset
-		offset = new(big.Rat).Add(offset, dur)
+		offset = new(big.Rat).Add(offset, currentNote.Duration)
 	}
 
 	for _, seq := range completedSeqs {
@@ -73,37 +66,34 @@ func Extract(notes []*note.Note) []*Sequence {
 	return completedSeqs
 }
 
-func elements(n *note.Note, p *pitch.Pitch, attack float64) []*Element {
-	d := n.Duration
-	l := n.Links[p]
-
+func elements(dur *big.Rat, p *pitch.Pitch, attack float64, link *note.Link) []*Element {
 	var elems []*Element
 
-	if l != nil {
-		switch l.Type {
+	if link != nil {
+		switch link.Type {
 		case note.Portamento:
 			panic("not supported")
 		case note.Glissando:
 			// reserve 25% of the original note duration for the starting pitch
 			elems = []*Element{
 				{
-					Duration: new(big.Rat).Mul(d, big.NewRat(1,4)),
+					Duration: new(big.Rat).Mul(dur, big.NewRat(1, 4)),
 					Pitch:    p,
 					Attack:   attack,
 				},
 			}
 
-			diff := l.Target.Diff(p)
+			diff := link.Target.Diff(p)
 			semitones := Abs(diff)
 			incr := diff / semitones
-			subdur := new(big.Rat).Mul(d, big.NewRat(3,4*int64(semitones)))
+			subdur := new(big.Rat).Mul(dur, big.NewRat(3, 4*int64(semitones)))
 			lastElem := elems[0]
 
 			for i := 0; i < semitones; i++ {
 				elem := &Element{
 					Duration: subdur,
 					Pitch:    lastElem.Pitch.Transpose(incr),
-					Attack:   AttackNone,
+					Attack:   note.AttackMin,
 				}
 
 				elems = append(elems, elem)
@@ -114,16 +104,16 @@ func elements(n *note.Note, p *pitch.Pitch, attack float64) []*Element {
 		case note.Tie:
 			elems = []*Element{
 				{
-					Duration: d,
+					Duration: dur,
 					Pitch:    p,
-					Attack:   AttackNone,
+					Attack:   note.AttackMin,
 				},
 			}
 		}
 	} else {
 		elems = []*Element{
 			{
-				Duration: d,
+				Duration: dur,
 				Pitch:    p,
 				Attack:   attack,
 			},

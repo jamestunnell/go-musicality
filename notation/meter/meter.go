@@ -28,12 +28,12 @@ func (m *Meter) Equal(other *Meter) bool {
 func (m *Meter) Validate() *validation.Result {
 	errs := []error{}
 
-	if m.Numerator == 0 {
-		errs = append(errs, validation.NewErrNonPositiveUInt("Numerator", 0))
+	if err := validation.VerifyNonZeroUInt("numerator", m.Numerator); err != nil {
+		errs = append(errs, err)
 	}
 
-	if m.Denominator == 0 {
-		errs = append(errs, validation.NewErrNonPositiveUInt("Denominator", 0))
+	if err := validation.VerifyNonZeroUInt("denominator", m.Denominator); err != nil {
+		errs = append(errs, err)
 	}
 
 	if len(errs) == 0 {

@@ -7,19 +7,20 @@ type State struct {
 	Volume float64 `json:"volume"`
 }
 
+const (
+	VolumeMin = -1.0
+	VolumeMax = 1.0
+)
+
 func (s *State) Validate() *validation.Result {
 	errs := []error{}
 
-	if s.Tempo <= 0.0 {
-		errs = append(errs, validation.NewErrNonPositiveFloat("tempo", s.Tempo))
+	if err := validation.VerifyPositiveFloat("tempo", s.Tempo); err != nil {
+		errs = append(errs, err)
 	}
 
-	if s.Volume <= 0.0 {
-		errs = append(errs, validation.NewErrNonPositiveFloat("volume", s.Volume))
-	}
-
-	if s.Volume > 1.0 {
-		errs = append(errs, validation.NewErrNotLessEqualOne("volume", s.Volume))
+	if err := validation.VerifyInRangeFloat("volume", s.Volume, VolumeMin, VolumeMax); err != nil {
+		errs = append(errs, err)
 	}
 
 	if len(errs) == 0 {

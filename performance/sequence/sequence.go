@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -22,7 +23,7 @@ func New(start *big.Rat, elements ...*Element) *Sequence {
 	return &Sequence{
 		Start:      start,
 		Elements:   elements,
-		Separation: SeparationNormal,
+		Separation: note.SeparationNormal,
 	}
 }
 
@@ -93,7 +94,7 @@ func (seq *Sequence) Simplify() error {
 		cur := seq.Elements[i]
 		prev := seq.Elements[i-1]
 
-		if (cur.Pitch == prev.Pitch) && (cur.Attack == 0.0) {
+		if (cur.Pitch == prev.Pitch) && (cur.Attack == note.AttackMin) {
 			// combine current with previous element
 			prev.Duration = prev.Duration.Add(prev.Duration, cur.Duration)
 

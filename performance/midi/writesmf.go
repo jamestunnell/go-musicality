@@ -11,9 +11,11 @@ import (
 	"gitlab.com/gomidi/midi/writer"
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
+	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/performance/sequence"
+	"github.com/jamestunnell/go-musicality/validation"
 )
 
 const ticksPerQuarter = 960
@@ -227,11 +229,12 @@ func Key(p *pitch.Pitch) (uint8, error) {
 // Velocity converts the attack to a MIDI velocity.
 // Returns a non-nil error if the attack is not in the range [0.0, 1.0]
 func Velocity(attack float64) (uint8, error) {
-	if attack < 0.0 || attack > 1.0 {
-		return 0, fmt.Errorf("attack '%v' not in range [0.0, 1.0]", attack)
+	if err := validation.VerifyInRangeFloat("attack", attack, note.AttackMin, note.AttackMax); err != nil {
+		return 0, err
 	}
 
-	vel := uint8(math.Round(attack * 127))
+	mul := (attack * 0.5) + 0.5
+	vel := uint8(math.Round(mul * 127))
 
 	return vel, nil
 }

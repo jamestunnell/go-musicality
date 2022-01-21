@@ -21,7 +21,7 @@ func NewContinuationMap(currentNote, nextNote *note.Note, sep float64) PitchMap 
 		}
 	}
 
-	if sep == SeparationNone {
+	if sep == note.SeparationMin {
 		unlinked := currentNote.Pitches.Diff(linked)
 		untargeted := nextNote.Pitches.Diff(targeted)
 		pm := OptimizeLinks(unlinked, untargeted)
