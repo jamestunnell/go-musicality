@@ -3,13 +3,13 @@ package score
 import "github.com/jamestunnell/go-musicality/validation"
 
 type State struct {
-	Tempo  float64 `json:"tempo"`
-	Volume float64 `json:"volume"`
+	Tempo   float64 `json:"tempo"`
+	Dynamic float64 `json:"dynamic"`
 }
 
 const (
-	VolumeMin = -1.0
-	VolumeMax = 1.0
+	DynamicMin = -1.0
+	DynamicMax = 1.0
 )
 
 func (s *State) Validate() *validation.Result {
@@ -19,7 +19,7 @@ func (s *State) Validate() *validation.Result {
 		errs = append(errs, err)
 	}
 
-	if err := validation.VerifyInRangeFloat("volume", s.Volume, VolumeMin, VolumeMax); err != nil {
+	if err := validation.VerifyInRangeFloat("volume", s.Dynamic, DynamicMin, DynamicMax); err != nil {
 		errs = append(errs, err)
 	}
 

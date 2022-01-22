@@ -1,13 +1,13 @@
 package score
 
 const (
-	DefaultStartVolume = 1.0
-	DefaultStartTempo  = 120.0
+	DefaultStartDynamic = 1.0
+	DefaultStartTempo   = 120.0
 )
 
-func OptStartVolume(vol float64) OptFunc {
+func OptStartVolume(dtynamic float64) OptFunc {
 	return func(s *Score) {
-		s.Start.Volume = vol
+		s.Start.Dynamic = dtynamic
 	}
 }
 

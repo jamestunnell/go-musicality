@@ -19,8 +19,8 @@ type OptFunc func(*Score)
 func New(opts ...OptFunc) *Score {
 	s := &Score{
 		Start: &State{
-			Tempo:  DefaultStartTempo,
-			Volume: DefaultStartVolume,
+			Tempo:   DefaultStartTempo,
+			Dynamic: DefaultStartDynamic,
 		},
 		Sections: []*section.Section{},
 	}
