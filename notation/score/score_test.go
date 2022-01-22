@@ -14,8 +14,8 @@ import (
 func TestScoreValidSection(t *testing.T) {
 	s := &score.Score{
 		Start: &score.State{
-			Tempo:  120.0,
-			Volume: 0.5,
+			Tempo:   120.0,
+			Dynamic: 0.5,
 		},
 		Sections: []*section.Section{
 			{Name: "", Measures: []*measure.Measure{measure.New(meter.New(4, 4))}},
@@ -28,8 +28,8 @@ func TestScoreValidSection(t *testing.T) {
 func TestScoreInvalidStart(t *testing.T) {
 	s := &score.Score{
 		Start: &score.State{
-			Tempo:  0.0,
-			Volume: 0.5,
+			Tempo:   0.0,
+			Dynamic: 0.5,
 		},
 		Sections: []*section.Section{},
 	}
@@ -44,8 +44,8 @@ func TestScoreInvalidSection(t *testing.T) {
 
 	s := &score.Score{
 		Start: &score.State{
-			Tempo:  120.0,
-			Volume: 0.5,
+			Tempo:   120.0,
+			Dynamic: 0.5,
 		},
 		Sections: []*section.Section{sec},
 	}

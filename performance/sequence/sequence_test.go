@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/performance/sequence"
 )
@@ -41,10 +42,10 @@ func TestSequenceInvalid(t *testing.T) {
 }
 
 func TestValidSequenceValid(t *testing.T) {
-	e1 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: 0.5}
-	e2 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: 0.0}
-	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.D4, Attack: 0.5}
-	e4 := &sequence.Element{Duration: big.NewRat(1, 1), Pitch: pitch.E4, Attack: 0.0}
+	e1 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: note.AttackNormal}
+	e2 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: note.AttackMin}
+	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.D4, Attack: note.AttackNormal}
+	e4 := &sequence.Element{Duration: big.NewRat(1, 1), Pitch: pitch.E4, Attack: note.AttackMin}
 	start := big.NewRat(1, 1)
 	s := sequence.New(start, e1, e2, e3, e4)
 	expectedDur := big.NewRat(7, 4)
@@ -60,9 +61,9 @@ func TestValidSequenceValid(t *testing.T) {
 	assert.Equal(t, expectedEnd, s.End())
 
 	require.Len(t, s.Elements, 3)
-	assert.Equal(t, 0.25, s.Elements[0].Duration)
-	assert.Equal(t, 0.5, s.Elements[1].Duration)
-	assert.Equal(t, 1.0, s.Elements[2].Duration)
+	assert.Equal(t, big.NewRat(1, 4), s.Elements[0].Duration)
+	assert.Equal(t, big.NewRat(1, 2), s.Elements[1].Duration)
+	assert.Equal(t, big.NewRat(1, 1), s.Elements[2].Duration)
 }
 
 // 	// Should fail without a 0.0 duration element
