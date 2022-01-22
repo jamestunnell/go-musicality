@@ -10,15 +10,17 @@ import (
 )
 
 type Measure struct {
-	Meter     *meter.Meter            `json:"meter"`
-	PartNotes map[string][]*note.Note `json:"partNotes"`
+	Meter     *meter.Meter          `json:"meter"`
+	PartNotes map[string]note.Notes `json:"partNotes"`
 	// Changes   map[note.Dur]Change `json:"changes"`
 }
+
+const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
 
 func New(met *meter.Meter) *Measure {
 	return &Measure{
 		Meter:     met,
-		PartNotes: map[string][]*note.Note{},
+		PartNotes: map[string]note.Notes{},
 	}
 }
 
@@ -38,13 +40,20 @@ func (m *Measure) Duration() *big.Rat {
 
 func (m *Measure) Validate() *validation.Result {
 	results := []*validation.Result{}
+	errs := []error{}
 
 	if result := m.Meter.Validate(); result != nil {
 		results = append(results, result)
 	}
 
+	dur := m.Duration()
+	if err := validation.VerifyPositiveRat("duration", dur); err != nil {
+		errs = append(errs, err)
+	}
+
 	for part, notes := range m.PartNotes {
 		partResults := []*validation.Result{}
+		partErrs := []error{}
 
 		for i, note := range notes {
 			if result := note.Validate(); result != nil {
@@ -54,23 +63,31 @@ func (m *Measure) Validate() *validation.Result {
 			}
 		}
 
-		if len(partResults) > 0 {
+		notesDur := notes.TotalDuration()
+
+		if notesDur.Cmp(dur) != 0 {
+			err := fmt.Errorf(notesDurErrFmt, notesDur.String(), dur.String())
+
+			partErrs = append(partErrs, err)
+		}
+
+		if len(partResults) > 0 || len(partErrs) > 0 {
 			partResult := &validation.Result{
 				Context:    fmt.Sprintf("part %s", part),
-				Errors:     []error{},
+				Errors:     partErrs,
 				SubResults: partResults,
 			}
 			results = append(results, partResult)
 		}
 	}
 
-	if len(results) == 0 {
+	if len(results) == 0 && len(errs) == 0 {
 		return nil
 	}
 
 	return &validation.Result{
 		Context:    "measure",
-		Errors:     []error{},
+		Errors:     errs,
 		SubResults: results,
 	}
 }
