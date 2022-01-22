@@ -19,8 +19,8 @@ type Note struct {
 type noteJSON struct {
 	Pitches    []string         `json:"pitches,omitempty"`
 	Duration   *big.Rat         `json:"duration"`
-	Attack     float64          `json:"attack"`
-	Separation float64          `json:"separation"`
+	Attack     float64          `json:"attack,omitempty"`
+	Separation float64          `json:"separation,omitempty"`
 	Links      map[string]*Link `json: "links,omitempty"`
 }
 
