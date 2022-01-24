@@ -162,7 +162,8 @@ func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
 	events := []*Event{}
 
 	notes := s.PartNotes(part)
-	seqs := sequence.Extract(notes)
+	extractor := sequence.NewExtractor()
+	seqs := extractor.Extract(notes)
 
 	for _, seq := range seqs {
 		offsets := seq.Offsets()
@@ -234,7 +235,7 @@ func Velocity(attack float64) (uint8, error) {
 	}
 
 	mul := (attack * 0.5) + 0.5
-	vel := uint8(math.Round(mul * 127))
+	vel := 31 + uint8(math.Round(mul*96))
 
 	return vel, nil
 }

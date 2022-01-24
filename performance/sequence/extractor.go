@@ -7,7 +7,36 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
-func Extract(notes []*note.Note) []*Sequence {
+type Extractor struct {
+	allowPortamento bool
+	centsPerStep    int
+}
+
+type OptionFunc func(e *Extractor)
+
+func NewExtractor(opts ...OptionFunc) *Extractor {
+	e := &Extractor{}
+
+	for _, opt := range opts {
+		opt(e)
+	}
+
+	return e
+}
+
+func OptionAllowPortamento() OptionFunc { return setAllowPortamento }
+
+func OptionCentsPerStep(centsPerStep int) OptionFunc {
+	return func(e *Extractor) {
+		e.centsPerStep = centsPerStep
+	}
+}
+
+func setAllowPortamento(e *Extractor) {
+	e.allowPortamento = true
+}
+
+func (e *Extractor) Extract(notes []*note.Note) []*Sequence {
 	offset := big.NewRat(0, 1)
 	completedSeqs := []*Sequence{}
 	continuingSequences := map[*pitch.Pitch]*Sequence{}
@@ -32,13 +61,13 @@ func Extract(notes []*note.Note) []*Sequence {
 			if continuingSeq, found := continuingSequences[p]; found {
 				seq = continuingSeq
 
-				elems := elements(currentNote.Duration, p, note.AttackMin, currentNote.Links[p])
+				elems := e.MakeElements(currentNote.Duration, p, note.AttackMin, currentNote.Links[p])
 
 				seq.Elements = append(seq.Elements, elems...)
 
 				delete(continuingSequences, p)
 			} else {
-				elems := elements(currentNote.Duration, p, currentNote.Attack, currentNote.Links[p])
+				elems := e.MakeElements(currentNote.Duration, p, currentNote.Attack, currentNote.Links[p])
 
 				seq = New(offset, elems...)
 			}
@@ -66,13 +95,24 @@ func Extract(notes []*note.Note) []*Sequence {
 	return completedSeqs
 }
 
-func elements(dur *big.Rat, p *pitch.Pitch, attack float64, link *note.Link) []*Element {
+func (e *Extractor) MakeElements(dur *big.Rat, p *pitch.Pitch, attack float64, link *note.Link) []*Element {
 	var elems []*Element
 
 	if link != nil {
 		switch link.Type {
 		case note.Portamento:
-			panic("not supported")
+			// Replace with a glissando if portamento is not allowed
+			if !e.allowPortamento {
+				gliss := &note.Link{
+					Target: link.Target,
+					Type:   note.Glissando,
+				}
+
+				return e.MakeElements(dur, p, attack, gliss)
+			}
+
+			// Otherwise, make the portamento
+			// TODO
 		case note.Glissando:
 			// reserve 25% of the original note duration for the starting pitch
 			elems = []*Element{

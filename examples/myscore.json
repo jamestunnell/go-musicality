@@ -21,25 +21,18 @@
             "piano": [
               {
                 "duration": "1/2",
+                "separation": -0.5,
                 "pitches": ["C4"]
               },
               {
                 "duration": "1/4",
+                "separation": -0.5,
                 "pitches": ["Bb3"]
               },
               {
                 "duration": "1/4",
+                "separation": -0.5,
                 "pitches": ["Ab3"]
-              }
-            ],
-            "bass": [
-              {
-                "duration": "1/2",
-                "pitches": ["F2"]
-              },
-              {
-                "duration": "1/2",
-                "pitches": ["G2"]
               }
             ]
           }
