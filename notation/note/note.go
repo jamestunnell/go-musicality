@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strings"
+
+	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/validation"
@@ -70,6 +73,27 @@ func (n *Note) Validate() *validation.Result {
 	}
 }
 
+func ValidateJSON(documentLoader gojsonschema.JSONLoader) error {
+	schemaLoader := gojsonschema.NewStringLoader(schema)
+
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return fmt.Errorf("failed to validate JSON: %w", err)
+	}
+
+	if !result.Valid() {
+		errs := strings.Builder{}
+		for _, desc := range result.Errors() {
+			errs.WriteRune('\n')
+			errs.WriteString(desc.String())
+		}
+
+		return fmt.Errorf("invalid note JSON: %s", errs.String())
+	}
+
+	return nil
+}
+
 func (n *Note) MarshalJSON() ([]byte, error) {
 	links := map[string]*Link{}
 
@@ -116,7 +140,6 @@ func (n *Note) UnmarshalJSON(d []byte) error {
 		pitches.Add(p)
 	}
 
-	n.Links = links
 	n.Pitches = pitches
 	n.Duration = j.Duration
 	n.Attack = j.Attack

@@ -6,6 +6,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.6.1
+	github.com/xeipuuv/gojsonschema v1.2.0
 	gitlab.com/gomidi/midi v1.23.7
 	gonum.org/v1/gonum v0.7.0
 )
