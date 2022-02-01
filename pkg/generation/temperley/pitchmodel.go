@@ -81,8 +81,8 @@ func (pm *PitchModel) MakeStartingPitch() *pitch.Pitch {
 
 func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 	proximityProfile := distuv.Normal{
-		Mu:    float64(currentPitch.TotalSemitoneOffset()), // semitone offset from C0
-		Sigma: 2.68,                                        // stddev - corresponds to variance of about 7.2 semitones
+		Mu:    float64(currentPitch.TotalSemitone()), // semitone offset from C0
+		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
 	}
 
 	proximityProbs := stats.GetIntProbs(proximityProfile, SemitoneRange)
@@ -104,7 +104,7 @@ func (pm *PitchModel) makePitch(probArrays [][]float64) *pitch.Pitch {
 
 	i := cdf.Rand()
 
-	return pitch.New(0, i, 0)
+	return pitch.New(0, i)
 }
 
 func (pm *PitchModel) MakePitches(n uint) []*pitch.Pitch {
