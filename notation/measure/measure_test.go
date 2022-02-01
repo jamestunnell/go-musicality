@@ -49,3 +49,22 @@ func TestInvalidPartDurs(t *testing.T) {
 
 	assert.NotNil(t, m.Validate())
 }
+
+// func TestValidateJSON(t *testing.T) {
+// 	testValidateJSONFails(t, "{}")
+// 	testValidateJSONFails(t, `{"meter":"4/4"}`)
+
+// 	testValidateJSONSucceeds(t, `{"meter":"4/4", "partNotes":{}}`)
+// }
+
+// func testValidateJSONSucceeds(t *testing.T, jsonStr string) {
+// 	loader := gojsonschema.NewStringLoader(jsonStr)
+
+// 	assert.NoError(t, measure.ValidateJSON(loader))
+// }
+
+// func testValidateJSONFails(t *testing.T, jsonStr string) {
+// 	loader := gojsonschema.NewStringLoader(jsonStr)
+
+// 	assert.Error(t, measure.ValidateJSON(loader))
+// }

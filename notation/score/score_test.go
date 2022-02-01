@@ -5,50 +5,35 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jamestunnell/go-musicality/notation/measure"
-	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/notation/section"
 )
 
 func TestScoreValidSection(t *testing.T) {
-	s := &score.Score{
-		Start: &score.State{
-			Tempo:   120.0,
-			Dynamic: 0.5,
-		},
-		Sections: []*section.Section{
-			{Name: "", Measures: []*measure.Measure{measure.New(meter.New(4, 4))}},
-		},
-	}
+	s := score.New()
+
+	s.Program = append(s.Program, "notempty")
+	s.Sections["notempty"] = section.New(
+		section.OptStartTempo(120),
+		section.OptStartDynamic(0.0),
+	)
 
 	assert.Nil(t, s.Validate())
 }
 
-func TestScoreInvalidStart(t *testing.T) {
-	s := &score.Score{
-		Start: &score.State{
-			Tempo:   0.0,
-			Dynamic: 0.5,
-		},
-		Sections: []*section.Section{},
-	}
+func TestScoreInvalidSection(t *testing.T) {
+	sec := section.New(section.OptStartTempo(0.0))
+	s := score.New()
+
+	s.Sections["notempty"] = sec
 
 	assert.NotNil(t, s.Validate())
 }
 
-func TestScoreInvalidSection(t *testing.T) {
-	sec := section.New("")
+func TestScoreMissingSection(t *testing.T) {
+	s := score.New()
 
-	sec.AppendMeasures(1, meter.New(0, 4))
-
-	s := &score.Score{
-		Start: &score.State{
-			Tempo:   120.0,
-			Dynamic: 0.5,
-		},
-		Sections: []*section.Section{sec},
-	}
+	s.Program = append(s.Program, "notempty")
 
 	assert.NotNil(t, s.Validate())
 }

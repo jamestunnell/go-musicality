@@ -1,9 +1,9 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "http://example.com/example.json",
+    "$id": "http://github.com/jamestunnell/go-musicality/note.json",
     "type": "object",
     "title": "Note JSON Schema",
-    "description": "JSON schema for a musical note.",
+    "description": "JSON schema for a music note.",
     "default": {},
     "examples": [
         {
@@ -31,9 +31,13 @@
             }
         }
     ],
-    "required": ["duration"],
+    "required": [
+        "duration"
+    ],
     "properties": {
-        "duration": { "$ref": "#/definitions/duration" },
+        "duration": {
+            "$ref": "#/definitions/duration"
+        },
         "separation": {
             "$id": "#/properties/separation",
             "type": "number",
@@ -58,7 +62,9 @@
                 0.0
             ]
         },
-        "pitches": { "$ref": "#/definitions/pitches" },
+        "pitches": {
+            "$ref": "#/definitions/pitches"
+        },
         "links": {
             "$id": "#/properties/links",
             "type": "object",
@@ -82,7 +88,9 @@
                 }
             ],
             "patternProperties": {
-                "^[A-G][#b]?-?[0-9]+$": { "$ref": "#/definitions/link" }
+                "^[A-G][#b]?-?[0-9]+$": {
+                    "$ref": "#/definitions/link"
+                }
             },
             "additionalProperties": false
         }
@@ -132,8 +140,12 @@
                 "target"
             ],
             "properties": {
-                "type": { "$ref": "#/definitions/linkType"  },
-                "target": { "$ref": "#/definitions/linkTarget" }
+                "type": {
+                    "$ref": "#/definitions/linkType"
+                },
+                "target": {
+                    "$ref": "#/definitions/linkTarget"
+                }
             },
             "additionalProperties": true
         },
@@ -141,7 +153,11 @@
             "$id": "#/properties/links/properties/C4/properties/type",
             "type": "string",
             "title": "Link type",
-            "enum": ["tie", "glide", "step"],
+            "enum": [
+                "tie",
+                "glide",
+                "step"
+            ],
             "examples": [
                 "tie"
             ]
@@ -156,5 +172,5 @@
                 "C4"
             ]
         }
-      }
+    }
 }

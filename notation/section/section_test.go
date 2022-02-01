@@ -10,13 +10,13 @@ import (
 )
 
 func TestSectionEmpty(t *testing.T) {
-	s := section.New("")
+	s := section.New()
 
 	assert.Nil(t, s.Validate())
 }
 
 func TestSectionNotEmpty(t *testing.T) {
-	s := section.New("anything")
+	s := section.New()
 
 	s.AppendMeasures(1, meter.New(4, 4))
 
@@ -24,7 +24,7 @@ func TestSectionNotEmpty(t *testing.T) {
 }
 
 func TestSectionInvalid(t *testing.T) {
-	s := section.New("anything")
+	s := section.New()
 
 	s.AppendMeasures(1, meter.New(0, 4))
 

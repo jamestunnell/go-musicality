@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
@@ -46,89 +45,89 @@ func TestNoteInvalid(t *testing.T) {
 	testNoteInvalid(t, "separation too low", big.NewRat(1, 4), func(n *note.Note) { n.Separation = -1.01 })
 }
 
-func TestValidateJSON(t *testing.T) {
-	testValidateJSONFails(t, "{}")
-	testValidateJSONFails(t, `{"duration":"0/1"}`)
-	testValidateJSONFails(t, `{"duration":"1/1", "pitches":["not-a-pitch"]}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"attack": -1.01,
-	}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"separation": -1.01,
-	}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"attack": 1.01,
-	}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"separation": 1.01,
-	}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"links": {
-			"not-a-pitch": {
-				"target": "A1",
-				"type": "tie"
-			}
-		}
-	}`)
-	testValidateJSONFails(t, `{
-		"duration":"1/2",
-		"links": {
-			"A1": {
-				"target": "not-a-pitch",
-				"type": "tie"
-			}
-		}
-	}`)
+// func TestValidateJSON(t *testing.T) {
+// 	testValidateJSONFails(t, "{}")
+// 	testValidateJSONFails(t, `{"duration":"0/1"}`)
+// 	testValidateJSONFails(t, `{"duration":"1/1", "pitches":["not-a-pitch"]}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"attack": -1.01,
+// 	}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"separation": -1.01,
+// 	}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"attack": 1.01,
+// 	}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"separation": 1.01,
+// 	}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"links": {
+// 			"not-a-pitch": {
+// 				"target": "A1",
+// 				"type": "tie"
+// 			}
+// 		}
+// 	}`)
+// 	testValidateJSONFails(t, `{
+// 		"duration":"1/2",
+// 		"links": {
+// 			"A1": {
+// 				"target": "not-a-pitch",
+// 				"type": "tie"
+// 			}
+// 		}
+// 	}`)
 
-	testValidateJSONSucceeds(t, `{"duration":"1/2"}`)
-	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":[]}`)
-	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":["A2"]}`)
-	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":["A2","Bb4"]}`)
-	testValidateJSONSucceeds(t, `{
-		"duration":"1/2",
-		"attack": -1.0,
-		"separation": -1.0
-	}`)
-	testValidateJSONSucceeds(t, `{
-		"duration":"1/2",
-		"attack": 1.0,
-		"separation": 1.0
-	}`)
-	testValidateJSONSucceeds(t, `{
-		"duration":"1/2",
-		"links": {
-			"A1": {
-				"target": "A1",
-				"type": "tie"
-			},
-			"B1": {
-				"target": "C1",
-				"type": "glide"
-			},
-			"C1": {
-				"target": "D1",
-				"type": "step"
-			}
-		}
-	}`)
-}
+// 	testValidateJSONSucceeds(t, `{"duration":"1/2"}`)
+// 	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":[]}`)
+// 	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":["A2"]}`)
+// 	testValidateJSONSucceeds(t, `{"duration":"1/2", "pitches":["A2","Bb4"]}`)
+// 	testValidateJSONSucceeds(t, `{
+// 		"duration":"1/2",
+// 		"attack": -1.0,
+// 		"separation": -1.0
+// 	}`)
+// 	testValidateJSONSucceeds(t, `{
+// 		"duration":"1/2",
+// 		"attack": 1.0,
+// 		"separation": 1.0
+// 	}`)
+// 	testValidateJSONSucceeds(t, `{
+// 		"duration":"1/2",
+// 		"links": {
+// 			"A1": {
+// 				"target": "A1",
+// 				"type": "tie"
+// 			},
+// 			"B1": {
+// 				"target": "C1",
+// 				"type": "glide"
+// 			},
+// 			"C1": {
+// 				"target": "D1",
+// 				"type": "step"
+// 			}
+// 		}
+// 	}`)
+// }
 
-func testValidateJSONSucceeds(t *testing.T, jsonStr string) {
-	loader := gojsonschema.NewStringLoader(jsonStr)
+// func testValidateJSONSucceeds(t *testing.T, jsonStr string) {
+// 	loader := gojsonschema.NewStringLoader(jsonStr)
 
-	assert.NoError(t, note.ValidateJSON(loader))
-}
+// 	assert.NoError(t, note.ValidateJSON(loader))
+// }
 
-func testValidateJSONFails(t *testing.T, jsonStr string) {
-	loader := gojsonschema.NewStringLoader(jsonStr)
+// func testValidateJSONFails(t *testing.T, jsonStr string) {
+// 	loader := gojsonschema.NewStringLoader(jsonStr)
 
-	assert.Error(t, note.ValidateJSON(loader))
-}
+// 	assert.Error(t, note.ValidateJSON(loader))
+// }
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 	dur := big.NewRat(3, 2)

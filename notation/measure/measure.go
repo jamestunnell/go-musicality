@@ -34,6 +34,11 @@ func NewN(n int, met *meter.Meter) []*Measure {
 	return measures
 }
 
+// func ValidateJSON(documentLoader gojsonschema.JSONLoader) error {
+// 	schema.Validate()
+// 	return validation.ValidateJSON(SchemaLoader(), documentLoader)
+// }
+
 func (m *Measure) Duration() *big.Rat {
 	return big.NewRat(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
 }

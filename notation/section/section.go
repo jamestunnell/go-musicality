@@ -9,15 +9,30 @@ import (
 )
 
 type Section struct {
-	Name     string             `json:"name"`
-	Measures []*measure.Measure `json:"measures"`
+	StartTempo   float64            `json:"startTempo"`
+	StartDynamic float64            `json:"startDynamic"`
+	Measures     []*measure.Measure `json:"measures"`
 }
 
-func New(name string) *Section {
-	return &Section{
-		Name:     name,
-		Measures: []*measure.Measure{},
+type OptFunc func(*Section)
+
+const (
+	DefaultStartTempo   = 120.0
+	DefaultStartDynamic = 0.0
+)
+
+func New(opts ...OptFunc) *Section {
+	s := &Section{
+		StartTempo:   DefaultStartTempo,
+		StartDynamic: DefaultStartDynamic,
+		Measures:     []*measure.Measure{},
 	}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
 }
 
 func (s *Section) AppendMeasures(n int, met *meter.Meter) {
@@ -34,6 +49,15 @@ func (s *Section) InsertMeasures(n int, met *meter.Meter, idx int) {
 
 func (s *Section) Validate() *validation.Result {
 	results := []*validation.Result{}
+	errs := []error{}
+
+	if err := validation.VerifyPositiveFloat("start tempo", s.StartTempo); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err := validation.VerifyInRangeFloat("start dynamic", s.StartDynamic, -1.0, 1.0); err != nil {
+		errs = append(errs, err)
+	}
 
 	for i, m := range s.Measures {
 		if result := m.Validate(); result != nil {
@@ -43,13 +67,13 @@ func (s *Section) Validate() *validation.Result {
 		}
 	}
 
-	if len(results) == 0 {
+	if len(results) == 0 && len(errs) == 0 {
 		return nil
 	}
 
 	return &validation.Result{
 		Context:    "section",
-		Errors:     []error{},
+		Errors:     errs,
 		SubResults: results,
 	}
 }
