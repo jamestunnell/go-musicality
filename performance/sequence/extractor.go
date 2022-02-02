@@ -8,8 +8,8 @@ import (
 )
 
 type Extractor struct {
-	allowPortamento bool
-	centsPerStep    int
+	allowGlide   bool
+	centsPerStep int
 }
 
 type OptionFunc func(e *Extractor)
@@ -33,7 +33,7 @@ func OptionCentsPerStep(centsPerStep int) OptionFunc {
 }
 
 func setAllowPortamento(e *Extractor) {
-	e.allowPortamento = true
+	e.allowGlide = true
 }
 
 func (e *Extractor) Extract(notes []*note.Note) []*Sequence {
@@ -98,67 +98,66 @@ func (e *Extractor) Extract(notes []*note.Note) []*Sequence {
 func (e *Extractor) MakeElements(dur *big.Rat, p *pitch.Pitch, attack float64, link *note.Link) []*Element {
 	var elems []*Element
 
-	if link != nil {
-		switch link.Type {
-		case note.Portamento:
-			// Replace with a glissando if portamento is not allowed
-			if !e.allowPortamento {
-				gliss := &note.Link{
-					Target: link.Target,
-					Type:   note.Glissando,
-				}
+	// // Replace with a glissando if portamento is not allowed
+	// if link.Type == note.Glide && !e.allowGlide {
+	// 	link = &note.Link{
+	// 		Target: link.Target,
+	// 		Type:   note.Step,
+	// 	}
+	// }
 
-				return e.MakeElements(dur, p, attack, gliss)
-			}
+	// if link != nil {
+	// 	switch link.Type {
+	// 	case note.Glide:
+	// 		// TODO
+	// 	case note.Step:
+	// 		pitches := StepPitches(p, link.Target)
 
-			// Otherwise, make the portamento
-			// TODO
-		case note.Glissando:
-			// reserve 25% of the original note duration for the starting pitch
-			elems = []*Element{
-				{
-					Duration: new(big.Rat).Mul(dur, big.NewRat(1, 4)),
-					Pitch:    p,
-					Attack:   attack,
-				},
-			}
+	// 		// reserve 25% of the original note duration for the starting pitch
+	// 		elems = []*Element{
+	// 			{
+	// 				Duration: new(big.Rat).Mul(dur, big.NewRat(1, 4)),
+	// 				Pitch:    p,
+	// 				Attack:   attack,
+	// 			},
+	// 		}
 
-			diff := link.Target.Diff(p)
-			semitones := Abs(diff)
-			incr := diff / semitones
-			subdur := new(big.Rat).Mul(dur, big.NewRat(3, 4*int64(semitones)))
-			lastElem := elems[0]
+	// 		diff := link.Target.Diff(p)
+	// 		semitones := Abs(diff)
+	// 		incr := diff / semitones
+	// 		subdur := new(big.Rat).Mul(dur, big.NewRat(3, 4*int64(semitones)))
+	// 		lastElem := elems[0]
 
-			for i := 0; i < semitones; i++ {
-				elem := &Element{
-					Duration: subdur,
-					Pitch:    lastElem.Pitch.Transpose(incr),
-					Attack:   note.AttackMin,
-				}
+	// 		for i := 0; i < semitones; i++ {
+	// 			elem := &Element{
+	// 				Duration: subdur,
+	// 				Pitch:    lastElem.Pitch.Transpose(incr),
+	// 				Attack:   note.AttackMin,
+	// 			}
 
-				elems = append(elems, elem)
+	// 			elems = append(elems, elem)
 
-				lastElem = elem
-			}
+	// 			lastElem = elem
+	// 		}
 
-		case note.Tie:
-			elems = []*Element{
-				{
-					Duration: dur,
-					Pitch:    p,
-					Attack:   note.AttackMin,
-				},
-			}
-		}
-	} else {
-		elems = []*Element{
-			{
-				Duration: dur,
-				Pitch:    p,
-				Attack:   attack,
-			},
-		}
-	}
+	// 	case note.Tie:
+	// 		elems = []*Element{
+	// 			{
+	// 				Duration: dur,
+	// 				Pitch:    p,
+	// 				Attack:   note.AttackMin,
+	// 			},
+	// 		}
+	// 	}
+	// } else {
+	// 	elems = []*Element{
+	// 		{
+	// 			Duration: dur,
+	// 			Pitch:    p,
+	// 			Attack:   attack,
+	// 		},
+	// 	}
+	// }
 
 	return elems
 }

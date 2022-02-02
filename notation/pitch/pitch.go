@@ -1,15 +1,7 @@
 package pitch
 
 import (
-	"math"
 	"strconv"
-)
-
-const (
-	// BaseFreq is frequency of C0
-	BaseFreq = 16.351597831287414667365624595207
-	// SemitonesPerOctave is the number of semitones per octave
-	SemitonesPerOctave = 12
 )
 
 var semitoneNames = []string{"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"}
@@ -73,9 +65,7 @@ func (p *Pitch) Semitone() int {
 }
 
 func (p *Pitch) Ratio() float64 {
-	totalSem := p.TotalSemitone()
-
-	return math.Pow(2.0, float64(totalSem)/float64(SemitonesPerOctave))
+	return Ratio(float64(p.TotalSemitone()))
 }
 
 func (p *Pitch) Freq() float64 {
