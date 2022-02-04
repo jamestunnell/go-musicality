@@ -12,8 +12,8 @@ func TestNew(t *testing.T) {
 	m := meter.New(3, 4)
 
 	assert.Nil(t, m.Validate())
-	assert.Equal(t, uint(3), m.Numerator)
-	assert.Equal(t, uint(4), m.Denominator)
+	assert.Equal(t, uint64(3), m.Numerator)
+	assert.Equal(t, uint64(4), m.Denominator)
 }
 
 func TestInvalid(t *testing.T) {
