@@ -13,13 +13,13 @@ const (
 
 // Pitch is a cent-adjusted pitch.Pitch.
 type Pitch struct {
-	CentAdjust int
+	centAdjust int
 	*pitch.Pitch
 }
 
 func NewPitch(p *pitch.Pitch, centAdjust int) *Pitch {
 	p2 := &Pitch{
-		CentAdjust: centAdjust,
+		centAdjust: centAdjust,
 		Pitch:      p,
 	}
 
@@ -29,7 +29,7 @@ func NewPitch(p *pitch.Pitch, centAdjust int) *Pitch {
 }
 
 func (p *Pitch) Equal(other *Pitch) bool {
-	return p.Pitch.Equal(other.Pitch) && p.CentAdjust == other.CentAdjust
+	return p.Pitch.Equal(other.Pitch) && p.centAdjust == other.centAdjust
 }
 
 func (p *Pitch) Diff(other *Pitch) int {
@@ -50,12 +50,25 @@ func (p *Pitch) Compare(other *Pitch) int {
 	return 0
 }
 
+func (p *Pitch) RoundedSemitone() int {
+	totalSem := p.TotalSemitone()
+
+	switch {
+	case p.centAdjust <= -50:
+		totalSem -= 1
+	case p.centAdjust >= 50:
+		totalSem += 1
+	}
+
+	return totalSem
+}
+
 func (p *Pitch) TotalCent() int {
-	return p.TotalSemitone()*CentsPerSemitoneInt + p.CentAdjust
+	return p.TotalSemitone()*CentsPerSemitoneInt + p.centAdjust
 }
 
 func (p *Pitch) Ratio() float64 {
-	totalSemitone := float64(p.Pitch.TotalSemitone()) + float64(p.CentAdjust)/CentsPerSemitoneFlt
+	totalSemitone := float64(p.Pitch.TotalSemitone()) + float64(p.centAdjust)/CentsPerSemitoneFlt
 
 	return pitch.Ratio(totalSemitone)
 }
@@ -66,18 +79,18 @@ func (p *Pitch) Freq() float64 {
 
 func (p *Pitch) String() string {
 	str := p.Pitch.String()
-	if p.CentAdjust != 0 {
-		str += strconv.Itoa(p.CentAdjust)
+	if p.centAdjust != 0 {
+		str += strconv.Itoa(p.centAdjust)
 	}
 
 	return str
 }
 
 func (p *Pitch) balance() {
-	if p.CentAdjust < -CentsPerSemitoneInt || p.CentAdjust >= CentsPerSemitoneInt {
-		semitoneAdjust := p.CentAdjust / CentsPerSemitoneInt
+	if p.centAdjust < -CentsPerSemitoneInt || p.centAdjust >= CentsPerSemitoneInt {
+		semitoneAdjust := p.centAdjust / CentsPerSemitoneInt
 
 		p.Pitch = p.Pitch.Transpose(semitoneAdjust)
-		p.CentAdjust -= semitoneAdjust * CentsPerSemitoneInt
+		p.centAdjust -= semitoneAdjust * CentsPerSemitoneInt
 	}
 }
