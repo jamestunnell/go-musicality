@@ -1,6 +1,6 @@
 package validation
 
-func VerifyNonZeroUInt(name string, val uint) error {
+func VerifyNonZeroUInt64(name string, val uint64) error {
 	if val == 0 {
 		return NewErrZero(name)
 	}

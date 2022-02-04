@@ -12,9 +12,8 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/score"
-	"github.com/jamestunnell/go-musicality/performance/sequence"
+	"github.com/jamestunnell/go-musicality/performance/model"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -162,47 +161,46 @@ func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
 	events := []*Event{}
 
 	notes := s.PartNotes(part)
-	extractor := sequence.NewExtractor()
-	seqs := extractor.Extract(notes)
+	converter := model.NewNoteConverter(model.OptionReplaceSlursAndGlides())
 
-	for _, seq := range seqs {
-		offsets := seq.Offsets()
+	notes2, err := converter.Process(notes)
+	if err != nil {
+		return []*Event{}, fmt.Errorf("failed to convert notes: %w", err)
+	}
 
-		for i, elem := range seq.Elements {
-			p := elem.Pitch
-			key, err := Key(p)
-			if err != nil {
-				err = fmt.Errorf("failed to get MIDI note for pitch '%s': %w", p.String(), err)
-
-				return []*Event{}, err
-			}
-
-			vel, err := Velocity(elem.Attack)
-			if err != nil {
-				err = fmt.Errorf("failed to get MIDI velocity: %w", err)
-
-				return []*Event{}, err
-			}
-
-			events = append(events, NewNoteOnEvent(offsets[i], key, vel))
-
-			lastElem := i == (len(seq.Elements) - 1)
-
-			if lastElem {
-				newDur, err := sequence.AdjustDuration(elem.Duration, seq.Separation)
-				if err != nil {
-					err = fmt.Errorf("failed to adjust duration: %w", err)
-
-					return []*Event{}, err
-				}
-
-				endOffset := new(big.Rat).Add(offsets[i], newDur)
-
-				events = append(events, NewNoteOffEvent(endOffset, key))
-			} else {
-				events = append(events, NewNoteOffEvent(offsets[i+1], key))
-			}
+	for i, n := range notes2 {
+		if len(n.PitchDurs) > 1 {
+			return []*Event{}, fmt.Errorf("note %d has multiple pitch durs", i)
 		}
+
+		pd := n.PitchDurs[0]
+		p := pd.Pitch
+
+		key, err := Key(p)
+		if err != nil {
+			err = fmt.Errorf("failed to get MIDI note for pitch '%s': %w", p.String(), err)
+
+			return []*Event{}, err
+		}
+
+		vel, err := Velocity(n.Attack)
+		if err != nil {
+			err = fmt.Errorf("failed to get MIDI velocity: %w", err)
+
+			return []*Event{}, err
+		}
+
+		newDur, err := model.AdjustDuration(pd.Duration, n.Separation)
+		if err != nil {
+			err = fmt.Errorf("failed to adjust duration: %w", err)
+
+			return []*Event{}, err
+		}
+
+		endOffset := new(big.Rat).Add(n.Start, newDur)
+
+		events = append(events, NewNoteOnEvent(n.Start, key, vel))
+		events = append(events, NewNoteOffEvent(endOffset, key))
 	}
 
 	return events, nil
@@ -210,7 +208,7 @@ func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
 
 // Key converts the pitch to a MIDI note number.
 // Returns a non-nil error if the pitch is not in the range [C-1, G9].
-func Key(p *pitch.Pitch) (uint8, error) {
+func Key(p *model.Pitch) (uint8, error) {
 	const (
 		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
 		minTotalSemitone = -12

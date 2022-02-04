@@ -7,65 +7,63 @@
       }
     }
   },
-  "start": {
-    "tempo": 120,
-    "volume": 0.75
-  },
-  "sections": [
-    {
-      "name": "intro",
+  "program": ["intro"],
+  "sections": {
+    "intro": {
+      "startTempo": 120,
+      "startDynamic": 1.0,
       "measures": [
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {
             "piano": [
               {
                 "duration": "1/2",
-                "separation": -0.5,
+                "separation": 0.0,
                 "pitches": ["C4"]
               },
               {
                 "duration": "1/4",
-                "separation": -0.5,
+                "separation": 0.0,
                 "pitches": ["Bb3"]
               },
               {
                 "duration": "1/4",
-                "separation": -0.5,
+                "separation": 0.0,
                 "pitches": ["Ab3"]
               }
             ]
           }
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 3, "denominator": 4},
+          "meter": "3/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": {"numerator": 4, "denominator": 4},
+          "meter": "4/4",
           "partNotes": {}
         }
       ]
     }
-  ]
+  }
 }

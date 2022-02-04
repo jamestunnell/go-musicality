@@ -9,17 +9,22 @@ import (
 )
 
 type NoteConverter struct {
-	// allowGlide   bool
-	centsPerStep int
-	offset       *big.Rat
-	completed    []*Note
-	continuing   map[*pitch.Pitch]*Note
+	replaceSlursAndGlides bool
+	centsPerStep          int
+	offset                *big.Rat
+	completed             []*Note
+	continuing            map[*pitch.Pitch]*Note
 }
 
 type NoteConverterOptionFunc func(nc *NoteConverter)
 
+const DefaultCentsPerStep = 10
+
 func NewNoteConverter(opts ...NoteConverterOptionFunc) *NoteConverter {
-	nc := &NoteConverter{}
+	nc := &NoteConverter{
+		replaceSlursAndGlides: false,
+		centsPerStep:          DefaultCentsPerStep,
+	}
 
 	for _, opt := range opts {
 		opt(nc)
@@ -28,17 +33,21 @@ func NewNoteConverter(opts ...NoteConverterOptionFunc) *NoteConverter {
 	return nc
 }
 
-// func OptionAllowPortamento() OptionFunc { return setAllowPortamento }
+func OptionReplaceSlursAndGlides() NoteConverterOptionFunc { return setReplaceSlursAndGlides }
 
 func OptionCentsPerStep(centsPerStep int) NoteConverterOptionFunc {
 	return func(nc *NoteConverter) {
+		if centsPerStep < 1 {
+			centsPerStep = 1
+		}
+
 		nc.centsPerStep = centsPerStep
 	}
 }
 
-// func setAllowPortamento(nc *NoteConverter) {
-// 	nc.allowGlide = true
-// }
+func setReplaceSlursAndGlides(nc *NoteConverter) {
+	nc.replaceSlursAndGlides = true
+}
 
 func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 	nc.offset = big.NewRat(0, 1)
@@ -77,9 +86,66 @@ func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 	return nc.completed, nil
 }
 
-func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, separation float64, pitchDurs ...*PitchDur) {
-	// pd := NewPitchDur(NewPitch(p, 0), dur)
+func (nc *NoteConverter) processNote(current, next *note.Note) error {
+	a := current.Attack
+	s := current.Separation
+	dur := current.Duration
 
+	for _, p := range current.Pitches.Pitches() {
+		link := current.Links[p]
+
+		if link != nil && nc.replaceSlursAndGlides {
+			switch link.Type {
+			case note.Slur:
+				link = nil
+				s = note.SeparationMin
+			case note.StepSlurred, note.Glide:
+				link = &note.Link{
+					Type:   note.Step,
+					Target: link.Target,
+				}
+			}
+		}
+
+		var target *pitch.Pitch
+
+		if link != nil && next.Pitches.Contains(link.Target) {
+			target = link.Target
+		}
+
+		// no link or a link where pitch doesn't change can be handled simply
+		if link == nil || link.Target == p {
+			nc.processPitchDurs(p, target, a, s, NewPitchDur(NewPitch(p, 0), dur))
+
+			continue
+		}
+
+		switch link.Type {
+		case note.Tie, note.Slur:
+			nc.processPitchDurs(p, target, a, s, NewPitchDur(NewPitch(p, 0), dur))
+		case note.Glide:
+			pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
+
+			nc.processPitchDurs(p, target, a, s, pds...)
+		case note.StepSlurred, note.Step:
+			pds := MakeSteps(dur, p, link.Target, CentsPerSemitoneInt)
+
+			if link.Type == note.Step {
+				for _, pd := range pds {
+					nc.processPitchDurs(p, nil, a, s, pd)
+				}
+			} else {
+				nc.processPitchDurs(p, target, a, s, pds...)
+			}
+		default:
+			return fmt.Errorf("unknown link type '%s' from pitch '%s'", link.Type, p.String())
+		}
+	}
+
+	return nil
+}
+
+func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, separation float64, pitchDurs ...*PitchDur) {
 	// is this a continuation?
 	n := nc.continuing[current]
 
@@ -100,51 +166,4 @@ func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, se
 	} else {
 		nc.completed = append(nc.completed, n)
 	}
-}
-
-func (nc *NoteConverter) processNote(current, next *note.Note) error {
-	a := current.Attack
-	s := current.Separation
-	dur := current.Duration
-
-	for _, p := range current.Pitches.Pitches() {
-		link := current.Links[p]
-
-		if link == nil {
-			nc.processPitchDurs(p, nil, a, s, NewPitchDur(NewPitch(p, 0), dur))
-
-			continue
-		}
-
-		var target *pitch.Pitch
-
-		if next.Pitches.Contains(link.Target) {
-			target = link.Target
-		}
-
-		if link.Type == note.Tie || link.Type == note.Slur || link.Target == p {
-			nc.processPitchDurs(p, nil, a, s, NewPitchDur(NewPitch(p, 0), dur))
-		} else {
-			switch link.Type {
-			case note.Glide:
-				pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
-
-				nc.processPitchDurs(p, target, a, s, pds...)
-			case note.StepSlurred, note.Step:
-				pds := MakeSteps(dur, p, link.Target, CentsPerSemitoneInt)
-
-				if link.Type == note.Step {
-					for _, pd := range pds {
-						nc.processPitchDurs(p, nil, a, s, pd)
-					}
-				} else {
-					nc.processPitchDurs(p, target, a, s, pds...)
-				}
-			default:
-				return fmt.Errorf("unknown link type '%s' from pitch '%s'", link.Type, p.String())
-			}
-		}
-	}
-
-	return nil
 }
