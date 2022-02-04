@@ -2,7 +2,7 @@ package score
 
 import "github.com/xeipuuv/gojsonschema"
 
-var schemaStr = `
+const schemaStr = `
 {
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"$id": "http://github.com/jamestunnell/go-musicality/score.json",
@@ -133,7 +133,7 @@ var schemaStr = `
 			"properties": {
 				"offset": {"$ref": "#/definitions/rationalNonNegative"},
 				"endValue": {"type": "number"},
-				"duration": {"$ref": "#/definitions/duration"},
+				"duration": {"$ref": "#/definitions/duration"}
 			}
 		},
 		"meter": {
@@ -202,9 +202,9 @@ var schemaStr = `
 			"examples": [
 				"0/1",
 				"1/2",
-				"1/1",
+				"1/1"
 			]
-		}
+		},
 		"duration": {
 			"$id": "#/definitions/duration",
 			"type": "string",
@@ -266,7 +266,9 @@ var schemaStr = `
 			"enum": [
 				"tie",
 				"glide",
-				"step"
+				"step",
+				"slur",
+				"stepSlurred"
 			],
 			"examples": [
 				"tie"
