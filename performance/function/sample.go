@@ -3,11 +3,9 @@ package function
 import (
 	"fmt"
 	"math"
-
-	"github.com/jamestunnell/go-musicality/pkg/util"
 )
 
-func Sample(f Function, xrange util.Range, xstep float64) ([]float64, error) {
+func Sample(f Function, xrange Range, xstep float64) ([]float64, error) {
 	if !xrange.IsValid() {
 		return []float64{}, fmt.Errorf("x-range %v is not valid", xrange)
 	}

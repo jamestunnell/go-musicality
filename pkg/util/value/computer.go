@@ -5,8 +5,8 @@ import (
 	"math"
 	"sort"
 
+	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/jamestunnell/go-musicality/pkg/util"
-	"github.com/jamestunnell/go-musicality/pkg/util/function"
 )
 
 // Computer represents an initial value and a set of changes as a
@@ -63,8 +63,8 @@ func NewComputer(startVal float64, changes map[float64]*Change) (*Computer, erro
 				}
 			}
 
-			p1 := util.NewPoint(offset, lastEndVal)
-			p2 := util.NewPoint(changeEnd, change.EndValue)
+			p1 := function.NewPoint(offset, lastEndVal)
+			p2 := function.NewPoint(changeEnd, change.EndValue)
 
 			var f function.Function
 

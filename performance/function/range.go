@@ -1,4 +1,4 @@
-package util
+package function
 
 type Range struct {
 	Start float64

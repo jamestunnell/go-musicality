@@ -1,4 +1,4 @@
-package util
+package function
 
 type Point struct {
 	X float64

@@ -3,20 +3,19 @@ package function_test
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/util"
-	"github.com/jamestunnell/go-musicality/pkg/util/function"
+	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
 )
 
 type echo struct {
-	domain util.Range
+	domain function.Range
 }
 
 func (f *echo) At(x float64) float64 {
 	return x
 }
 
-func (f *echo) Domain() util.Range {
+func (f *echo) Domain() function.Range {
 	return f.domain
 }
 
@@ -30,7 +29,7 @@ func TestAtUnlimitedDomain(t *testing.T) {
 }
 
 func TestAtLimitedDomain(t *testing.T) {
-	f := &echo{domain: util.NewRange(-2.5, 2.5)}
+	f := &echo{domain: function.NewRange(-2.5, 2.5)}
 
 	testFunctionAt(t, f, 0.0, 0.0)
 	testFunctionAt(t, f, -2.5, -2.5)

@@ -4,15 +4,14 @@ import (
 	"math"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/util"
-	"github.com/jamestunnell/go-musicality/pkg/util/function"
+	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 	pairs := []function.SubdomainFunctionPair{
-		{Subdomain: util.NewRange(-2, 0), Function: function.NewConstantFunction(-1)},
-		{Subdomain: util.NewRange(0, 2), Function: function.NewConstantFunction(1)},
+		{Subdomain: function.NewRange(-2, 0), Function: function.NewConstantFunction(-1)},
+		{Subdomain: function.NewRange(0, 2), Function: function.NewConstantFunction(1)},
 	}
 	f, err := function.NewPiecewiseFunction(pairs)
 
@@ -39,8 +38,8 @@ func TestPiecewiseFunctionUnlimitedDomain(t *testing.T) {
 	fB := function.NewLinearFunction(-2.5, -10)
 	xBoundary := -5.6789
 	pairs := []function.SubdomainFunctionPair{
-		{Subdomain: util.NewRange(-math.MaxFloat64, xBoundary), Function: fA},
-		{Subdomain: util.NewRange(xBoundary, math.MaxFloat64), Function: fB},
+		{Subdomain: function.NewRange(-math.MaxFloat64, xBoundary), Function: fA},
+		{Subdomain: function.NewRange(xBoundary, math.MaxFloat64), Function: fB},
 	}
 	f, err := function.NewPiecewiseFunction(pairs)
 

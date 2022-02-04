@@ -83,7 +83,7 @@ func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*Pitc
 // MakeStartingPitch uses the range and key profiles to determine a
 // starting pitch
 func (pm *PitchModel) MakeStartingPitch() *pitch.Pitch {
-	rangeProbs := stats.GetIntProbs(pm.RangeProfile, SemitoneRange)
+	rangeProbs := GetIntProbs(pm.RangeProfile, 0, NumSemitones)
 
 	return pm.makePitch([][]float64{rangeProbs, pm.KeyProbs})
 }
@@ -94,8 +94,8 @@ func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
 	}
 
-	proximityProbs := stats.GetIntProbs(proximityProfile, SemitoneRange)
-	rangeProbs := stats.GetIntProbs(pm.RangeProfile, SemitoneRange)
+	proximityProbs := GetIntProbs(proximityProfile, 0, NumSemitones)
+	rangeProbs := GetIntProbs(pm.RangeProfile, 0, NumSemitones)
 
 	return pm.makePitch([][]float64{proximityProbs, rangeProbs, pm.KeyProbs})
 }

@@ -3,7 +3,7 @@ package value_test
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/util/function"
+	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/jamestunnell/go-musicality/pkg/util/value"
 
 	"github.com/stretchr/testify/assert"

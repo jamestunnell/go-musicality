@@ -3,17 +3,15 @@ package function
 import (
 	"errors"
 	"fmt"
-
-	"github.com/jamestunnell/go-musicality/pkg/util"
 )
 
 type SubdomainFunctionPair struct {
-	Subdomain util.Range
+	Subdomain Range
 	Function  Function
 }
 
 type PiecewiseFunction struct {
-	domain util.Range
+	domain Range
 	pairs  []SubdomainFunctionPair
 }
 
@@ -44,12 +42,12 @@ func NewPiecewiseFunction(pairs []SubdomainFunctionPair) (*PiecewiseFunction, er
 		}
 	}
 
-	domain := util.NewRange(pairs[0].Subdomain.Start, pairs[n-1].Subdomain.End)
+	domain := NewRange(pairs[0].Subdomain.Start, pairs[n-1].Subdomain.End)
 
 	return &PiecewiseFunction{domain: domain, pairs: pairs}, nil
 }
 
-func (f *PiecewiseFunction) Domain() util.Range {
+func (f *PiecewiseFunction) Domain() Range {
 	return f.domain
 }
 
@@ -95,14 +93,14 @@ func (f *PiecewiseFunction) At(x float64) float64 {
 // 			delete(f.pieces, existingDomain)
 
 // 			if newDomain.Start > existingDomain.Start {
-// 				beforeNewDomain := util.NewRange(existingDomain.Start, newDomain.Start)
+// 				beforeNewDomain := NewRange(existingDomain.Start, newDomain.Start)
 // 				f.pieces[beforeNewDomain] = existingFunction
 // 			}
 
 // 			f.pieces[newDomain] = newFunction
 
 // 			if newDomain.End < existingDomain.End {
-// 				afterNewDomain := util.NewRange(newDomain.End, existingDomain.End)
+// 				afterNewDomain := NewRange(newDomain.End, existingDomain.End)
 // 				f.pieces[afterNewDomain] = existingFunction
 // 			}
 

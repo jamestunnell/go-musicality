@@ -3,8 +3,7 @@ package function_test
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/util"
-	"github.com/jamestunnell/go-musicality/pkg/util/function"
+	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 func TestLinear(t *testing.T) {
@@ -16,12 +15,12 @@ func TestLinear(t *testing.T) {
 	testFunctionAt(t, f, 1.0, 1.0)
 	testFunctionAt(t, f, 1.5, 1.5)
 
-	testFunctionSample(t, f, util.NewRange(0.0, 1.0), 0.5, []float64{0.0, 0.5, 1.0})
+	testFunctionSample(t, f, function.NewRange(0.0, 1.0), 0.5, []float64{0.0, 0.5, 1.0})
 }
 
 func TestLinear2(t *testing.T) {
-	p0 := util.NewPoint(0.0, 0.5)
-	p1 := util.NewPoint(1.0, 1.0)
+	p0 := function.NewPoint(0.0, 0.5)
+	p1 := function.NewPoint(1.0, 1.0)
 	f := function.NewLinearFunctionFromPoints(p0, p1)
 
 	testFunctionAt(t, f, -1, 0.0)
