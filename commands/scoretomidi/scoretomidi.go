@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -24,7 +23,7 @@ func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
 	flagSet := flag.NewFlagSet("midi", flag.ExitOnError)
 	outDir := flagSet.String("outdir", "", "output directory")
 
-	if err := flagSet.Parse(os.Args[2:]); err != nil {
+	if err := flagSet.Parse(cliArgs); err != nil {
 		return nil, fmt.Errorf("failed to parse midi args: %w", err)
 	}
 

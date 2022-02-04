@@ -18,7 +18,7 @@ func NewCKeyProfile(semitoneProbs []float64) (*CKeyProfile, error) {
 	return &CKeyProfile{semitoneProbs}, nil
 }
 
-func (p *CKeyProfile) RotateProbs(n uint) []float64 {
+func (p *CKeyProfile) RotateProbs(n int) []float64 {
 	n = (n % 12)
 
 	return append(p.semitoneProbs[:n], p.semitoneProbs[n:]...)

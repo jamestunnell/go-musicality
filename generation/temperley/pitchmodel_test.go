@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/generation/temperley"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jamestunnell/go-musicality/generation/temperley"
 )
 
 func TestPitchModel(t *testing.T) {
-	pm, err := temperley.NewMajorPitchModel(0)
+	pm, err := temperley.NewMajorPitchModel(0, 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, pm)
 

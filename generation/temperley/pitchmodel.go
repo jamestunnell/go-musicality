@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
@@ -34,19 +35,21 @@ type PitchModel struct {
 	RangeProfile distuv.Normal
 }
 
-func NewMajorPitchModel(keySemitone uint) (*PitchModel, error) {
-	return newPitchModel(keySemitone, CMajorBaseKeyProbs)
+func NewMajorPitchModel(keySemitone int, seed uint64) (*PitchModel, error) {
+	return newPitchModel(keySemitone, seed, CMajorBaseKeyProbs)
 }
 
-func NewMinorPitchModel(keySemitone uint) (*PitchModel, error) {
-	return newPitchModel(keySemitone, CMinorBaseKeyProbs)
+func NewMinorPitchModel(keySemitone int, seed uint64) (*PitchModel, error) {
+	return newPitchModel(keySemitone, seed, CMinorBaseKeyProbs)
 }
 
-func newPitchModel(keySemitone uint, cKeyBaseProbs []float64) (*PitchModel, error) {
+func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*PitchModel, error) {
 	cKeyProfile, err := NewCKeyProfile(cKeyBaseProbs)
 	if err != nil {
 		return nil, err
 	}
+
+	randSrc := rand.NewSource(seed)
 
 	keyBaseProbs := cKeyProfile.RotateProbs(keySemitone)
 	keyProbs := make([]float64, NumSemitones)
@@ -58,11 +61,17 @@ func newPitchModel(keySemitone uint, cKeyBaseProbs []float64) (*PitchModel, erro
 		Mu:    float64(56), // semitone offset from C0 - corresponds to Ab4
 		Sigma: 3.63,        // stddev - corresponds to variance of about 13.2 semitones
 	}
+
+	centralPitchProfile.Src = randSrc
+
 	centralPitchOffset := int(math.Round(centralPitchProfile.Rand()))
 	rangeProfile := distuv.Normal{
 		Mu:    float64(centralPitchOffset), // semitone offset from C0
 		Sigma: 5.39,                        // stddev - corresponds to variance of about 29 semitones
 	}
+
+	rangeProfile.Src = randSrc
+
 	model := &PitchModel{
 		KeyProbs:     keyProbs,
 		RangeProfile: rangeProfile,
