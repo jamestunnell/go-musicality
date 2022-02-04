@@ -3,9 +3,11 @@ package note
 import "github.com/jamestunnell/go-musicality/notation/pitch"
 
 const (
-	Tie   = "tie"
-	Glide = "glide"
-	Step  = "step"
+	Tie         = "tie"
+	Slur        = "slur"
+	Glide       = "glide"
+	Step        = "step"
+	StepSlurred = "stepSlurred"
 )
 
 type Link struct {

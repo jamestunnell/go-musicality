@@ -1,163 +1,150 @@
-package sequence
+package model
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
-type Extractor struct {
-	allowGlide   bool
+type NoteConverter struct {
+	// allowGlide   bool
 	centsPerStep int
+	offset       *big.Rat
+	completed    []*Note
+	continuing   map[*pitch.Pitch]*Note
 }
 
-type OptionFunc func(e *Extractor)
+type NoteConverterOptionFunc func(nc *NoteConverter)
 
-func NewExtractor(opts ...OptionFunc) *Extractor {
-	e := &Extractor{}
+func NewNoteConverter(opts ...NoteConverterOptionFunc) *NoteConverter {
+	nc := &NoteConverter{}
 
 	for _, opt := range opts {
-		opt(e)
+		opt(nc)
 	}
 
-	return e
+	return nc
 }
 
-func OptionAllowPortamento() OptionFunc { return setAllowPortamento }
+// func OptionAllowPortamento() OptionFunc { return setAllowPortamento }
 
-func OptionCentsPerStep(centsPerStep int) OptionFunc {
-	return func(e *Extractor) {
-		e.centsPerStep = centsPerStep
+func OptionCentsPerStep(centsPerStep int) NoteConverterOptionFunc {
+	return func(nc *NoteConverter) {
+		nc.centsPerStep = centsPerStep
 	}
 }
 
-func setAllowPortamento(e *Extractor) {
-	e.allowGlide = true
-}
+// func setAllowPortamento(nc *NoteConverter) {
+// 	nc.allowGlide = true
+// }
 
-func (e *Extractor) Extract(notes []*note.Note) []*Sequence {
-	offset := big.NewRat(0, 1)
-	completedSeqs := []*Sequence{}
-	continuingSequences := map[*pitch.Pitch]*Sequence{}
+func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
+	nc.offset = big.NewRat(0, 1)
+	nc.completed = []*Note{}
+	nc.continuing = map[*pitch.Pitch]*Note{}
 
-	for i, currentNote := range notes {
-		var nextNote *note.Note
+	for i, current := range notes {
+		var next *note.Note
 
 		if i == (len(notes) - 1) {
-			// invent an imaginary next note
-			nextNote = note.Quarter()
+			// pretend the next note is a rest
+			next = note.Quarter()
 		} else {
-			nextNote = notes[i+1]
+			next = notes[i+1]
 		}
 
-		continuationMap := NewContinuationMap(currentNote, nextNote, currentNote.Separation)
+		if err := nc.processNote(current, next); err != nil {
+			err = fmt.Errorf("failed to process note %d: %w", i, err)
 
-		newContinuingSequences := map[*pitch.Pitch]*Sequence{}
-
-		for _, p := range currentNote.Pitches.Pitches() {
-			var seq *Sequence
-
-			if continuingSeq, found := continuingSequences[p]; found {
-				seq = continuingSeq
-
-				elems := e.MakeElements(currentNote.Duration, p, note.AttackMin, currentNote.Links[p])
-
-				seq.Elements = append(seq.Elements, elems...)
-
-				delete(continuingSequences, p)
-			} else {
-				elems := e.MakeElements(currentNote.Duration, p, currentNote.Attack, currentNote.Links[p])
-
-				seq = New(offset, elems...)
-			}
-
-			if tgt, found := continuationMap[p]; found {
-				newContinuingSequences[tgt] = seq
-			} else {
-				completedSeqs = append(completedSeqs, seq)
-			}
+			return []*Note{}, err
 		}
 
-		if len(continuingSequences) > 0 {
-			panic("shouldn't be any continuing sequences")
-		}
-
-		continuingSequences = newContinuingSequences
-
-		offset = new(big.Rat).Add(offset, currentNote.Duration)
+		nc.offset = new(big.Rat).Add(nc.offset, current.Duration)
 	}
 
-	for _, seq := range completedSeqs {
-		seq.Simplify()
+	if len(nc.continuing) > 0 {
+		err := fmt.Errorf("continuing notes left over: %v", nc.continuing)
+
+		return []*Note{}, err
 	}
 
-	return completedSeqs
+	for _, n := range nc.completed {
+		n.Simplify()
+	}
+
+	return nc.completed, nil
 }
 
-func (e *Extractor) MakeElements(dur *big.Rat, p *pitch.Pitch, attack float64, link *note.Link) []*Element {
-	var elems []*Element
+func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, separation float64, pitchDurs ...*PitchDur) {
+	// pd := NewPitchDur(NewPitch(p, 0), dur)
 
-	// // Replace with a glissando if portamento is not allowed
-	// if link.Type == note.Glide && !e.allowGlide {
-	// 	link = &note.Link{
-	// 		Target: link.Target,
-	// 		Type:   note.Step,
-	// 	}
-	// }
+	// is this a continuation?
+	n := nc.continuing[current]
 
-	// if link != nil {
-	// 	switch link.Type {
-	// 	case note.Glide:
-	// 		// TODO
-	// 	case note.Step:
-	// 		pitches := StepPitches(p, link.Target)
+	if n != nil {
+		n.PitchDurs = append(n.PitchDurs, pitchDurs...)
+		n.Separation = separation
 
-	// 		// reserve 25% of the original note duration for the starting pitch
-	// 		elems = []*Element{
-	// 			{
-	// 				Duration: new(big.Rat).Mul(dur, big.NewRat(1, 4)),
-	// 				Pitch:    p,
-	// 				Attack:   attack,
-	// 			},
-	// 		}
+		delete(nc.continuing, current)
+	} else {
+		n = NewNote(nc.offset, pitchDurs...)
 
-	// 		diff := link.Target.Diff(p)
-	// 		semitones := Abs(diff)
-	// 		incr := diff / semitones
-	// 		subdur := new(big.Rat).Mul(dur, big.NewRat(3, 4*int64(semitones)))
-	// 		lastElem := elems[0]
+		n.Attack = attack
+		n.Separation = separation
+	}
 
-	// 		for i := 0; i < semitones; i++ {
-	// 			elem := &Element{
-	// 				Duration: subdur,
-	// 				Pitch:    lastElem.Pitch.Transpose(incr),
-	// 				Attack:   note.AttackMin,
-	// 			}
+	if next != nil {
+		nc.continuing[next] = n
+	} else {
+		nc.completed = append(nc.completed, n)
+	}
+}
 
-	// 			elems = append(elems, elem)
+func (nc *NoteConverter) processNote(current, next *note.Note) error {
+	a := current.Attack
+	s := current.Separation
+	dur := current.Duration
 
-	// 			lastElem = elem
-	// 		}
+	for _, p := range current.Pitches.Pitches() {
+		link := current.Links[p]
 
-	// 	case note.Tie:
-	// 		elems = []*Element{
-	// 			{
-	// 				Duration: dur,
-	// 				Pitch:    p,
-	// 				Attack:   note.AttackMin,
-	// 			},
-	// 		}
-	// 	}
-	// } else {
-	// 	elems = []*Element{
-	// 		{
-	// 			Duration: dur,
-	// 			Pitch:    p,
-	// 			Attack:   attack,
-	// 		},
-	// 	}
-	// }
+		if link == nil {
+			nc.processPitchDurs(p, nil, a, s, NewPitchDur(NewPitch(p, 0), dur))
 
-	return elems
+			continue
+		}
+
+		var target *pitch.Pitch
+
+		if next.Pitches.Contains(link.Target) {
+			target = link.Target
+		}
+
+		if link.Type == note.Tie || link.Type == note.Slur || link.Target == p {
+			nc.processPitchDurs(p, nil, a, s, NewPitchDur(NewPitch(p, 0), dur))
+		} else {
+			switch link.Type {
+			case note.Glide:
+				pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
+
+				nc.processPitchDurs(p, target, a, s, pds...)
+			case note.StepSlurred, note.Step:
+				pds := MakeSteps(dur, p, link.Target, CentsPerSemitoneInt)
+
+				if link.Type == note.Step {
+					for _, pd := range pds {
+						nc.processPitchDurs(p, nil, a, s, pd)
+					}
+				} else {
+					nc.processPitchDurs(p, target, a, s, pds...)
+				}
+			default:
+				return fmt.Errorf("unknown link type '%s' from pitch '%s'", link.Type, p.String())
+			}
+		}
+	}
+
+	return nil
 }

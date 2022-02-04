@@ -1,64 +1,37 @@
-package sequence
+package model
 
-import "github.com/jamestunnell/go-musicality/notation/pitch"
+import (
+	"math/big"
 
-func StepPitches(startPitch, endPitch *pitch.Pitch) pitch.Pitches {
-	start := startPitch.TotalSemitone()
-	end := endPitch.TotalSemitone()
+	"github.com/jamestunnell/go-musicality/notation/pitch"
+)
 
-	if end == start {
-		return pitch.Pitches{pitch.New(0, start)}
+func MakeSteps(dur *big.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
+	ps := StepPitches(start, end, centsPerStep)
+	nSteps := big.NewRat(int64(len(ps)), 1)
+	subDur := new(big.Rat).Quo(dur, nSteps)
+
+	return ps.MakePitchDurs(subDur)
+}
+
+func StepPitches(startPitch, endPitch *pitch.Pitch, centsPerStep int) Pitches {
+	start := NewPitch(startPitch, 0).TotalCent()
+	end := NewPitch(endPitch, 0).TotalCent()
+
+	diff := end - start
+	if diff < 0 {
+		centsPerStep = -centsPerStep
 	}
 
-	var semitones []int
+	nSteps := diff / centsPerStep
+	diffCurrent := 0
+	pitches := make(Pitches, nSteps)
 
-	if end > start {
-		semitones = IntRangeAsc(start, end)
-	} else {
-		semitones = IntRangeDesc(start, end)
-	}
+	for i := 0; i < nSteps; i++ {
+		pitches[i] = NewPitch(startPitch, diffCurrent)
 
-	pitches := make(pitch.Pitches, len(semitones))
-
-	for i, semitone := range semitones {
-		pitches[i] = pitch.New(0, semitone)
+		diffCurrent += centsPerStep
 	}
 
 	return pitches
-}
-
-func IntRangeAsc(start, end int) []int {
-	if start > end {
-		return []int{}
-	}
-
-	n := (end - start) + 1
-	ints := make([]int, n)
-	intVal := start
-
-	for i := 0; i < n; i++ {
-		ints[i] = intVal
-
-		intVal++
-	}
-
-	return ints
-}
-
-func IntRangeDesc(start, end int) []int {
-	if end > start {
-		return []int{}
-	}
-
-	n := (start - end) + 1
-	ints := make([]int, n)
-	intVal := start
-
-	for i := 0; i < n; i++ {
-		ints[i] = intVal
-
-		intVal--
-	}
-
-	return ints
 }

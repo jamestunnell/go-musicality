@@ -1,4 +1,4 @@
-package sequence
+package model
 
 import (
 	"math/big"

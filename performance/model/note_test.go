@@ -1,4 +1,4 @@
-package sequence_test
+package model_test
 
 import (
 	"math/big"
@@ -7,9 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/performance/sequence"
+	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
 func zero() *big.Rat {
@@ -18,78 +17,72 @@ func zero() *big.Rat {
 
 func TestNewEmpty(t *testing.T) {
 
-	s := sequence.New(zero())
+	s := model.NewNote(zero())
 
 	assert.Equal(t, zero(), s.Duration())
 	assert.Equal(t, zero(), s.End())
-	assert.Nil(t, s.Validate())
-	assert.NoError(t, s.Simplify())
 }
 
-func TestSequenceInvalid(t *testing.T) {
-	e1 := &sequence.Element{Duration: big.NewRat(1, 4), Pitch: pitch.D4}
-	e2 := &sequence.Element{Duration: zero(), Pitch: pitch.C4}
-	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.E4}
+func TestNoteInvalid(t *testing.T) {
+	e1 := &model.PitchDur{Duration: big.NewRat(1, 4), Pitch: model.NewPitch(pitch.D4, 0)}
+	e2 := &model.PitchDur{Duration: zero(), Pitch: model.NewPitch(pitch.C4, 0)}
+	e3 := &model.PitchDur{Duration: big.NewRat(1, 2), Pitch: model.NewPitch(pitch.E4, 0)}
 	start := big.NewRat(1, 2)
-	s := sequence.New(start, e1, e2, e3)
+	s := model.NewNote(start, e1, e2, e3)
 	expectedDur := big.NewRat(3, 4)
 	expectedEnd := new(big.Rat).Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
-	assert.NotNil(t, s.Validate())
-	assert.Error(t, s.Simplify())
 }
 
-func TestValidSequenceValid(t *testing.T) {
-	e1 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: note.AttackNormal}
-	e2 := &sequence.Element{Duration: big.NewRat(1, 8), Pitch: pitch.D4, Attack: note.AttackMin}
-	e3 := &sequence.Element{Duration: big.NewRat(1, 2), Pitch: pitch.D4, Attack: note.AttackNormal}
-	e4 := &sequence.Element{Duration: big.NewRat(1, 1), Pitch: pitch.E4, Attack: note.AttackMin}
+func TestValidNoteValid(t *testing.T) {
+	e1 := &model.PitchDur{Duration: big.NewRat(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
+	e2 := &model.PitchDur{Duration: big.NewRat(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
+	e3 := &model.PitchDur{Duration: big.NewRat(1, 2), Pitch: model.NewPitch(pitch.D4, 0)}
+	e4 := &model.PitchDur{Duration: big.NewRat(1, 1), Pitch: model.NewPitch(pitch.E4, 0)}
 	start := big.NewRat(1, 1)
-	s := sequence.New(start, e1, e2, e3, e4)
+	s := model.NewNote(start, e1, e2, e3, e4)
 	expectedDur := big.NewRat(7, 4)
 	expectedEnd := new(big.Rat).Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
-	assert.Nil(t, s.Validate())
 
-	assert.NoError(t, s.Simplify())
+	s.Simplify()
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
 
-	require.Len(t, s.Elements, 3)
-	assert.Equal(t, big.NewRat(1, 4), s.Elements[0].Duration)
-	assert.Equal(t, big.NewRat(1, 2), s.Elements[1].Duration)
-	assert.Equal(t, big.NewRat(1, 1), s.Elements[2].Duration)
+	require.Len(t, s.PitchDurs, 2)
+	assert.Equal(t, big.NewRat(3, 4), s.PitchDurs[0].Duration)
+	assert.Equal(t, big.NewRat(1, 1), s.PitchDurs[1].Duration)
 }
 
-// 	// Should fail without a 0.0 duration element
-// 	ns, err = p.NewSequence(0.0, []*p.Element{0.0DurElem}, p.Separation0)
+// 	// Should fail without a 0.0 duration PitchDur
+// 	ns, err = p.NewNote(0.0, []*p.PitchDur{0.0DurElem}, p.Separation0)
 // 	assert.Nil(t, ns)
 // 	assert.NotNil(t, err)
 
-// 	// Should be okay with a non-rest element
-// 	ns, err = p.NewSequence(0.0, []*p.Element{nonRestElem}, p.Separation0)
+// 	// Should be okay with a non-rest PitchDur
+// 	ns, err = p.NewNote(0.0, []*p.PitchDur{nonRestElem}, p.Separation0)
 // 	assert.NotNil(t, ns)
 // 	assert.Nil(t, err)
 
-// 	// Should simplifiy two tied elements into 1.0 element
-// 	ns, err = p.NewSequence(0.0, []*p.Element{nonRestElem, tiedElem}, p.Separation0)
+// 	// Should simplifiy two tied PitchDurs into 1.0 PitchDur
+// 	ns, err = p.NewNote(0.0, []*p.PitchDur{nonRestElem, tiedElem}, p.Separation0)
 // 	assert.NotNil(t, ns)
 // 	assert.Nil(t, err)
-// 	assert.Equal(t, 1, len(ns.Elements))
-// 	assert.True(t, ns.Elements[0].Duration.Equal(nonRestElem.Duration.Add(tiedElem.Duration)))
+// 	assert.Equal(t, 1, len(ns.PitchDurs))
+// 	assert.True(t, ns.PitchDurs[0].Duration.Equal(nonRestElem.Duration.Add(tiedElem.Duration)))
 // }
 
-// func TestSequenceOffsets(t *testing.T) {
-// 	testSequenceOffsets(t, makeTestSequenceA(t), []n.NNRational{startA})
-// 	testSequenceOffsets(t, makeTestSequenceB(t), []n.NNRational{startB, startB.Add(elemB1.Duration)})
+// func TestNoteOffsets(t *testing.T) {
+// 	testNoteOffsets(t, makeTestNoteA(t), []n.NNRational{startA})
+// 	testNoteOffsets(t, makeTestNoteB(t), []n.NNRational{startB, startB.Add(elemB1.Duration)})
 // }
 
-// func testSequenceOffsets(t *testing.T, seq *p.Sequence, expected []n.NNRational) {
+// func testNoteOffsets(t *testing.T, seq *p.Note, expected []n.NNRational) {
 // 	actual := seq.Offsets()
 // 	if assert.Equal(t, len(expected), len(actual)) {
 // 		for i, offset := range expected {
@@ -98,26 +91,26 @@ func TestValidSequenceValid(t *testing.T) {
 // 	}
 // }
 
-// func TestSequenceDurationAndEnd(t *testing.T) {
-// 	seqA := makeTestSequenceA(t)
+// func TestNoteDurationAndEnd(t *testing.T) {
+// 	seqA := makeTestNoteA(t)
 // 	assert.True(t, elemA.Duration.Equal(seqA.Duration()))
 // 	assert.True(t, startA.Add(elemA.Duration).Equal(seqA.End()))
 
-// 	seqB := makeTestSequenceB(t)
+// 	seqB := makeTestNoteB(t)
 // 	assert.True(t, elemB1.Duration.Add(elemB2.Duration).Equal(seqB.Duration()))
 // 	assert.True(t, startB.Add(elemB1.Duration).Add(elemB2.Duration).Equal(seqB.End()))
 // }
 
-// func makeTestSequenceA(t *testing.T) *p.Sequence {
-// 	seq, err := p.NewSequence(startA, []*p.Element{elemA}, p.Separation0)
+// func makeTestNoteA(t *testing.T) *p.Note {
+// 	seq, err := p.NewNote(startA, []*p.PitchDur{elemA}, p.Separation0)
 // 	assert.NotNil(t, seq)
 // 	assert.Nil(t, err)
 
 // 	return seq
 // }
 
-// func makeTestSequenceB(t *testing.T) *p.Sequence {
-// 	seq, err := p.NewSequence(startB, []*p.Element{elemB1, elemB2}, p.Separation0)
+// func makeTestNoteB(t *testing.T) *p.Note {
+// 	seq, err := p.NewNote(startB, []*p.PitchDur{elemB1, elemB2}, p.Separation0)
 // 	assert.NotNil(t, seq)
 // 	assert.Nil(t, err)
 

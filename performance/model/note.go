@@ -1,59 +1,30 @@
-package sequence
+package model
 
 import (
-	"errors"
-	"fmt"
 	"math/big"
-
-	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/validation"
 )
 
-// Sequence is a sequence of elements, starting at an offset, and with some
-// kind of separation at the end.
-type Sequence struct {
+type Note struct {
 	Start      *big.Rat
-	Elements   []*Element
+	PitchDurs  []*PitchDur
+	Attack     float64
 	Separation float64
 }
 
-var errInvalidSeq = errors.New("sequence is invalid, validate for details")
-
-func New(start *big.Rat, elements ...*Element) *Sequence {
-	return &Sequence{
+func NewNote(start *big.Rat, pitchDurs ...*PitchDur) *Note {
+	return &Note{
 		Start:      start,
-		Elements:   elements,
-		Separation: note.SeparationNormal,
+		Attack:     0.0,
+		Separation: 0.0,
+		PitchDurs:  pitchDurs,
 	}
 }
 
-func (s *Sequence) Validate() *validation.Result {
-	results := []*validation.Result{}
-
-	for i, elem := range s.Elements {
-		if result := elem.Validate(); result != nil {
-			result.Context = fmt.Sprintf("%s %d", result.Context, i)
-
-			results = append(results, result)
-		}
-	}
-
-	if len(results) == 0 {
-		return nil
-	}
-
-	return &validation.Result{
-		Context:    "sequence",
-		Errors:     []error{},
-		SubResults: results,
-	}
-}
-
-func (seq *Sequence) Offsets() []*big.Rat {
-	offsets := make([]*big.Rat, len(seq.Elements))
+func (seq *Note) Offsets() []*big.Rat {
+	offsets := make([]*big.Rat, len(seq.PitchDurs))
 	currentOffset := new(big.Rat).Set(seq.Start)
 
-	for i, e := range seq.Elements {
+	for i, e := range seq.PitchDurs {
 		offsets[i] = currentOffset
 		currentOffset = new(big.Rat).Add(currentOffset, e.Duration)
 	}
@@ -61,48 +32,38 @@ func (seq *Sequence) Offsets() []*big.Rat {
 	return offsets
 }
 
-// Duration is not modified to account for sequence separation.
-func (seq *Sequence) Duration() *big.Rat {
+// Duration is not modified to account for Note separation.
+func (seq *Note) Duration() *big.Rat {
 	dur := big.NewRat(0, 1)
 
-	for _, e := range seq.Elements {
-		dur = dur.Add(dur, e.Duration)
+	for _, pd := range seq.PitchDurs {
+		dur = dur.Add(dur, pd.Duration)
 	}
 
 	return dur
 }
 
 // End is not modified to account for separation
-func (seq *Sequence) End() *big.Rat {
+func (seq *Note) End() *big.Rat {
 	end := new(big.Rat).Add(seq.Start, seq.Duration())
 
 	return end
 }
 
-func (seq *Sequence) Simplify() error {
-	if result := seq.Validate(); result != nil {
-		return errInvalidSeq
-	}
-
-	if len(seq.Elements) == 0 {
-		return nil
-	}
-
+func (seq *Note) Simplify() {
 	i := 1
 
-	for i < len(seq.Elements) {
-		cur := seq.Elements[i]
-		prev := seq.Elements[i-1]
+	for i < len(seq.PitchDurs) {
+		cur := seq.PitchDurs[i]
+		prev := seq.PitchDurs[i-1]
 
-		if (cur.Pitch == prev.Pitch) && (cur.Attack == note.AttackMin) {
+		if cur.Pitch.Equal(prev.Pitch) {
 			// combine current with previous element
 			prev.Duration = prev.Duration.Add(prev.Duration, cur.Duration)
 
-			seq.Elements = append(seq.Elements[:i], seq.Elements[i+1:]...)
+			seq.PitchDurs = append(seq.PitchDurs[:i], seq.PitchDurs[i+1:]...)
 		} else {
 			i++
 		}
 	}
-
-	return nil
 }
