@@ -6,21 +6,25 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/value"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Measure struct {
-	Meter     *meter.Meter          `json:"meter"`
-	PartNotes map[string]note.Notes `json:"partNotes"`
-	// Changes   map[note.Dur]Change `json:"changes"`
+	Meter          *meter.Meter          `json:"meter"`
+	PartNotes      map[string]note.Notes `json:"partNotes"`
+	DynamicChanges value.Changes         `json:"dynamicChanges"`
+	TempoChanges   value.Changes         `json:"tempoChanges"`
 }
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
 
 func New(met *meter.Meter) *Measure {
 	return &Measure{
-		Meter:     met,
-		PartNotes: map[string]note.Notes{},
+		Meter:          met,
+		PartNotes:      map[string]note.Notes{},
+		DynamicChanges: value.Changes{},
+		TempoChanges:   value.Changes{},
 	}
 }
 
@@ -81,6 +85,14 @@ func (m *Measure) Validate() *validation.Result {
 		}
 	}
 
+	if changesResults := validateChanges("dynamic", m.DynamicChanges); len(changesResults) > 0 {
+		results = append(results, changesResults...)
+	}
+
+	if changesResults := validateChanges("tempo", m.TempoChanges); len(changesResults) > 0 {
+		results = append(results, changesResults...)
+	}
+
 	if len(results) == 0 && len(errs) == 0 {
 		return nil
 	}
@@ -90,4 +102,17 @@ func (m *Measure) Validate() *validation.Result {
 		Errors:     errs,
 		SubResults: results,
 	}
+}
+
+func validateChanges(changeType string, changes value.Changes) []*validation.Result {
+	results := []*validation.Result{}
+
+	for i, change := range changes {
+		if result := change.Validate(); result != nil {
+			result.Context = fmt.Sprintf("%s %s %d", changeType, result.Context, i)
+			results = append(results, result)
+		}
+	}
+
+	return results
 }

@@ -2,9 +2,13 @@ package section
 
 import (
 	"fmt"
+	"math/big"
+	"sort"
 
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
+	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/value"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -76,4 +80,80 @@ func (s *Section) Validate() *validation.Result {
 		Errors:     errs,
 		SubResults: results,
 	}
+}
+
+func (s *Section) PartNames() []string {
+	nameMap := map[string]struct{}{}
+
+	for _, m := range s.Measures {
+		for name, notes := range m.PartNotes {
+			if len(notes) > 0 {
+				if _, found := nameMap[name]; !found {
+					nameMap[name] = struct{}{}
+				}
+			}
+		}
+	}
+
+	names := []string{}
+
+	for name := range nameMap {
+		names = append(names, name)
+	}
+
+	return names
+}
+
+func (s *Section) PartNotes(part string) []*note.Note {
+	partNotes := []*note.Note{}
+
+	for _, m := range s.Measures {
+		notes, found := m.PartNotes[part]
+		if found {
+			partNotes = append(partNotes, notes...)
+		} else {
+			partNotes = append(partNotes, note.New(m.Duration()))
+		}
+	}
+
+	return partNotes
+}
+
+func (s *Section) DynamicChanges() value.Changes {
+	return s.gatherChanges(getDynamicChanges)
+}
+
+func (s *Section) TempoChanges() value.Changes {
+	return s.gatherChanges(getTempoChanges)
+}
+
+func (s *Section) gatherChanges(measureChanges func(m *measure.Measure) value.Changes) value.Changes {
+	measureOffset := big.NewRat(0, 1)
+	changes := []*value.Change{}
+
+	for _, m := range s.Measures {
+		mChanges := measureChanges(m)
+		sort.Sort(mChanges)
+
+		for _, c := range mChanges {
+			change := &value.Change{
+				Offset:   new(big.Rat).Add(measureOffset, c.Offset),
+				EndValue: c.EndValue,
+				Duration: c.Duration,
+			}
+			changes = append(changes, change)
+		}
+
+		measureOffset.Add(measureOffset, m.Duration())
+	}
+
+	return changes
+}
+
+func getDynamicChanges(m *measure.Measure) value.Changes {
+	return m.DynamicChanges
+}
+
+func getTempoChanges(m *measure.Measure) value.Changes {
+	return m.TempoChanges
 }

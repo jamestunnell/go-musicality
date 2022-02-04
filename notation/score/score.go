@@ -3,7 +3,6 @@ package score
 import (
 	"fmt"
 
-	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/section"
 	"github.com/jamestunnell/go-musicality/validation"
 )
@@ -51,48 +50,4 @@ func (s *Score) Validate() *validation.Result {
 		Errors:     errs,
 		SubResults: results,
 	}
-}
-
-func (s *Score) PartNames() []string {
-	nameMap := map[string]struct{}{}
-
-	for _, section := range s.Sections {
-		for _, m := range section.Measures {
-			for name, notes := range m.PartNotes {
-				if len(notes) > 0 {
-					if _, found := nameMap[name]; !found {
-						nameMap[name] = struct{}{}
-					}
-				}
-			}
-		}
-	}
-
-	names := make([]string, len(nameMap))
-	i := 0
-
-	for name := range nameMap {
-		names[i] = name
-
-		i++
-	}
-
-	return names
-}
-
-func (s *Score) PartNotes(part string) []*note.Note {
-	partNotes := []*note.Note{}
-
-	for _, section := range s.Sections {
-		for _, m := range section.Measures {
-			notes, found := m.PartNotes[part]
-			if found {
-				partNotes = append(partNotes, notes...)
-			} else {
-				partNotes = append(partNotes, note.New(m.Duration()))
-			}
-		}
-	}
-
-	return partNotes
 }

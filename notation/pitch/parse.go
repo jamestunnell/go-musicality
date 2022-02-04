@@ -22,6 +22,34 @@ var (
 	}
 )
 
+func ParseSemitone(s string) (int, error) {
+	if len(s) == 0 {
+		return 0, errExpectedSemitone
+	}
+
+	semitone, found := baseSemitoneMap[rune(s[0])]
+	if !found {
+		return 0, fmt.Errorf("invalid semitone '%s'", s[:1])
+	}
+
+	switch len(s) {
+	case 1:
+	case 2:
+		switch rune(s[1]) {
+		case '#':
+			semitone++
+		case 'b':
+			semitone--
+		default:
+			return 0, fmt.Errorf("unexpected accidental rune %c", s[1])
+		}
+	default:
+		return 0, fmt.Errorf("semitone string is too long")
+	}
+
+	return semitone, nil
+}
+
 func parse(s string) (octave, semitone int, err error) {
 	if len(s) == 0 {
 		return 0, 0, errExpectedSemitone

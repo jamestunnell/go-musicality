@@ -64,7 +64,6 @@ var schemaStr = `
 					"type": "array",
 					"title": "Section measures",
 					"description": "Contains section part notes.",
-					"minItems": 0,
 					"items": {
 						"$ref": "#/definitions/measure"
 					}
@@ -110,7 +109,31 @@ var schemaStr = `
 							"$ref": "#/definitions/note"
 						}
 					}
+				},
+				"dynamicChanges": {
+					"type": "array",
+					"title": "Dynamic changes",
+					"items": {
+						"$ref": "#/definitions/change"
+					}
+				},
+				"tempoChanges": {
+					"type": "array",
+					"title": "Tempo changes",
+					"items": {
+						"$ref": "#/definitions/change"
+					}
 				}
+			}
+		},
+		"change": {
+			"$id": "#/definitions/change",
+			"title": "A value change",
+			"type": "object",
+			"properties": {
+				"offset": {"$ref": "#/definitions/rationalNonNegative"},
+				"endValue": {"type": "number"},
+				"duration": {"$ref": "#/definitions/duration"},
 			}
 		},
 		"meter": {
@@ -171,6 +194,17 @@ var schemaStr = `
 			"maximum": 1,
 			"default": 0
 		},
+		"rationalNonNegative": {
+			"$id": "#/definitions/rationalNonNegative",
+			"type": "string",
+			"title": "Rational number",
+			"pattern": "^[0-9]+/[1-9][0-9]*$",
+			"examples": [
+				"0/1",
+				"1/2",
+				"1/1",
+			]
+		}
 		"duration": {
 			"$id": "#/definitions/duration",
 			"type": "string",
