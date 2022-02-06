@@ -98,7 +98,7 @@ func (nc *NoteConverter) processNote(current, next *note.Note) error {
 			switch link.Type {
 			case note.Slur:
 				link = nil
-				s = note.SeparationMin
+				s = note.ControlMin
 			case note.StepSlurred, note.Glide:
 				link = &note.Link{
 					Type:   note.Step,

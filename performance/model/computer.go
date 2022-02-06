@@ -18,10 +18,11 @@ type Computer struct {
 
 // NewComputer takes an initial value and a set of changes and
 // produces a Computer which can calculate the value at any time.
+// Assumes that the changes are valid.
 func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
-	if result := changes.Validate(); result != nil {
-		return nil, result
-	}
+	// if result := changes.Validate(); result != nil {
+	// 	return nil, result
+	// }
 
 	pairs := []function.SubdomainFunctionPair{}
 

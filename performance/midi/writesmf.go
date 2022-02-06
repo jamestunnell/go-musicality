@@ -10,10 +10,7 @@ import (
 	"gitlab.com/gomidi/midi/smf/smfwriter"
 	"gitlab.com/gomidi/midi/writer"
 
-	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/score"
-	"github.com/jamestunnell/go-musicality/performance/model"
-	"github.com/jamestunnell/go-musicality/validation"
 )
 
 const ticksPerQuarter = 960
@@ -108,35 +105,3 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 // 	return events, nil
 // }
-
-// Key converts the pitch to a MIDI note number.
-// Returns a non-nil error if the pitch is not in the range [C-1, G9].
-func Key(p *model.Pitch) (uint8, error) {
-	const (
-		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
-		minTotalSemitone = -12
-		// maxTotalSemitone is the total semitone value of MIDI note 127 (G9)
-		maxTotalSemitone = 115
-	)
-
-	totalSemitone := p.TotalSemitone()
-
-	if totalSemitone < minTotalSemitone || totalSemitone > maxTotalSemitone {
-		return 0, fmt.Errorf("pitch %s is outside of MIDI note number range", p.String())
-	}
-
-	return uint8(totalSemitone + 12), nil
-}
-
-// Velocity converts the attack to a MIDI velocity.
-// Returns a non-nil error if the attack is not in the range [0.0, 1.0]
-func Velocity(attack float64) (uint8, error) {
-	if err := validation.VerifyInRangeFloat("attack", attack, note.AttackMin, note.AttackMax); err != nil {
-		return 0, err
-	}
-
-	mul := (attack * 0.5) + 0.5
-	vel := 31 + uint8(math.Round(mul*96))
-
-	return vel, nil
-}
