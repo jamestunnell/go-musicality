@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,8 +34,8 @@ func TestValidateJSON(t *testing.T) {
 									Map{
 										"duration":   "1/4",
 										"pitches":    Slice{"C4"},
-										"attack":     0.0,
-										"separation": 0.0,
+										"attack":     note.ControlMax,
+										"separation": note.ControlMax,
 										"links": Map{
 											"C4": Map{
 												"target": "C4",
@@ -57,6 +58,12 @@ func TestValidateJSON(t *testing.T) {
 	testValidateJSONValid(t, "happy path", makeValidScoreMap(), func(m Map) {})
 	testValidateJSONValid(t, "measure with no part notes", makeValidScoreMap(), func(m Map) {
 		assert.True(t, ChangeMapValue(m, "partNotes", Map{}))
+	})
+	testValidateJSONValid(t, "note with no attack", makeValidScoreMap(), func(m Map) {
+		assert.True(t, RemoveMapValue(m, "attack"))
+	})
+	testValidateJSONValid(t, "note with no separation", makeValidScoreMap(), func(m Map) {
+		assert.True(t, RemoveMapValue(m, "separation"))
 	})
 
 	// Invalid scores
@@ -97,16 +104,16 @@ func TestValidateJSON(t *testing.T) {
 		assert.True(t, RemoveMapValue(m, "duration"))
 	})
 	testValidateJSONInvalid(t, "bad attack", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "attack", -1.01))
+		assert.True(t, ChangeMapValue(m, "attack", note.ControlMin-0.01))
 	})
 	testValidateJSONInvalid(t, "bad attack", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "attack", 1.01))
+		assert.True(t, ChangeMapValue(m, "attack", note.ControlMax+0.01))
 	})
 	testValidateJSONInvalid(t, "bad separation", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "separation", -1.01))
+		assert.True(t, ChangeMapValue(m, "separation", note.ControlMin-0.01))
 	})
 	testValidateJSONInvalid(t, "bad separation", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "separation", 1.01))
+		assert.True(t, ChangeMapValue(m, "separation", note.ControlMax+0.01))
 	})
 	testValidateJSONInvalid(t, "bad link target pitch", makeValidScoreMap(), func(m Map) {
 		assert.True(t, ChangeMapValue(m, "target", "not-a-pitch"))

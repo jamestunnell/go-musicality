@@ -6,6 +6,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.6.1
+	github.com/tidwall/gjson v1.12.1
+	github.com/tidwall/sjson v1.2.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gitlab.com/gomidi/midi v1.23.7
 	golang.org/x/exp v0.0.0-20190125153040-c74c464bbbf2

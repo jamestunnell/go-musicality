@@ -20,29 +20,26 @@ func TestNoteValid(t *testing.T) {
 		n.Pitches.Add(pitch.C0)
 	})
 	testNoteValid(t, "min attack", big.NewRat(1, 2), func(n *note.Note) {
-		n.Attack = -1.0
+		n.Attack = note.ControlMin
 	})
 	testNoteValid(t, "max attack", big.NewRat(1, 2), func(n *note.Note) {
-		n.Attack = 1.0
+		n.Attack = note.ControlMax
 	})
 	testNoteValid(t, "min separation", big.NewRat(1, 2), func(n *note.Note) {
-		n.Separation = -1.0
+		n.Separation = note.ControlMin
 	})
 	testNoteValid(t, "max separation", big.NewRat(1, 2), func(n *note.Note) {
-		n.Separation = 1.0
-	})
-	testNoteValid(t, "max separation", big.NewRat(1, 2), func(n *note.Note) {
-		n.Separation = 1.0
+		n.Separation = note.ControlMax
 	})
 }
 
 func TestNoteInvalid(t *testing.T) {
 	testNoteInvalid(t, "zero dur", big.NewRat(0, 1), func(n *note.Note) {})
 	testNoteInvalid(t, "negative dur", big.NewRat(0, 1), func(n *note.Note) {})
-	testNoteInvalid(t, "attack too high", big.NewRat(1, 4), func(n *note.Note) { n.Attack = 1.01 })
-	testNoteInvalid(t, "attack too low", big.NewRat(1, 4), func(n *note.Note) { n.Attack = -1.01 })
-	testNoteInvalid(t, "separation too high", big.NewRat(1, 4), func(n *note.Note) { n.Separation = 1.01 })
-	testNoteInvalid(t, "separation too low", big.NewRat(1, 4), func(n *note.Note) { n.Separation = -1.01 })
+	testNoteInvalid(t, "attack too high", big.NewRat(1, 4), func(n *note.Note) { n.Attack = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "attack too low", big.NewRat(1, 4), func(n *note.Note) { n.Attack = note.ControlMin - 0.01 })
+	testNoteInvalid(t, "separation too high", big.NewRat(1, 4), func(n *note.Note) { n.Separation = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "separation too low", big.NewRat(1, 4), func(n *note.Note) { n.Separation = note.ControlMin - 0.01 })
 }
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
@@ -56,13 +53,21 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 
 	n := note.New(dur, p1)
 
-	n.Attack = note.AttackMax + 0.1
+	n.Attack = note.ControlMax + 0.1
 
 	testNoteMarshalUnmarshalJSON(t, "invalid attack", n)
 
-	n.Separation = note.SeparationMax + 0.1
+	n.Separation = note.ControlMax + 0.1
 
 	testNoteMarshalUnmarshalJSON(t, "invalid separation", n)
+
+	n.Attack = note.ControlNormal
+
+	testNoteMarshalUnmarshalJSON(t, "normal attack", n)
+
+	n.Separation = note.ControlNormal
+
+	testNoteMarshalUnmarshalJSON(t, "normal separation", n)
 }
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
