@@ -10,7 +10,6 @@ import (
 	"gitlab.com/gomidi/midi/smf/smfwriter"
 	"gitlab.com/gomidi/midi/writer"
 
-	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/performance/model"
@@ -83,30 +82,35 @@ func WriteSMF(s *score.Score, fpath string) error {
 }
 
 func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
-	partNames := s.PartNames()
+	fs, err := (&model.ScoreConverter{}).Process(s)
+	if err != nil {
+		err = fmt.Errorf("failed to convert to flat score: %w", err)
 
-	for _, part := range partNames {
-		if _, found := settings.PartChannels[part]; !found {
-			return []*Track{}, fmt.Errorf("part '%s' channel is missing from MIDI settings", part)
+		return []*Track{}, err
+	}
+
+	for partName := range fs.Parts {
+		if _, found := settings.PartChannels[partName]; !found {
+			return []*Track{}, fmt.Errorf("part '%s' channel is missing from MIDI settings", partName)
 		}
 	}
 
-	metEvents, err := collectMeterEvents(s)
-	if err != nil {
-		return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
-	}
+	// metEvents, err := collectMeterEvents(fs)
+	// if err != nil {
+	// 	return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
+	// }
 
 	tracks := []*Track{}
 
-	for _, part := range partNames {
-		noteEvents, err := collectNoteEvents(s, part)
+	for partName := range fs.Parts {
+		noteEvents, err := collectNoteEvents(fs, partName)
 		if err != nil {
-			return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", part, err)
+			return []*Track{}, fmt.Errorf("failed to collect notes for part '%s': %w", partName, err)
 		}
 
 		events := []*Event{}
 
-		events = append(events, metEvents...)
+		// events = append(events, metEvents...)
 
 		events = append(events, noteEvents...)
 
@@ -117,8 +121,8 @@ func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 		SortEvents(events)
 
 		track := &Track{
-			Name:       part,
-			Channel:    settings.PartChannels[part],
+			Name:       partName,
+			Channel:    settings.PartChannels[partName],
 			Events:     events,
 			Instrument: 1,
 		}
@@ -129,38 +133,38 @@ func makeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 	return tracks, nil
 }
 
-func collectMeterEvents(s *score.Score) ([]*Event, error) {
+// func collectMeterEvents(fs *model.FlatScore) ([]*Event, error) {
+// 	events := []*Event{}
+
+// 	offset := big.NewRat(0, 1)
+
+// 	var met *meter.Meter
+
+// 	for _, section := range s.Sections {
+// 		for _, m := range section.Measures {
+// 			if met == nil || !met.Equal(m.Meter) {
+// 				if m.Meter.Numerator >= 256 || m.Meter.Denominator >= 256 {
+// 					return []*Event{}, fmt.Errorf("meter %s is not valid for MIDI", met.String())
+// 				}
+
+// 				metEvent := NewMeterEvent(offset, uint8(m.Meter.Numerator), uint8(m.Meter.Denominator))
+
+// 				events = append(events, metEvent)
+
+// 				met = m.Meter
+
+// 				offset.Add(offset, m.Duration())
+// 			}
+// 		}
+// 	}
+
+// 	return events, nil
+// }
+
+func collectNoteEvents(fs *model.FlatScore, part string) ([]*Event, error) {
 	events := []*Event{}
 
-	offset := big.NewRat(0, 1)
-
-	var met *meter.Meter
-
-	for _, section := range s.Sections {
-		for _, m := range section.Measures {
-			if met == nil || !met.Equal(m.Meter) {
-				if m.Meter.Numerator >= 256 || m.Meter.Denominator >= 256 {
-					return []*Event{}, fmt.Errorf("meter %s is not valid for MIDI", met.String())
-				}
-
-				metEvent := NewMeterEvent(offset, uint8(m.Meter.Numerator), uint8(m.Meter.Denominator))
-
-				events = append(events, metEvent)
-
-				met = m.Meter
-
-				offset.Add(offset, m.Duration())
-			}
-		}
-	}
-
-	return events, nil
-}
-
-func collectNoteEvents(s *score.Score, part string) ([]*Event, error) {
-	events := []*Event{}
-
-	notes := s.PartNotes(part)
+	notes := fs.Parts[part]
 	converter := model.NewNoteConverter(model.OptionReplaceSlursAndGlides())
 
 	notes2, err := converter.Process(notes)

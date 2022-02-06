@@ -29,16 +29,20 @@ func Settings(s *score.Score) (*MIDISettings, error) {
 		partChannels := map[string]uint8{}
 		channel := uint8(1)
 
-		for _, partName := range s.PartNames() {
-			partChannels[partName] = channel
+		for _, sec := range s.Sections {
+			for _, partName := range sec.PartNames() {
+				if _, found := partChannels[partName]; !found {
+					partChannels[partName] = channel
 
-			switch channel {
-			case 9: // reserve channel 10 for percussion
-				channel = 11
-			case 16: // wrap around once last channel is reached
-				channel = 1
-			default:
-				channel++
+					switch channel {
+					case 9: // reserve channel 10 for percussion
+						channel = 11
+					case 16: // wrap around once last channel is reached
+						channel = 1
+					default:
+						channel++
+					}
+				}
 			}
 		}
 

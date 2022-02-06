@@ -16,6 +16,10 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/section"
 )
 
+const (
+	testSectionName = "testSection"
+)
+
 func TestLoadScoresEmpty(t *testing.T) {
 	scores, err := scoretomidi.LoadScores()
 
@@ -93,7 +97,7 @@ func invalidScoreJSON(t *testing.T) []byte {
 	s := validScore()
 
 	// invalidate
-	s.Sections[0].Measures[0].Meter.Numerator = 0
+	s.Sections[testSectionName].Measures[0].Meter.Numerator = 0
 
 	return scoreJSON(t, s)
 }
@@ -104,10 +108,11 @@ func validScoreJSON(t *testing.T) []byte {
 
 func validScore() *score.Score {
 	s := score.New()
+	sec := section.New()
 
-	s.Sections = append(s.Sections, section.New("first"))
+	sec.AppendMeasures(1, meter.New(4, 4))
 
-	s.Sections[0].AppendMeasures(1, meter.New(4, 4))
+	s.Sections[testSectionName] = sec
 
 	return s
 }
