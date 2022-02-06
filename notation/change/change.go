@@ -25,11 +25,15 @@ func NewImmediate(endVal float64) *Change {
 	return New(endVal, big.NewRat(0, 1))
 }
 
-func (c *Change) Validate() *validation.Result {
+func (c *Change) Validate(r ValueRange) *validation.Result {
 	errs := []error{}
 
 	if c.Duration.Cmp(zero) == -1 {
 		errs = append(errs, fmt.Errorf("duration %v is negative", c.Duration))
+	}
+
+	if !r.Includes(c.EndValue) {
+		errs = append(errs, fmt.Errorf("endVal %v not in range %s", c.EndValue, r.String()))
 	}
 
 	if len(errs) == 0 {

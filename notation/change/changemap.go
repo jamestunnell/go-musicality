@@ -10,12 +10,12 @@ import (
 
 type Map map[*big.Rat]*Change
 
-func (m Map) Validate() *validation.Result {
+func (m Map) Validate(r ValueRange) *validation.Result {
 	results := []*validation.Result{}
 	errs := []error{}
 
 	for offset, change := range m {
-		if result := change.Validate(); result != nil {
+		if result := change.Validate(r); result != nil {
 			result.Context = fmt.Sprintf("%s at offset %v", result.Context, offset)
 			results = append(results, result)
 		}

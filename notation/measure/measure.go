@@ -38,6 +38,16 @@ func NewN(n int, met *meter.Meter) []*Measure {
 	return measures
 }
 
+var (
+	dynamicRange = &change.MinMaxInclRange{
+		Min: note.ControlMin,
+		Max: note.ControlMax,
+	}
+	tempoRange = &change.MinExclRange{
+		Min: 0.0,
+	}
+)
+
 func (m *Measure) Duration() *big.Rat {
 	return big.NewRat(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
 }
@@ -85,25 +95,17 @@ func (m *Measure) Validate() *validation.Result {
 		}
 	}
 
-	validateChanges := func(changeType string, changes change.Map) {
-		for offset, change := range changes {
-			if offset.Cmp(dur) >= 0 {
-				err := fmt.Errorf(
-					"%s change offset %v is not less than measure duration %v", changeType, offset, dur)
+	validateChanges := func(changeType string, changes change.Map, r change.ValueRange) {
+		result := changes.Validate(r)
+		if result != nil {
+			result.Context = fmt.Sprintf("%s %s", changeType, result.Context)
 
-				errs = append(errs, err)
-			}
-
-			if result := change.Validate(); result != nil {
-				result.Context = fmt.Sprintf("%s %s at offset %v", changeType, result.Context, offset)
-
-				results = append(results, result)
-			}
+			results = append(results, result)
 		}
 	}
 
-	validateChanges("dynamic", m.DynamicChanges)
-	validateChanges("tempo", m.TempoChanges)
+	validateChanges("dynamic", m.DynamicChanges, dynamicRange)
+	validateChanges("tempo", m.TempoChanges, tempoRange)
 
 	if len(results) == 0 && len(errs) == 0 {
 		return nil
