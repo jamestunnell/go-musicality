@@ -1,6 +1,7 @@
 package function_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,39 +9,54 @@ import (
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
-func TestSampleUnlimitedDomain(t *testing.T) {
-	f := &echo{domain: function.DomainAll())}
+var (
+	negFive = big.NewRat(-5, 1)
+	five    = big.NewRat(5, 1)
+	zero    = big.NewRat(0, 1)
+	one     = big.NewRat(1, 1)
+)
 
-	testFunctionSample(t, f, function.NewRange(0.0, 10.0), 2.0, []float64{0.0, 2.0, 4.0, 6.0, 8.0, 10.0})
-	testFunctionSample(t, f, function.NewRange(-0.5e50, 0.5e50), 0.5e50, []float64{-0.5e50, 0.0, 0.5e50})
+func TestSampleUnlimitedDomain(t *testing.T) {
+	f := &echo{domain: function.DomainAll()}
+	xRange := function.NewRange(zero, big.NewRat(10, 1))
+	xStep := two
+	expected := []float64{0.0, 2.0, 4.0, 6.0, 8.0, 10.0}
+
+	testFunctionSample(t, f, xRange, xStep, expected)
+
+	xRange = function.NewRange(negHalf, half)
+	xStep = half
+	expected = []float64{-0.5, 0.0, 0.5}
+
+	testFunctionSample(t, f, xRange, xStep, expected)
 }
 
 func TestSampleLimitedDomain(t *testing.T) {
-	f := &echo{domain: function.NewRange(-5, 5)}
+	f := &echo{domain: function.NewRange(negFive, five)}
 
-	testFunctionSample(t, f, function.NewRange(-5, 5), 5, []float64{-5, 0, 5})
-	testFunctionSample(t, f, function.NewRange(-5, 0), 1, []float64{-5, -4, -3, -2, -1, 0})
-	testFunctionSample(t, f, function.NewRange(0, 5), 1, []float64{0, 1, 2, 3, 4, 5})
+	testFunctionSample(t, f, function.NewRange(negFive, five), five, []float64{-5, 0, 5})
+	testFunctionSample(t, f, function.NewRange(negFive, zero), one, []float64{-5, -4, -3, -2, -1, 0})
+	testFunctionSample(t, f, function.NewRange(zero, five), one, []float64{0, 1, 2, 3, 4, 5})
 
-	testFunctionSampleBadRange(t, f, function.NewRange(-10, 0), 1)
-	testFunctionSampleBadRange(t, f, function.NewRange(0, 10), 1)
-	testFunctionSampleBadRange(t, f, function.NewRange(-10, -8), 1)
-	testFunctionSampleBadRange(t, f, function.NewRange(8, 10), 1)
+	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(-10, 1), zero), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(zero, big.NewRat(10, 1)), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(-10, 1), big.NewRat(-8, 1)), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(8, 1), big.NewRat(10, 1)), one)
 }
 
 func TestSampleNonPositiveXStep(t *testing.T) {
-	f := &echo{domain: function.NewRange(-5, 5)}
+	f := &echo{domain: function.NewRange(negFive, five)}
 
-	_, err := function.Sample(f, f.domain, 0.0)
+	_, err := function.Sample(f, f.domain, zero)
 
 	assert.NotNil(t, err)
 
-	_, err = function.Sample(f, f.domain, -1.0)
+	_, err = function.Sample(f, f.domain, negOne)
 
 	assert.NotNil(t, err)
 }
 
-func testFunctionSample(t *testing.T, f function.Function, xrange function.Range, xstep float64, expected []float64) {
+func testFunctionSample(t *testing.T, f function.Function, xrange function.Range, xstep *big.Rat, expected []float64) {
 	samples, err := function.Sample(f, xrange, xstep)
 
 	assert.Nil(t, err)
@@ -54,7 +70,7 @@ func testFunctionSample(t *testing.T, f function.Function, xrange function.Range
 	}
 }
 
-func testFunctionSampleBadRange(t *testing.T, f function.Function, xrange function.Range, xstep float64) {
+func testFunctionSampleBadRange(t *testing.T, f function.Function, xrange function.Range, xstep *big.Rat) {
 	_, err := function.Sample(f, xrange, xstep)
 
 	assert.NotNil(t, err)

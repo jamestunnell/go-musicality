@@ -1,34 +1,40 @@
 package function_test
 
 import (
-	"math"
+	"math/big"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jamestunnell/go-musicality/performance/function"
+)
+
+var (
+	negHundredth = new(big.Rat).SetFloat64(-0.01)
+	hundredth    = new(big.Rat).SetFloat64(0.01)
 )
 
 func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 	pairs := []function.SubdomainFunctionPair{
-		{Subdomain: function.NewRange(-2, 0), Function: function.NewConstantFunction(-1)},
-		{Subdomain: function.NewRange(0, 2), Function: function.NewConstantFunction(1)},
+		{Subdomain: function.NewRange(negTwo, zero), Function: function.NewConstantFunction(-1)},
+		{Subdomain: function.NewRange(zero, two), Function: function.NewConstantFunction(1)},
 	}
 	f, err := function.NewPiecewiseFunction(pairs)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	testFunctionAt(t, f, -2, -1)
-	testFunctionAt(t, f, -0.01, -1)
-	testFunctionAt(t, f, 0, 1)
-	testFunctionAt(t, f, 0.01, 1)
-	testFunctionAt(t, f, 2, 1)
+	testFunctionAt(t, f, negTwo, -1)
+	testFunctionAt(t, f, negHundredth, -1)
+	testFunctionAt(t, f, zero, 1)
+	testFunctionAt(t, f, hundredth, 1)
+	testFunctionAt(t, f, two, 1)
 
-	_, err = function.At(f, -2.01)
+	_, err = function.At(f, new(big.Rat).SetFloat64(-2.01))
 
 	assert.NotNil(t, err)
 
-	_, err = function.At(f, 2.01)
+	_, err = function.At(f, new(big.Rat).SetFloat64(2.01))
 
 	assert.NotNil(t, err)
 }
@@ -36,19 +42,24 @@ func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 func TestPiecewiseFunctionUnlimitedDomain(t *testing.T) {
 	fA := function.NewLinearFunction(7, 5)
 	fB := function.NewLinearFunction(-2.5, -10)
-	xBoundary := -5.6789
+	xBoundary := new(big.Rat).SetFloat64(-5.6789)
 	pairs := []function.SubdomainFunctionPair{
-		{Subdomain: function.NewRange(-math.MaxFloat64, xBoundary), Function: fA},
-		{Subdomain: function.NewRange(xBoundary, math.MaxFloat64), Function: fB},
+		{Subdomain: function.NewRange(function.DomainMin(), xBoundary), Function: fA},
+		{Subdomain: function.NewRange(xBoundary, function.DomainMax()), Function: fB},
 	}
 	f, err := function.NewPiecewiseFunction(pairs)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	testFunctionAt(t, f, -2.4e55, fA.At(-2.4e55))
-	testFunctionAt(t, f, xBoundary-0.01, fA.At(xBoundary-0.01))
+	beforeXBoundary1 := new(big.Rat).Sub(xBoundary, two)
+	beforeXBoundary2 := new(big.Rat).Sub(xBoundary, hundredth)
+	afterXBoundary1 := new(big.Rat).Add(xBoundary, hundredth)
+	afterXBoundary2 := new(big.Rat).Add(xBoundary, two)
+
+	testFunctionAt(t, f, beforeXBoundary1, fA.At(beforeXBoundary1))
+	testFunctionAt(t, f, beforeXBoundary2, fA.At(beforeXBoundary2))
 	testFunctionAt(t, f, xBoundary, fB.At(xBoundary))
-	testFunctionAt(t, f, xBoundary+0.01, fB.At(xBoundary+0.01))
-	testFunctionAt(t, f, 66.3e34, fB.At(66.3e34))
+	testFunctionAt(t, f, afterXBoundary1, fB.At(afterXBoundary1))
+	testFunctionAt(t, f, afterXBoundary2, fB.At(afterXBoundary2))
 }

@@ -4,8 +4,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 type echo struct {
@@ -25,29 +26,30 @@ func (f *echo) Domain() function.Range {
 func TestAtUnlimitedDomain(t *testing.T) {
 	f := &echo{domain: function.DomainAll()}
 
-	testFunctionAt(t, f, 0.0, 0.0)
-	testFunctionAt(t, f, -0.22, -0.22)
-	testFunctionAt(t, f, 50000.2, 50000.2)
-	testFunctionAt(t, f, 107.5e22, 107.5e22)
+	testFunctionAt(t, f, big.NewRat(0, 1), 0.0)
+	testFunctionAt(t, f, big.NewRat(-1, 5), -0.2)
+	testFunctionAt(t, f, big.NewRat(75, 1000), 0.075)
 }
 
 func TestAtLimitedDomain(t *testing.T) {
-	f := &echo{domain: function.NewRange(-2.5, 2.5)}
+	min := new(big.Rat).SetInt64(-2)
+	max := new(big.Rat).SetInt64(2)
+	f := &echo{domain: function.NewRange(min, max)}
 
-	testFunctionAt(t, f, 0.0, 0.0)
-	testFunctionAt(t, f, -2.5, -2.5)
-	testFunctionAt(t, f, 2.5, 2.5)
+	testFunctionAt(t, f, big.NewRat(0, 1), 0.0)
+	testFunctionAt(t, f, min, -2)
+	testFunctionAt(t, f, max, 2)
 
-	_, err := function.At(f, -2.51)
+	_, err := function.At(f, new(big.Rat).SetFloat64(-2.1))
 
 	assert.NotNil(t, err)
 
-	_, err = function.At(f, 2.51)
+	_, err = function.At(f, new(big.Rat).SetFloat64(2.1))
 
 	assert.NotNil(t, err)
 }
 
-func testFunctionAt(t *testing.T, f function.Function, x, yExpected float64) {
+func testFunctionAt(t *testing.T, f function.Function, x *big.Rat, yExpected float64) {
 	y, err := function.At(f, x)
 
 	assert.Nil(t, err)
