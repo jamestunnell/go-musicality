@@ -6,9 +6,9 @@ import (
 )
 
 type Result struct {
-	Context    string
-	Errors     []error
-	SubResults []*Result
+	Context    string    `json:"context"`
+	Errors     []error   `json:"errors"`
+	SubResults []*Result `json:"subResults"`
 }
 
 func (r *Result) Error() string {

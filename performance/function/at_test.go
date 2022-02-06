@@ -1,6 +1,7 @@
 package function_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/jamestunnell/go-musicality/performance/function"
@@ -11,8 +12,10 @@ type echo struct {
 	domain function.Range
 }
 
-func (f *echo) At(x float64) float64 {
-	return x
+func (f *echo) At(x *big.Rat) float64 {
+	xFlt, _ := x.Float64()
+
+	return xFlt
 }
 
 func (f *echo) Domain() function.Range {
@@ -20,7 +23,7 @@ func (f *echo) Domain() function.Range {
 }
 
 func TestAtUnlimitedDomain(t *testing.T) {
-	f := &echo{domain: function.DomainAllFloat64}
+	f := &echo{domain: function.DomainAll()}
 
 	testFunctionAt(t, f, 0.0, 0.0)
 	testFunctionAt(t, f, -0.22, -0.22)

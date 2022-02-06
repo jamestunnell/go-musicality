@@ -2,13 +2,22 @@ package function
 
 import (
 	"math"
+	"math/big"
 )
 
-var (
-	DomainAllFloat64 = NewRange(-math.MaxFloat64, math.MaxFloat64)
-)
+func DomainMin() *big.Rat {
+	return big.NewRat(-math.MaxInt64, 1)
+}
+
+func DomainMax() *big.Rat {
+	return big.NewRat(math.MaxInt64, 1)
+}
+
+func DomainAll() Range {
+	return NewRange(DomainMin(), DomainMax())
+}
 
 type Function interface {
-	At(x float64) float64
+	At(x *big.Rat) float64
 	Domain() Range
 }

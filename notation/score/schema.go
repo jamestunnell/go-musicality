@@ -111,27 +111,32 @@ const schemaStr = `
 					}
 				},
 				"dynamicChanges": {
-					"type": "array",
 					"title": "Dynamic changes",
-					"items": {
-						"$ref": "#/definitions/change"
-					}
+					"$ref": "#/definitions/changeMap"
 				},
 				"tempoChanges": {
-					"type": "array",
 					"title": "Tempo changes",
-					"items": {
-						"$ref": "#/definitions/change"
-					}
+					"$ref": "#/definitions/changeMap"
 				}
 			}
+		},
+		"changeMap": {
+			"$id": "#/definitions/changeMap",
+			"type": "object",
+			"title": "Change map",
+			"description": "Changes mapped by offset",
+			"patternProperties": {
+				"^[0-9]+/[1-9][0-9]*$": {
+					"$ref": "#/definitions/change"
+				}
+			},
+			"additionalProperties": false
 		},
 		"change": {
 			"$id": "#/definitions/change",
 			"title": "A value change",
 			"type": "object",
 			"properties": {
-				"offset": {"$ref": "#/definitions/rationalNonNegative"},
 				"endValue": {"type": "number"},
 				"duration": {"$ref": "#/definitions/duration"}
 			}
@@ -193,17 +198,6 @@ const schemaStr = `
 			"minimum": -1,
 			"maximum": 1,
 			"default": 0
-		},
-		"rationalNonNegative": {
-			"$id": "#/definitions/rationalNonNegative",
-			"type": "string",
-			"title": "Rational number",
-			"pattern": "^[0-9]+/[1-9][0-9]*$",
-			"examples": [
-				"0/1",
-				"1/2",
-				"1/1"
-			]
 		},
 		"duration": {
 			"$id": "#/definitions/duration",

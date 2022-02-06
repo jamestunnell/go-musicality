@@ -3,15 +3,16 @@ package function
 import (
 	"fmt"
 	"math"
+	"math/big"
 )
 
-func Sample(f Function, xrange Range, xstep float64) ([]float64, error) {
+func Sample(f Function, xrange Range, xstep *big.Rat) ([]float64, error) {
 	if !xrange.IsValid() {
 		return []float64{}, fmt.Errorf("x-range %v is not valid", xrange)
 	}
 
-	if xstep <= 0.0 {
-		return []float64{}, fmt.Errorf("x-step %f is not positive", xstep)
+	if xstep.Cmp(big.NewRat(0, 1)) <= 0 {
+		return []float64{}, fmt.Errorf("x-step %v is not positive", xstep)
 	}
 
 	d := f.Domain()
@@ -21,11 +22,13 @@ func Sample(f Function, xrange Range, xstep float64) ([]float64, error) {
 		return []float64{}, err
 	}
 
-	n := 1 + int(math.Floor(xrange.Span()/xstep))
+	z, _ := new(big.Rat).Quo(xrange.Span(), xstep).Float64()
+	n := 1 + int(math.Floor(z))
 	samples := make([]float64, n)
 
 	for i := 0; i < n; i++ {
-		x := xrange.Start + (float64(i) * xstep)
+		offset := new(big.Rat).Mul(big.NewRat(int64(i), 1), xstep)
+		x := new(big.Rat).Add(xrange.Start, offset)
 		samples[i] = f.At(x)
 	}
 

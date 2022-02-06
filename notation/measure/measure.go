@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/value"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Measure struct {
 	Meter          *meter.Meter          `json:"meter"`
 	PartNotes      map[string]note.Notes `json:"partNotes"`
-	DynamicChanges value.Changes         `json:"dynamicChanges"`
-	TempoChanges   value.Changes         `json:"tempoChanges"`
+	DynamicChanges change.Map            `json:"dynamicChanges"`
+	TempoChanges   change.Map            `json:"tempoChanges"`
 }
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
@@ -23,8 +23,8 @@ func New(met *meter.Meter) *Measure {
 	return &Measure{
 		Meter:          met,
 		PartNotes:      map[string]note.Notes{},
-		DynamicChanges: value.Changes{},
-		TempoChanges:   value.Changes{},
+		DynamicChanges: change.Map{},
+		TempoChanges:   change.Map{},
 	}
 }
 
@@ -85,13 +85,25 @@ func (m *Measure) Validate() *validation.Result {
 		}
 	}
 
-	if changesResults := validateChanges("dynamic", m.DynamicChanges); len(changesResults) > 0 {
-		results = append(results, changesResults...)
+	validateChanges := func(changeType string, changes change.Map) {
+		for offset, change := range changes {
+			if offset.Cmp(dur) >= 0 {
+				err := fmt.Errorf(
+					"%s change offset %v is not less than measure duration %v", changeType, offset, dur)
+
+				errs = append(errs, err)
+			}
+
+			if result := change.Validate(); result != nil {
+				result.Context = fmt.Sprintf("%s %s at offset %v", changeType, result.Context, offset)
+
+				results = append(results, result)
+			}
+		}
 	}
 
-	if changesResults := validateChanges("tempo", m.TempoChanges); len(changesResults) > 0 {
-		results = append(results, changesResults...)
-	}
+	validateChanges("dynamic", m.DynamicChanges)
+	validateChanges("tempo", m.TempoChanges)
 
 	if len(results) == 0 && len(errs) == 0 {
 		return nil
@@ -102,17 +114,4 @@ func (m *Measure) Validate() *validation.Result {
 		Errors:     errs,
 		SubResults: results,
 	}
-}
-
-func validateChanges(changeType string, changes value.Changes) []*validation.Result {
-	results := []*validation.Result{}
-
-	for i, change := range changes {
-		if result := change.Validate(); result != nil {
-			result.Context = fmt.Sprintf("%s %s %d", changeType, result.Context, i)
-			results = append(results, result)
-		}
-	}
-
-	return results
 }

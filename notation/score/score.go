@@ -51,3 +51,16 @@ func (s *Score) Validate() *validation.Result {
 		SubResults: results,
 	}
 }
+
+func (s *Score) ProgramSections() []*section.Section {
+	sections := []*section.Section{}
+
+	for _, secName := range s.Program {
+		sec, found := s.Sections[secName]
+		if found {
+			sections = append(sections, sec)
+		}
+	}
+
+	return sections
+}

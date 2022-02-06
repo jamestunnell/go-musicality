@@ -9,7 +9,7 @@ import (
 )
 
 func TestSampleUnlimitedDomain(t *testing.T) {
-	f := &echo{domain: function.DomainAllFloat64}
+	f := &echo{domain: function.DomainAll())}
 
 	testFunctionSample(t, f, function.NewRange(0.0, 10.0), 2.0, []float64{0.0, 2.0, 4.0, 6.0, 8.0, 10.0})
 	testFunctionSample(t, f, function.NewRange(-0.5e50, 0.5e50), 0.5e50, []float64{-0.5e50, 0.0, 0.5e50})

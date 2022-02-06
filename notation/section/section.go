@@ -3,12 +3,11 @@ package section
 import (
 	"fmt"
 	"math/big"
-	"sort"
 
+	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/value"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -37,6 +36,16 @@ func New(opts ...OptFunc) *Section {
 	}
 
 	return s
+}
+
+func (s *Section) Duration() *big.Rat {
+	dur := big.NewRat(0, 1)
+
+	for _, m := range s.Measures {
+		dur.Add(dur, m.Duration())
+	}
+
+	return dur
 }
 
 func (s *Section) AppendMeasures(n int, met *meter.Meter) {
@@ -119,29 +128,29 @@ func (s *Section) PartNotes(part string) []*note.Note {
 	return partNotes
 }
 
-func (s *Section) DynamicChanges() value.Changes {
-	return s.gatherChanges(getDynamicChanges)
+func (s *Section) DynamicChanges(sectionOffset *big.Rat) change.Map {
+	return s.gatherChanges(sectionOffset, getDynamicChanges)
 }
 
-func (s *Section) TempoChanges() value.Changes {
-	return s.gatherChanges(getTempoChanges)
+func (s *Section) TempoChanges(sectionOffset *big.Rat) change.Map {
+	return s.gatherChanges(sectionOffset, getTempoChanges)
 }
 
-func (s *Section) gatherChanges(measureChanges func(m *measure.Measure) value.Changes) value.Changes {
-	measureOffset := big.NewRat(0, 1)
-	changes := []*value.Change{}
+func (s *Section) gatherChanges(sectionOffset *big.Rat, measureChanges func(m *measure.Measure) change.Map) change.Map {
+	measureOffset := sectionOffset
+	changes := change.Map{}
 
 	for _, m := range s.Measures {
 		mChanges := measureChanges(m)
-		sort.Sort(mChanges)
 
-		for _, c := range mChanges {
-			change := &value.Change{
-				Offset:   new(big.Rat).Add(measureOffset, c.Offset),
+		for offset, c := range mChanges {
+			changeOffset := new(big.Rat).Add(measureOffset, offset)
+			change := &change.Change{
 				EndValue: c.EndValue,
 				Duration: c.Duration,
 			}
-			changes = append(changes, change)
+
+			changes[changeOffset] = change
 		}
 
 		measureOffset.Add(measureOffset, m.Duration())
@@ -150,10 +159,10 @@ func (s *Section) gatherChanges(measureChanges func(m *measure.Measure) value.Ch
 	return changes
 }
 
-func getDynamicChanges(m *measure.Measure) value.Changes {
+func getDynamicChanges(m *measure.Measure) change.Map {
 	return m.DynamicChanges
 }
 
-func getTempoChanges(m *measure.Measure) value.Changes {
+func getTempoChanges(m *measure.Measure) change.Map {
 	return m.TempoChanges
 }
