@@ -3,8 +3,9 @@ package stats_test
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/pkg/util/stats"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jamestunnell/go-musicality/generation/stats"
 )
 
 func TestNewCDFNoValues(t *testing.T) {

@@ -1,4 +1,4 @@
-package temperley
+package stats
 
 import (
 	"gonum.org/v1/gonum/stat/distuv"

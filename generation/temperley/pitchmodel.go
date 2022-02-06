@@ -7,9 +7,8 @@ import (
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 
+	"github.com/jamestunnell/go-musicality/generation/stats"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/pkg/util"
-	"github.com/jamestunnell/go-musicality/pkg/util/stats"
 )
 
 const (
@@ -24,8 +23,6 @@ var (
 	CMajorBaseKeyProbs = []float64{0.184, 0.001, 0.155, 0.003, 0.191, 0.109, 0.005, 0.214, 0.001, 0.078, 0.004, 0.055}
 	// CMajorBaseKeyProbs contains the probabilities of each octave semitone appearing given a key of C minor
 	CMinorBaseKeyProbs = []float64{0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022}
-	// SemitoneRange covers the range of semitones included in the pitch model
-	SemitoneRange = util.NewRange(0, NumSemitones)
 )
 
 // PitchModel uses RPK profiles to generate random pitches.
@@ -83,7 +80,7 @@ func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*Pitc
 // MakeStartingPitch uses the range and key profiles to determine a
 // starting pitch
 func (pm *PitchModel) MakeStartingPitch() *pitch.Pitch {
-	rangeProbs := GetIntProbs(pm.RangeProfile, 0, NumSemitones)
+	rangeProbs := stats.GetIntProbs(pm.RangeProfile, 0, NumSemitones)
 
 	return pm.makePitch([][]float64{rangeProbs, pm.KeyProbs})
 }
@@ -94,8 +91,8 @@ func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
 	}
 
-	proximityProbs := GetIntProbs(proximityProfile, 0, NumSemitones)
-	rangeProbs := GetIntProbs(pm.RangeProfile, 0, NumSemitones)
+	proximityProbs := stats.GetIntProbs(proximityProfile, 0, NumSemitones)
+	rangeProbs := stats.GetIntProbs(pm.RangeProfile, 0, NumSemitones)
 
 	return pm.makePitch([][]float64{proximityProbs, rangeProbs, pm.KeyProbs})
 }
