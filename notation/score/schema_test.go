@@ -111,7 +111,7 @@ func TestValidateJSON(t *testing.T) {
 		assert.True(t, ChangeMapValue(m, "pitches", Slice{"not-a-pitch"}))
 	})
 	testValidateJSONInvalid(t, "bad duration", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "duration", "0/1"))
+		assert.True(t, ChangeMapValue(m, "duration", 2.5))
 	})
 	testValidateJSONInvalid(t, "duration wrong type", makeValidScoreMap(), func(m Map) {
 		assert.True(t, ChangeMapValue(m, "duration", 5.6))

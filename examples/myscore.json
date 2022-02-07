@@ -18,9 +18,9 @@
         {
           "meter": "4/4",
           "dynamicChanges": {
-            "1/4": {
+            "0": {
               "endValue": 0.0,
-              "duration": "2/1"
+              "duration": "2"
             }
           },
           "partNotes": {
@@ -79,6 +79,12 @@
         },
         {
           "meter": "3/4",
+          "dynamicChanges": {
+            "0": {
+              "duration": "0",
+              "endValue": 1.0
+            }
+          },
           "partNotes": {
             "piano": [
               {

@@ -126,7 +126,7 @@ const schemaStr = `
 			"title": "Change map",
 			"description": "Changes mapped by offset",
 			"patternProperties": {
-				"^[0-9]+/[1-9][0-9]*$": {
+				"^[0-9]+(/[1-9][0-9]*)?$": {
 					"$ref": "#/definitions/change"
 				}
 			},
@@ -204,8 +204,9 @@ const schemaStr = `
 			"type": "string",
 			"title": "Note duration",
 			"description": "Nominal note length.",
-			"pattern": "^[1-9][0-9]*/[1-9][0-9]*$",
+			"pattern": "^[0-9]+(/[1-9][0-9]*)?$",
 			"examples": [
+				"7",
 				"1/2"
 			]
 		},
