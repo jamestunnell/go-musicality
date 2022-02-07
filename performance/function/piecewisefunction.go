@@ -3,7 +3,8 @@ package function
 import (
 	"errors"
 	"fmt"
-	"math/big"
+
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 type SubdomainFunctionPair struct {
@@ -36,7 +37,7 @@ func NewPiecewiseFunction(pairs []SubdomainFunctionPair) (*PiecewiseFunction, er
 		// Make sure subdomains are contiguous
 		if i > 0 {
 			dPrev := pairs[i-1].Subdomain
-			if dPrev.End.Cmp(d.Start) != 0 {
+			if !dPrev.End.Equal(d.Start) {
 				err := fmt.Errorf("subdomain %v is not contiguous with prev subdomain %v", d, dPrev)
 				return nil, err
 			}
@@ -52,7 +53,7 @@ func (f *PiecewiseFunction) Domain() Range {
 	return f.domain
 }
 
-func (f *PiecewiseFunction) At(x *big.Rat) float64 {
+func (f *PiecewiseFunction) At(x rat.Rat) float64 {
 	var y float64
 
 	n := len(f.pairs)

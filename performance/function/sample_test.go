@@ -1,24 +1,24 @@
 package function_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 var (
-	negFive = big.NewRat(-5, 1)
-	five    = big.NewRat(5, 1)
-	zero    = big.NewRat(0, 1)
-	one     = big.NewRat(1, 1)
+	negFive = rat.FromInt64(-5)
+	five    = rat.FromInt64(5)
+	zero    = rat.Zero()
+	one     = rat.FromInt64(1)
 )
 
 func TestSampleUnlimitedDomain(t *testing.T) {
 	f := &echo{domain: function.DomainAll()}
-	xRange := function.NewRange(zero, big.NewRat(10, 1))
+	xRange := function.NewRange(zero, rat.New(10, 1))
 	xStep := two
 	expected := []float64{0.0, 2.0, 4.0, 6.0, 8.0, 10.0}
 
@@ -38,10 +38,10 @@ func TestSampleLimitedDomain(t *testing.T) {
 	testFunctionSample(t, f, function.NewRange(negFive, zero), one, []float64{-5, -4, -3, -2, -1, 0})
 	testFunctionSample(t, f, function.NewRange(zero, five), one, []float64{0, 1, 2, 3, 4, 5})
 
-	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(-10, 1), zero), one)
-	testFunctionSampleBadRange(t, f, function.NewRange(zero, big.NewRat(10, 1)), one)
-	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(-10, 1), big.NewRat(-8, 1)), one)
-	testFunctionSampleBadRange(t, f, function.NewRange(big.NewRat(8, 1), big.NewRat(10, 1)), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(rat.New(-10, 1), zero), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(zero, rat.New(10, 1)), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(rat.New(-10, 1), rat.New(-8, 1)), one)
+	testFunctionSampleBadRange(t, f, function.NewRange(rat.New(8, 1), rat.New(10, 1)), one)
 }
 
 func TestSampleNonPositiveXStep(t *testing.T) {
@@ -56,7 +56,7 @@ func TestSampleNonPositiveXStep(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func testFunctionSample(t *testing.T, f function.Function, xrange function.Range, xstep *big.Rat, expected []float64) {
+func testFunctionSample(t *testing.T, f function.Function, xrange function.Range, xstep rat.Rat, expected []float64) {
 	samples, err := function.Sample(f, xrange, xstep)
 
 	assert.Nil(t, err)
@@ -70,7 +70,7 @@ func testFunctionSample(t *testing.T, f function.Function, xrange function.Range
 	}
 }
 
-func testFunctionSampleBadRange(t *testing.T, f function.Function, xrange function.Range, xstep *big.Rat) {
+func testFunctionSampleBadRange(t *testing.T, f function.Function, xrange function.Range, xstep rat.Rat) {
 	_, err := function.Sample(f, xrange, xstep)
 
 	assert.NotNil(t, err)

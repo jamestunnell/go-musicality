@@ -1,10 +1,10 @@
 package model
 
-import "math/big"
+import "github.com/jamestunnell/go-musicality/notation/rat"
 
 type Pitches []*Pitch
 
-func (ps Pitches) MakePitchDurs(dur *big.Rat) []*PitchDur {
+func (ps Pitches) MakePitchDurs(dur rat.Rat) []*PitchDur {
 	n := len(ps)
 	pds := make([]*PitchDur, n)
 

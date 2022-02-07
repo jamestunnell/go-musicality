@@ -7,7 +7,9 @@
       }
     }
   },
-  "program": ["intro"],
+  "program": [
+    "intro"
+  ],
   "sections": {
     "intro": {
       "startTempo": 120,
@@ -15,33 +17,86 @@
       "measures": [
         {
           "meter": "4/4",
+          "dynamicChanges": {
+            "1/4": {
+              "endValue": 0.0,
+              "duration": "2/1"
+            }
+          },
           "partNotes": {
             "piano": [
               {
                 "duration": "1/2",
                 "separation": 0.0,
-                "pitches": ["C4"]
+                "pitches": [
+                  "C4"
+                ]
               },
               {
                 "duration": "1/4",
                 "separation": 0.0,
-                "pitches": ["Bb3"]
+                "pitches": [
+                  "Bb3"
+                ]
               },
               {
                 "duration": "1/4",
                 "separation": 0.0,
-                "pitches": ["Ab3"]
+                "pitches": [
+                  "Ab3"
+                ]
               }
             ]
           }
         },
         {
           "meter": "4/4",
-          "partNotes": {}
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/2",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "Bb3"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "Ab3"
+                ]
+              }
+            ]
+          }
         },
         {
           "meter": "3/4",
-          "partNotes": {}
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/2",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "Bb3"
+                ]
+              }
+            ]
+          }
         },
         {
           "meter": "4/4",

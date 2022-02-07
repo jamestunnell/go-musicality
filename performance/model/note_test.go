@@ -1,50 +1,48 @@
 package model_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
-func zero() *big.Rat {
-	return big.NewRat(0, 1)
-}
+var zero = rat.Zero()
 
 func TestNewEmpty(t *testing.T) {
 
-	s := model.NewNote(zero())
+	s := model.NewNote(zero)
 
-	assert.Equal(t, zero(), s.Duration())
-	assert.Equal(t, zero(), s.End())
+	assert.Equal(t, zero, s.Duration())
+	assert.Equal(t, zero, s.End())
 }
 
 func TestNoteInvalid(t *testing.T) {
-	e1 := &model.PitchDur{Duration: big.NewRat(1, 4), Pitch: model.NewPitch(pitch.D4, 0)}
-	e2 := &model.PitchDur{Duration: zero(), Pitch: model.NewPitch(pitch.C4, 0)}
-	e3 := &model.PitchDur{Duration: big.NewRat(1, 2), Pitch: model.NewPitch(pitch.E4, 0)}
-	start := big.NewRat(1, 2)
+	e1 := &model.PitchDur{Duration: rat.New(1, 4), Pitch: model.NewPitch(pitch.D4, 0)}
+	e2 := &model.PitchDur{Duration: zero, Pitch: model.NewPitch(pitch.C4, 0)}
+	e3 := &model.PitchDur{Duration: rat.New(1, 2), Pitch: model.NewPitch(pitch.E4, 0)}
+	start := rat.New(1, 2)
 	s := model.NewNote(start, e1, e2, e3)
-	expectedDur := big.NewRat(3, 4)
-	expectedEnd := new(big.Rat).Add(start, expectedDur)
+	expectedDur := rat.New(3, 4)
+	expectedEnd := start.Add(expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
 }
 
 func TestValidNoteValid(t *testing.T) {
-	e1 := &model.PitchDur{Duration: big.NewRat(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
-	e2 := &model.PitchDur{Duration: big.NewRat(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
-	e3 := &model.PitchDur{Duration: big.NewRat(1, 2), Pitch: model.NewPitch(pitch.D4, 0)}
-	e4 := &model.PitchDur{Duration: big.NewRat(1, 1), Pitch: model.NewPitch(pitch.E4, 0)}
-	start := big.NewRat(1, 1)
+	e1 := &model.PitchDur{Duration: rat.New(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
+	e2 := &model.PitchDur{Duration: rat.New(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
+	e3 := &model.PitchDur{Duration: rat.New(1, 2), Pitch: model.NewPitch(pitch.D4, 0)}
+	e4 := &model.PitchDur{Duration: rat.New(1, 1), Pitch: model.NewPitch(pitch.E4, 0)}
+	start := rat.New(1, 1)
 	s := model.NewNote(start, e1, e2, e3, e4)
-	expectedDur := big.NewRat(7, 4)
-	expectedEnd := new(big.Rat).Add(start, expectedDur)
+	expectedDur := rat.New(7, 4)
+	expectedEnd := start.Add(expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
@@ -55,8 +53,8 @@ func TestValidNoteValid(t *testing.T) {
 	assert.Equal(t, expectedEnd, s.End())
 
 	require.Len(t, s.PitchDurs, 2)
-	assert.Equal(t, big.NewRat(3, 4), s.PitchDurs[0].Duration)
-	assert.Equal(t, big.NewRat(1, 1), s.PitchDurs[1].Duration)
+	assert.Equal(t, rat.New(3, 4), s.PitchDurs[0].Duration)
+	assert.Equal(t, rat.New(1, 1), s.PitchDurs[1].Duration)
 }
 
 // 	// Should fail without a 0.0 duration PitchDur

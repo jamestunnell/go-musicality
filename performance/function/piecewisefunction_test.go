@@ -1,17 +1,17 @@
 package function_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 var (
-	negHundredth = new(big.Rat).SetFloat64(-0.01)
-	hundredth    = new(big.Rat).SetFloat64(0.01)
+	negHundredth = rat.FromFloat64(-0.01)
+	hundredth    = rat.FromFloat64(0.01)
 )
 
 func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
@@ -30,11 +30,11 @@ func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 	testFunctionAt(t, f, hundredth, 1)
 	testFunctionAt(t, f, two, 1)
 
-	_, err = function.At(f, new(big.Rat).SetFloat64(-2.01))
+	_, err = function.At(f, rat.FromFloat64(-2.01))
 
 	assert.NotNil(t, err)
 
-	_, err = function.At(f, new(big.Rat).SetFloat64(2.01))
+	_, err = function.At(f, rat.FromFloat64(2.01))
 
 	assert.NotNil(t, err)
 }
@@ -42,7 +42,7 @@ func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 func TestPiecewiseFunctionUnlimitedDomain(t *testing.T) {
 	fA := function.NewLinearFunction(7, 5)
 	fB := function.NewLinearFunction(-2.5, -10)
-	xBoundary := new(big.Rat).SetFloat64(-5.6789)
+	xBoundary := rat.FromFloat64(-5.6789)
 	pairs := []function.SubdomainFunctionPair{
 		{Subdomain: function.NewRange(function.DomainMin(), xBoundary), Function: fA},
 		{Subdomain: function.NewRange(xBoundary, function.DomainMax()), Function: fB},
@@ -52,10 +52,10 @@ func TestPiecewiseFunctionUnlimitedDomain(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	beforeXBoundary1 := new(big.Rat).Sub(xBoundary, two)
-	beforeXBoundary2 := new(big.Rat).Sub(xBoundary, hundredth)
-	afterXBoundary1 := new(big.Rat).Add(xBoundary, hundredth)
-	afterXBoundary2 := new(big.Rat).Add(xBoundary, two)
+	beforeXBoundary1 := xBoundary.Sub(two)
+	beforeXBoundary2 := xBoundary.Sub(hundredth)
+	afterXBoundary1 := xBoundary.Add(hundredth)
+	afterXBoundary2 := xBoundary.Add(two)
 
 	testFunctionAt(t, f, beforeXBoundary1, fA.At(beforeXBoundary1))
 	testFunctionAt(t, f, beforeXBoundary2, fA.At(beforeXBoundary2))

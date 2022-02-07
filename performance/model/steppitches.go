@@ -1,15 +1,14 @@
 package model
 
 import (
-	"math/big"
-
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func MakeSteps(dur *big.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
+func MakeSteps(dur rat.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
 	ps := StepPitches(start, end, centsPerStep)
-	nSteps := big.NewRat(int64(len(ps)), 1)
-	subDur := new(big.Rat).Quo(dur, nSteps)
+	nSteps := rat.FromInt64(int64(len(ps)))
+	subDur := dur.Div(nSteps)
 
 	return ps.MakePitchDurs(subDur)
 }

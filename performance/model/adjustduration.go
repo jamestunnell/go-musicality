@@ -1,25 +1,24 @@
 package model
 
 import (
-	"math/big"
-
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func AdjustDuration(dur *big.Rat, separation float64) *big.Rat {
-	var adjust *big.Rat
+func AdjustDuration(dur rat.Rat, separation float64) rat.Rat {
+	var adjust rat.Rat
 	switch separation {
 	case note.ControlMin:
-		adjust = big.NewRat(1, 1)
+		adjust = rat.New(1, 1)
 	case note.ControlMax:
-		adjust = big.NewRat(1, 8)
+		adjust = rat.New(1, 8)
+	case note.ControlNormal:
+		adjust = rat.New(9, 16)
 	default:
-		remove := new(big.Rat).Mul(new(big.Rat).SetFloat64(separation), big.NewRat(7, 8))
-		adjust = new(big.Rat).Sub(big.NewRat(1, 1), remove)
+		remove := rat.New(7, 8).MulFloat64(separation)
+		adjust = rat.New(1, 1).Sub(remove)
 	}
 
-	newDur := new(big.Rat).Mul(dur, adjust)
-
-	return newDur
+	return dur.Mul(adjust)
 
 }

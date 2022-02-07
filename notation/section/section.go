@@ -2,12 +2,12 @@ package section
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -38,11 +38,11 @@ func New(opts ...OptFunc) *Section {
 	return s
 }
 
-func (s *Section) Duration() *big.Rat {
-	dur := big.NewRat(0, 1)
+func (s *Section) Duration() rat.Rat {
+	dur := rat.Zero()
 
 	for _, m := range s.Measures {
-		dur.Add(dur, m.Duration())
+		dur.Accum(m.Duration())
 	}
 
 	return dur
@@ -128,15 +128,15 @@ func (s *Section) PartNotes(part string) []*note.Note {
 	return partNotes
 }
 
-func (s *Section) DynamicChanges(sectionOffset *big.Rat) change.Map {
+func (s *Section) DynamicChanges(sectionOffset rat.Rat) change.Map {
 	return s.gatherChanges(sectionOffset, getDynamicChanges)
 }
 
-func (s *Section) TempoChanges(sectionOffset *big.Rat) change.Map {
+func (s *Section) TempoChanges(sectionOffset rat.Rat) change.Map {
 	return s.gatherChanges(sectionOffset, getTempoChanges)
 }
 
-func (s *Section) gatherChanges(sectionOffset *big.Rat, measureChanges func(m *measure.Measure) change.Map) change.Map {
+func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *measure.Measure) change.Map) change.Map {
 	measureOffset := sectionOffset
 	changes := change.Map{}
 
@@ -144,7 +144,7 @@ func (s *Section) gatherChanges(sectionOffset *big.Rat, measureChanges func(m *m
 		mChanges := measureChanges(m)
 
 		for offset, c := range mChanges {
-			changeOffset := new(big.Rat).Add(measureOffset, offset)
+			changeOffset := measureOffset.Add(offset)
 			change := &change.Change{
 				EndValue: c.EndValue,
 				Duration: c.Duration,
@@ -153,7 +153,7 @@ func (s *Section) gatherChanges(sectionOffset *big.Rat, measureChanges func(m *m
 			changes[changeOffset] = change
 		}
 
-		measureOffset.Add(measureOffset, m.Duration())
+		measureOffset.Accum(m.Duration())
 	}
 
 	return changes

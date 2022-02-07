@@ -2,9 +2,9 @@ package model
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/notation/section"
 )
@@ -28,15 +28,15 @@ func (sc *ScoreConverter) Process(s *score.Score) (*FlatScore, error) {
 		fs.StartTempo = sections[0].StartTempo
 	}
 
-	secOffset := big.NewRat(0, 1)
+	secOffset := rat.Zero()
 
 	for _, sec := range sections {
 		secDur := sec.Duration()
 
 		for _, partName := range sec.PartNames() {
 			part, partFound := fs.Parts[partName]
-			if !partFound && secOffset.Cmp(zero) == 1 {
-				part = note.Notes{note.New(secOffset)}
+			if !partFound && secOffset.Positive() {
+				part = note.Notes{note.New(secOffset.Clone())}
 			}
 
 			part = append(part, sec.PartNotes(partName)...)
@@ -44,15 +44,15 @@ func (sc *ScoreConverter) Process(s *score.Score) (*FlatScore, error) {
 			fs.Parts[partName] = part
 		}
 
-		for offset, change := range sec.DynamicChanges(secOffset) {
+		for offset, change := range sec.DynamicChanges(secOffset.Clone()) {
 			fs.DynamicChanges[offset] = change
 		}
 
-		for offset, change := range sec.TempoChanges(secOffset) {
+		for offset, change := range sec.TempoChanges(secOffset.Clone()) {
 			fs.TempoChanges[offset] = change
 		}
 
-		secOffset = new(big.Rat).Add(secOffset, secDur)
+		secOffset.Accum(secDur)
 	}
 
 	return fs, nil

@@ -1,15 +1,13 @@
 package model
 
-import (
-	"math/big"
-)
+import "github.com/jamestunnell/go-musicality/notation/rat"
 
 type PitchDur struct {
-	Duration *big.Rat
+	Duration rat.Rat
 	Pitch    *Pitch
 }
 
-func NewPitchDur(p *Pitch, dur *big.Rat) *PitchDur {
+func NewPitchDur(p *Pitch, dur rat.Rat) *PitchDur {
 	return &PitchDur{
 		Pitch:    p,
 		Duration: dur,

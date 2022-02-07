@@ -1,17 +1,17 @@
 package model
 
 import (
-	"math/big"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 type Note struct {
-	Start      *big.Rat
+	Start      rat.Rat
 	PitchDurs  []*PitchDur
 	Attack     float64
 	Separation float64
 }
 
-func NewNote(start *big.Rat, pitchDurs ...*PitchDur) *Note {
+func NewNote(start rat.Rat, pitchDurs ...*PitchDur) *Note {
 	return &Note{
 		Start:      start,
 		Attack:     0.0,
@@ -20,48 +20,46 @@ func NewNote(start *big.Rat, pitchDurs ...*PitchDur) *Note {
 	}
 }
 
-func (seq *Note) Offsets() []*big.Rat {
-	offsets := make([]*big.Rat, len(seq.PitchDurs))
-	currentOffset := new(big.Rat).Set(seq.Start)
+func (n *Note) Offsets() rat.Rats {
+	offsets := make(rat.Rats, len(n.PitchDurs))
+	currentOffset := n.Start.Clone()
 
-	for i, e := range seq.PitchDurs {
-		offsets[i] = currentOffset
-		currentOffset = new(big.Rat).Add(currentOffset, e.Duration)
+	for i, e := range n.PitchDurs {
+		offsets[i] = currentOffset.Clone()
+		currentOffset.Accum(e.Duration)
 	}
 
 	return offsets
 }
 
 // Duration is not modified to account for Note separation.
-func (seq *Note) Duration() *big.Rat {
-	dur := big.NewRat(0, 1)
+func (n *Note) Duration() rat.Rat {
+	dur := rat.Zero()
 
-	for _, pd := range seq.PitchDurs {
-		dur = dur.Add(dur, pd.Duration)
+	for _, pd := range n.PitchDurs {
+		dur.Accum(pd.Duration)
 	}
 
 	return dur
 }
 
 // End is not modified to account for separation
-func (seq *Note) End() *big.Rat {
-	end := new(big.Rat).Add(seq.Start, seq.Duration())
-
-	return end
+func (n *Note) End() rat.Rat {
+	return n.Start.Add(n.Duration())
 }
 
-func (seq *Note) Simplify() {
+func (n *Note) Simplify() {
 	i := 1
 
-	for i < len(seq.PitchDurs) {
-		cur := seq.PitchDurs[i]
-		prev := seq.PitchDurs[i-1]
+	for i < len(n.PitchDurs) {
+		cur := n.PitchDurs[i]
+		prev := n.PitchDurs[i-1]
 
 		if cur.Pitch.Equal(prev.Pitch) {
 			// combine current with previous element
-			prev.Duration = prev.Duration.Add(prev.Duration, cur.Duration)
+			prev.Duration.Accum(cur.Duration)
 
-			seq.PitchDurs = append(seq.PitchDurs[:i], seq.PitchDurs[i+1:]...)
+			n.PitchDurs = append(n.PitchDurs[:i], n.PitchDurs[i+1:]...)
 		} else {
 			i++
 		}

@@ -2,13 +2,13 @@ package change
 
 import (
 	"fmt"
-	"math/big"
 	"sort"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
-type Map map[*big.Rat]*Change
+type Map map[rat.Rat]*Change
 
 func (m Map) Validate(r ValueRange) *validation.Result {
 	results := []*validation.Result{}
@@ -32,8 +32,8 @@ func (m Map) Validate(r ValueRange) *validation.Result {
 	}
 }
 
-func (m Map) SortedOffsets() Rats {
-	offsets := make(Rats, len(m))
+func (m Map) SortedOffsets() rat.Rats {
+	offsets := make(rat.Rats, len(m))
 	i := 0
 
 	for offset := range m {

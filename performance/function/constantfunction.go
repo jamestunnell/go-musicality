@@ -1,6 +1,6 @@
 package function
 
-import "math/big"
+import "github.com/jamestunnell/go-musicality/notation/rat"
 
 type ConstantFunction struct {
 	domain Range
@@ -11,7 +11,7 @@ func NewConstantFunction(val float64) *ConstantFunction {
 	return &ConstantFunction{domain: DomainAll(), value: val}
 }
 
-func (f *ConstantFunction) At(x *big.Rat) float64 {
+func (f *ConstantFunction) At(x rat.Rat) float64 {
 	return f.value
 }
 

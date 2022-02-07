@@ -2,7 +2,6 @@ package note_test
 
 import (
 	"encoding/json"
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,40 +9,41 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func TestNoteValid(t *testing.T) {
-	testNoteValid(t, "rest", big.NewRat(1, 2), func(n *note.Note) {})
-	testNoteValid(t, "monophonic", big.NewRat(1, 2), func(n *note.Note) { n.Pitches.Add(pitch.A0) })
-	testNoteValid(t, "polyphonic", big.NewRat(1, 2), func(n *note.Note) {
+	testNoteValid(t, "rest", rat.New(1, 2), func(n *note.Note) {})
+	testNoteValid(t, "monophonic", rat.New(1, 2), func(n *note.Note) { n.Pitches.Add(pitch.A0) })
+	testNoteValid(t, "polyphonic", rat.New(1, 2), func(n *note.Note) {
 		n.Pitches.Add(pitch.A0)
 		n.Pitches.Add(pitch.C0)
 	})
-	testNoteValid(t, "min attack", big.NewRat(1, 2), func(n *note.Note) {
+	testNoteValid(t, "min attack", rat.New(1, 2), func(n *note.Note) {
 		n.Attack = note.ControlMin
 	})
-	testNoteValid(t, "max attack", big.NewRat(1, 2), func(n *note.Note) {
+	testNoteValid(t, "max attack", rat.New(1, 2), func(n *note.Note) {
 		n.Attack = note.ControlMax
 	})
-	testNoteValid(t, "min separation", big.NewRat(1, 2), func(n *note.Note) {
+	testNoteValid(t, "min separation", rat.New(1, 2), func(n *note.Note) {
 		n.Separation = note.ControlMin
 	})
-	testNoteValid(t, "max separation", big.NewRat(1, 2), func(n *note.Note) {
+	testNoteValid(t, "max separation", rat.New(1, 2), func(n *note.Note) {
 		n.Separation = note.ControlMax
 	})
 }
 
 func TestNoteInvalid(t *testing.T) {
-	testNoteInvalid(t, "zero dur", big.NewRat(0, 1), func(n *note.Note) {})
-	testNoteInvalid(t, "negative dur", big.NewRat(0, 1), func(n *note.Note) {})
-	testNoteInvalid(t, "attack too high", big.NewRat(1, 4), func(n *note.Note) { n.Attack = note.ControlMax + 0.01 })
-	testNoteInvalid(t, "attack too low", big.NewRat(1, 4), func(n *note.Note) { n.Attack = note.ControlMin - 0.01 })
-	testNoteInvalid(t, "separation too high", big.NewRat(1, 4), func(n *note.Note) { n.Separation = note.ControlMax + 0.01 })
-	testNoteInvalid(t, "separation too low", big.NewRat(1, 4), func(n *note.Note) { n.Separation = note.ControlMin - 0.01 })
+	testNoteInvalid(t, "zero dur", rat.Zero(), func(n *note.Note) {})
+	testNoteInvalid(t, "negative dur", rat.Zero(), func(n *note.Note) {})
+	testNoteInvalid(t, "attack too high", rat.New(1, 4), func(n *note.Note) { n.Attack = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "attack too low", rat.New(1, 4), func(n *note.Note) { n.Attack = note.ControlMin - 0.01 })
+	testNoteInvalid(t, "separation too high", rat.New(1, 4), func(n *note.Note) { n.Separation = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "separation too low", rat.New(1, 4), func(n *note.Note) { n.Separation = note.ControlMin - 0.01 })
 }
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
-	dur := big.NewRat(3, 2)
+	dur := rat.New(3, 2)
 	p1 := pitch.New(3, 2)
 	p2 := pitch.New(4, 0)
 
@@ -93,7 +93,7 @@ func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 	})
 }
 
-func testNoteValid(t *testing.T, name string, dur *big.Rat, mod func(n *note.Note)) {
+func testNoteValid(t *testing.T, name string, dur rat.Rat, mod func(n *note.Note)) {
 	t.Run(name, func(t *testing.T) {
 		n := note.New(dur)
 
@@ -103,7 +103,7 @@ func testNoteValid(t *testing.T, name string, dur *big.Rat, mod func(n *note.Not
 	})
 }
 
-func testNoteInvalid(t *testing.T, name string, dur *big.Rat, mod func(n *note.Note)) {
+func testNoteInvalid(t *testing.T, name string, dur rat.Rat, mod func(n *note.Note)) {
 	t.Run(name, func(t *testing.T) {
 		n := note.New(dur)
 

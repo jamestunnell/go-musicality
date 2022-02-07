@@ -2,11 +2,11 @@ package measure
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -48,8 +48,8 @@ var (
 	}
 )
 
-func (m *Measure) Duration() *big.Rat {
-	return big.NewRat(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
+func (m *Measure) Duration() rat.Rat {
+	return rat.New(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
 }
 
 func (m *Measure) Validate() *validation.Result {
@@ -79,7 +79,7 @@ func (m *Measure) Validate() *validation.Result {
 
 		notesDur := notes.TotalDuration()
 
-		if notesDur.Cmp(dur) != 0 {
+		if !notesDur.Equal(dur) {
 			err := fmt.Errorf(notesDurErrFmt, notesDur.String(), dur.String())
 
 			partErrs = append(partErrs, err)

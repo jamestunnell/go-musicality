@@ -2,19 +2,17 @@ package change
 
 import (
 	"fmt"
-	"math/big"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
-var zero = big.NewRat(0, 1)
-
 type Change struct {
-	EndValue float64
-	Duration *big.Rat
+	EndValue float64 `json:"endValue"`
+	Duration rat.Rat `json:"duration"`
 }
 
-func New(endVal float64, dur *big.Rat) *Change {
+func New(endVal float64, dur rat.Rat) *Change {
 	return &Change{
 		EndValue: endVal,
 		Duration: dur,
@@ -22,13 +20,13 @@ func New(endVal float64, dur *big.Rat) *Change {
 }
 
 func NewImmediate(endVal float64) *Change {
-	return New(endVal, big.NewRat(0, 1))
+	return New(endVal, rat.Zero())
 }
 
 func (c *Change) Validate(r ValueRange) *validation.Result {
 	errs := []error{}
 
-	if c.Duration.Cmp(zero) == -1 {
+	if c.Duration.Negative() {
 		errs = append(errs, fmt.Errorf("duration %v is negative", c.Duration))
 	}
 

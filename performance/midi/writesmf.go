@@ -3,13 +3,13 @@ package midi
 import (
 	"fmt"
 	"math"
-	"math/big"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/gomidi/midi/smf"
 	"gitlab.com/gomidi/midi/smf/smfwriter"
 	"gitlab.com/gomidi/midi/writer"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 )
 
@@ -39,16 +39,14 @@ func WriteSMF(s *score.Score, fpath string) error {
 			wr.SetChannel(track.Channel)
 			writer.ProgramChange(wr, track.Instrument)
 
-			prev := big.NewRat(0, 1)
+			prev := rat.Zero()
 
 			for _, event := range track.Events {
 				current := event.Offset
 
-				if current.Cmp(prev) == 1 {
-					diff := new(big.Rat).Sub(current, prev)
-
-					flt, _ := diff.Float64()
-					num := uint32(math.Round(math.MaxUint32 * flt))
+				if current.Greater(prev) {
+					diff := current.Sub(prev).Float64()
+					num := uint32(math.Round(math.MaxUint32 * diff))
 
 					writer.Forward(wr, 0, num, math.MaxUint32)
 
@@ -59,8 +57,10 @@ func WriteSMF(s *score.Score, fpath string) error {
 				if err != nil {
 					return fmt.Errorf("failed to write event at %s: %w", event.Offset.String(), err)
 				} else {
-					offsetFlt, _ := current.Float64()
-					log.Debug().Float64("offset", offsetFlt).Msg("wrote event")
+					log.Debug().
+						Float64("offset", current.Float64()).
+						Str("summary", event.Writer.Summary()).
+						Msg("wrote event")
 				}
 			}
 

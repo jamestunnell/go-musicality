@@ -65,6 +65,22 @@ func TestValidateJSON(t *testing.T) {
 	testValidateJSONValid(t, "note with no separation", makeValidScoreMap(), func(m Map) {
 		assert.True(t, RemoveMapValue(m, "separation"))
 	})
+	testValidateJSONValid(t, "measure with dynamic change", makeValidScoreMap(), func(m Map) {
+		val, found := GetSliceValue(m, "measures", 0)
+
+		require.True(t, found)
+
+		mm, ok := val.(Map)
+
+		require.True(t, ok)
+
+		mm["dynamicChanges"] = Map{
+			"1/4": Map{
+				"endValue": 1.0,
+				"duration": "3/4",
+			},
+		}
+	})
 
 	// Invalid scores
 	testValidateJSONInvalid(t, "missing program", makeValidScoreMap(), func(m Map) {
@@ -231,4 +247,25 @@ func ChangeSliceValue(rootMap Map, sliceKey string, index int, newValue Value) b
 	}
 
 	return ExecuteOnKeyMatch(rootMap, sliceKey, f)
+}
+
+func GetSliceValue(rootMap Map, sliceKey string, index int) (Value, bool) {
+	var val Value
+
+	f := func(parentMap Map, k string, v Value) bool {
+		s, ok := v.(Slice)
+		if !ok {
+			return false
+		}
+
+		val = s[index]
+
+		return true
+	}
+
+	if ExecuteOnKeyMatch(rootMap, sliceKey, f) {
+		return val, true
+	}
+
+	return nil, false
 }

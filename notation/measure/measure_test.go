@@ -1,7 +1,6 @@
 package measure_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +8,7 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func TestEmpty(t *testing.T) {
@@ -28,7 +28,7 @@ func TestInvalidPartNote(t *testing.T) {
 	m := measure.New(meter.New(4, 4))
 
 	m.PartNotes["piano"] = []*note.Note{
-		note.New(big.NewRat(0, 2)),
+		note.New(rat.New(0, 2)),
 	}
 
 	assert.NotNil(t, m.Validate())
@@ -38,13 +38,13 @@ func TestInvalidPartDurs(t *testing.T) {
 	m := measure.New(meter.New(4, 4))
 
 	m.PartNotes["piano"] = []*note.Note{
-		note.New(big.NewRat(1, 1)),
-		note.New(big.NewRat(1, 1)),
+		note.New(rat.New(1, 1)),
+		note.New(rat.New(1, 1)),
 	}
 
 	m.PartNotes["piano"] = []*note.Note{
-		note.New(big.NewRat(1, 4)),
-		note.New(big.NewRat(1, 4)),
+		note.New(rat.New(1, 4)),
+		note.New(rat.New(1, 4)),
 	}
 
 	assert.NotNil(t, m.Validate())

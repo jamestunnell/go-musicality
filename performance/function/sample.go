@@ -3,15 +3,16 @@ package function
 import (
 	"fmt"
 	"math"
-	"math/big"
+
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func Sample(f Function, xrange Range, xstep *big.Rat) ([]float64, error) {
+func Sample(f Function, xrange Range, xstep rat.Rat) ([]float64, error) {
 	if !xrange.IsValid() {
 		return []float64{}, fmt.Errorf("x-range %v is not valid", xrange)
 	}
 
-	if xstep.Cmp(big.NewRat(0, 1)) <= 0 {
+	if !xstep.Positive() {
 		return []float64{}, fmt.Errorf("x-step %v is not positive", xstep)
 	}
 
@@ -22,14 +23,14 @@ func Sample(f Function, xrange Range, xstep *big.Rat) ([]float64, error) {
 		return []float64{}, err
 	}
 
-	z, _ := new(big.Rat).Quo(xrange.Span(), xstep).Float64()
-	n := 1 + int(math.Floor(z))
+	n := 1 + int(math.Floor(xrange.Span().Div(xstep).Float64()))
 	samples := make([]float64, n)
 
+	x := xrange.Start.Clone()
 	for i := 0; i < n; i++ {
-		offset := new(big.Rat).Mul(big.NewRat(int64(i), 1), xstep)
-		x := new(big.Rat).Add(xrange.Start, offset)
 		samples[i] = f.At(x)
+
+		x.Accum(xstep)
 	}
 
 	return samples, nil

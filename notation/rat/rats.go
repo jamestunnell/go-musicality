@@ -1,8 +1,6 @@
-package change
+package rat
 
-import "math/big"
-
-type Rats []*big.Rat
+type Rats []Rat
 
 func (rats Rats) Len() int {
 	return len(rats)
@@ -13,5 +11,5 @@ func (rats Rats) Swap(i, j int) {
 }
 
 func (rats Rats) Less(i, j int) bool {
-	return rats[i].Cmp(rats[j]) == -1
+	return rats[i].Less(rats[j])
 }

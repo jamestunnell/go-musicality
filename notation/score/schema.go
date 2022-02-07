@@ -79,9 +79,9 @@ const schemaStr = `
 		},
 		"dynamic": {
 			"$id": "#/definitions/dynamic",
-			"$ref": "#/definitions/control"
+			"$ref": "#/definitions/control",
 			"title": "Dynamic",
-			"description": "Controls loudness.",
+			"description": "Controls loudness."
 		},
 		"measure": {
 			"$id": "#/definitions/measure",

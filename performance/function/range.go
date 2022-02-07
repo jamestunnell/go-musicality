@@ -1,38 +1,39 @@
 package function
 
-import "math/big"
+import (
+	"github.com/jamestunnell/go-musicality/notation/rat"
+)
 
 type Range struct {
-	Start, End *big.Rat
+	Start, End rat.Rat
 }
 
-func NewRange(start, end *big.Rat) Range {
+func NewRange(start, end rat.Rat) Range {
 	return Range{Start: start, End: end}
 }
 
 func (r Range) IsValid() bool {
-	return r.End.Cmp(r.Start) == 1
+	return r.End.Greater(r.Start)
 }
 
-func (r Range) Span() *big.Rat {
-	return new(big.Rat).Sub(r.End, r.Start)
+func (r Range) Span() rat.Rat {
+	return r.End.Sub(r.Start)
 }
 
 // IncludesRange checks to see if the current range includes the given range.
 func (r Range) IncludesRange(r2 Range) bool {
-	// Testing (r2.Start >= r.Start) && (r2.Start <= r.End) && (r2.End >= r.Start) && (r2.End <= r.End)
-	return (r2.Start.Cmp(r.Start) >= 0) &&
-		(r2.Start.Cmp(r.End) <= 0) &&
-		(r2.End.Cmp(r.Start) >= 0) &&
-		(r2.End.Cmp(r.End) <= 0)
+	return r2.Start.GreaterEqual(r.Start) &&
+		r2.Start.LessEqual(r.End) &&
+		r2.End.GreaterEqual(r.Start) &&
+		r2.End.LessEqual(r.End)
 }
 
 // IncludesValue checks to see if the current range includes the given value (includes end).
-func (r Range) IncludesValue(val *big.Rat) bool {
-	return (val.Cmp(r.Start) >= 0) && (val.Cmp(r.End) <= 0)
+func (r Range) IncludesValue(val rat.Rat) bool {
+	return val.GreaterEqual(r.Start) && val.LessEqual(r.End)
 }
 
 // IncludesValueExcl checks to see if the current range includes the given value (excludes end).
-func (r Range) IncludesValueExcl(val *big.Rat) bool {
-	return (val.Cmp(r.Start) >= 0) && (val.Cmp(r.End) < 0)
+func (r Range) IncludesValueExcl(val rat.Rat) bool {
+	return val.GreaterEqual(r.Start) && val.Less(r.End)
 }

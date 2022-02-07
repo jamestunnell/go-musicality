@@ -2,16 +2,16 @@ package model
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 type NoteConverter struct {
 	replaceSlursAndGlides bool
 	centsPerStep          int
-	offset                *big.Rat
+	offset                rat.Rat
 	completed             []*Note
 	continuing            map[*pitch.Pitch]*Note
 }
@@ -50,7 +50,7 @@ func setReplaceSlursAndGlides(nc *NoteConverter) {
 }
 
 func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
-	nc.offset = big.NewRat(0, 1)
+	nc.offset = rat.Zero()
 	nc.completed = []*Note{}
 	nc.continuing = map[*pitch.Pitch]*Note{}
 
@@ -70,7 +70,7 @@ func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 			return []*Note{}, err
 		}
 
-		nc.offset = new(big.Rat).Add(nc.offset, current.Duration)
+		nc.offset.Accum(current.Duration)
 	}
 
 	if len(nc.continuing) > 0 {
@@ -155,7 +155,7 @@ func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, se
 
 		delete(nc.continuing, current)
 	} else {
-		n = NewNote(nc.offset, pitchDurs...)
+		n = NewNote(nc.offset.Clone(), pitchDurs...)
 
 		n.Attack = attack
 		n.Separation = separation

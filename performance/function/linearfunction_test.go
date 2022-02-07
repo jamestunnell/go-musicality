@@ -1,14 +1,14 @@
 package function_test
 
 import (
-	"math/big"
 	"testing"
 
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 var (
-	negHalf = new(big.Rat).SetFloat64(-0.5)
+	negHalf = rat.FromFloat64(-0.5)
 )
 
 func TestLinear(t *testing.T) {

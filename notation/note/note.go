@@ -3,25 +3,25 @@ package note
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Note struct {
 	Pitches            *pitch.Set
-	Duration           *big.Rat
+	Duration           rat.Rat
 	Attack, Separation float64
 	Links              map[*pitch.Pitch]*Link
 }
 
 type noteJSON struct {
 	Pitches    []string         `json:"pitches,omitempty"`
-	Duration   *big.Rat         `json:"duration"`
+	Duration   rat.Rat          `json:"duration"`
 	Attack     float64          `json:"attack"`
 	Separation float64          `json:"separation"`
 	Links      map[string]*Link `json: "links,omitempty"`
@@ -33,7 +33,7 @@ const (
 	ControlMax    = 1.0
 )
 
-func New(dur *big.Rat, pitches ...*pitch.Pitch) *Note {
+func New(dur rat.Rat, pitches ...*pitch.Pitch) *Note {
 	return &Note{
 		Pitches:    pitch.NewSet(pitches...),
 		Duration:   dur,

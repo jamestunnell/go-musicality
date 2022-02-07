@@ -1,6 +1,6 @@
 package function
 
-import "math/big"
+import "github.com/jamestunnell/go-musicality/notation/rat"
 
 type LinearFunction struct {
 	domain     Range
@@ -17,18 +17,16 @@ func NewLinearFunction(slope, yIntercept float64) *LinearFunction {
 }
 
 func NewLinearFunctionFromPoints(p0, p1 Point) *LinearFunction {
-	xDelta, _ := new(big.Rat).Sub(p1.X, p0.X).Float64()
+	xDelta := p1.X.Sub(p0.X).Float64()
 	slope := (p1.Y - p0.Y) / xDelta
-	x0, _ := p0.X.Float64()
+	x0 := p0.X.Float64()
 	intercept := p0.Y - slope*x0
 
 	return NewLinearFunction(slope, intercept)
 }
 
-func (f *LinearFunction) At(x *big.Rat) float64 {
-	xFlt, _ := x.Float64()
-
-	return f.slope*xFlt + f.yIntercept
+func (f *LinearFunction) At(x rat.Rat) float64 {
+	return f.slope*x.Float64() + f.yIntercept
 }
 
 func (f *LinearFunction) Domain() Range {

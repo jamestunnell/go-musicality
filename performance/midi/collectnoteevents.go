@@ -3,7 +3,6 @@ package midi
 import (
 	"fmt"
 	"math"
-	"math/big"
 
 	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/jamestunnell/go-musicality/performance/model"
@@ -44,7 +43,7 @@ func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]
 
 		vel := Velocity(n.Attack * dynamic)
 		newDur := model.AdjustDuration(pd.Duration, n.Separation)
-		endOffset := new(big.Rat).Add(n.Start, newDur)
+		endOffset := n.Start.Add(newDur)
 
 		events = append(events, NewNoteOnEvent(n.Start, key, vel))
 		events = append(events, NewNoteOffEvent(endOffset, key))

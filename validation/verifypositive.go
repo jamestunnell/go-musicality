@@ -1,9 +1,9 @@
 package validation
 
-import "math/big"
+import "github.com/jamestunnell/go-musicality/notation/rat"
 
-func VerifyPositiveRat(name string, r *big.Rat) error {
-	if r.Cmp(big.NewRat(0, 1)) != 1 {
+func VerifyPositiveRat(name string, r rat.Rat) error {
+	if !r.Positive() {
 		return NewErrNonPositive(name, r.String())
 	}
 
