@@ -1,2 +1,5 @@
 .html
 .out
+*.mid
+*.exe
+.vscode/launch.json
