@@ -2,9 +2,11 @@ package model
 
 import (
 	"math/big"
+	"sort"
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/note"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/section"
 )
 
@@ -24,6 +26,18 @@ func NewFlatScore() *FlatScore {
 		DynamicChanges: change.Map{},
 		TempoChanges:   change.Map{},
 	}
+}
+
+func (s *FlatScore) Duration() rat.Rat {
+	durs := rat.Rats{}
+
+	for _, notes := range s.Parts {
+		durs = append(durs, notes.TotalDuration())
+	}
+
+	sort.Sort(durs)
+
+	return durs.Last()
 }
 
 func (s *FlatScore) DynamicComputer() (*Computer, error) {

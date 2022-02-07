@@ -28,6 +28,11 @@ func MakeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 		return []*Track{}, err
 	}
 
+	tempoEvents, err := collectTempoEvents(fs, fs.Duration(), settings.TempoSamplePeriod)
+	if err != nil {
+		return []*Track{}, fmt.Errorf("failed to collect tempo events: %w", err)
+	}
+
 	// metEvents, err := collectMeterEvents(fs)
 	// if err != nil {
 	// 	return []*Track{}, fmt.Errorf("failed to collect meter events: %w", err)
@@ -45,6 +50,7 @@ func MakeTracks(s *score.Score, settings *MIDISettings) ([]*Track, error) {
 
 		// events = append(events, metEvents...)
 
+		events = append(events, tempoEvents...)
 		events = append(events, noteEvents...)
 
 		if len(events) == 0 {

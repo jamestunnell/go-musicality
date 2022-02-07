@@ -77,31 +77,3 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 	return nil
 }
-
-// func collectMeterEvents(fs *model.FlatScore) ([]*Event, error) {
-// 	events := []*Event{}
-
-// 	offset := big.NewRat(0, 1)
-
-// 	var met *meter.Meter
-
-// 	for _, section := range s.Sections {
-// 		for _, m := range section.Measures {
-// 			if met == nil || !met.Equal(m.Meter) {
-// 				if m.Meter.Numerator >= 256 || m.Meter.Denominator >= 256 {
-// 					return []*Event{}, fmt.Errorf("meter %s is not valid for MIDI", met.String())
-// 				}
-
-// 				metEvent := NewMeterEvent(offset, uint8(m.Meter.Numerator), uint8(m.Meter.Denominator))
-
-// 				events = append(events, metEvent)
-
-// 				met = m.Meter
-
-// 				offset.Add(offset, m.Duration())
-// 			}
-// 		}
-// 	}
-
-// 	return events, nil
-// }
