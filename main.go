@@ -9,13 +9,6 @@ import (
 )
 
 func main() {
-	// s := score.New(score.OptStartVolume(0.75))
-
-	// intro := makeIntro()
-
-	// s.Sections = append(s.Sections, intro)
-
-	// validateAndPrintJSON(s)
 	if len(os.Args) == 1 {
 		fmt.Println("no command")
 		os.Exit(1)
