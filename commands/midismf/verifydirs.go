@@ -1,4 +1,4 @@
-package scoretomidi
+package midismf
 
 import (
 	"errors"

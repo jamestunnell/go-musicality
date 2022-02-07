@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/jamestunnell/go-musicality/commands"
-	"github.com/jamestunnell/go-musicality/commands/scoretomidi"
+	"github.com/jamestunnell/go-musicality/commands/midismf"
 )
 
 func main() {
@@ -25,8 +25,8 @@ func main() {
 	var err error
 
 	switch os.Args[1] {
-	case "midi":
-		if cmd, err = scoretomidi.NewFromArgs(os.Args[2:]...); err != nil {
+	case midismf.Name:
+		if cmd, err = midismf.NewFromArgs(os.Args[2:]...); err != nil {
 			fmt.Printf("%v\n", err)
 
 			os.Exit(1)

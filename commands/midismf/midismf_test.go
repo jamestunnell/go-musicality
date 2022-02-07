@@ -1,4 +1,4 @@
-package scoretomidi_test
+package midismf_test
 
 import (
 	"io/fs"
@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/commands/scoretomidi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/jamestunnell/go-musicality/commands/midismf"
 )
 
 func TestScoreToMIDINoScores(t *testing.T) {
-	cmd := scoretomidi.ScoreToMIDI{
+	cmd := midismf.ScoreToMIDI{
 		OutDir:     "",
 		ScoreFiles: []string{},
 	}
@@ -23,7 +24,7 @@ func TestScoreToMIDINoScores(t *testing.T) {
 }
 
 func TestScoreToMIDIScoreNotFound(t *testing.T) {
-	cmd := scoretomidi.ScoreToMIDI{
+	cmd := midismf.ScoreToMIDI{
 		OutDir:     "",
 		ScoreFiles: []string{bogusPath(t)},
 	}
@@ -34,7 +35,7 @@ func TestScoreToMIDIScoreNotFound(t *testing.T) {
 
 func TestScoreToMIDIOutDirNotFound(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		cmd := scoretomidi.ScoreToMIDI{
+		cmd := midismf.ScoreToMIDI{
 			OutDir:     bogusPath(t),
 			ScoreFiles: []string{valid},
 		}
@@ -46,7 +47,7 @@ func TestScoreToMIDIOutDirNotFound(t *testing.T) {
 
 func TestScoreToMIDIInvalidScore(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		cmd := scoretomidi.ScoreToMIDI{
+		cmd := midismf.ScoreToMIDI{
 			OutDir:     "",
 			ScoreFiles: []string{invalid},
 		}
@@ -64,7 +65,7 @@ func TestScoreToMIDINotScoreJSON(t *testing.T) {
 
 	require.NoError(t, err)
 
-	cmd := scoretomidi.ScoreToMIDI{
+	cmd := midismf.ScoreToMIDI{
 		OutDir:     "",
 		ScoreFiles: []string{notJSON.Name()},
 	}
@@ -74,7 +75,7 @@ func TestScoreToMIDINotScoreJSON(t *testing.T) {
 
 func TestScoreToMIDIValidAndInvalidScore(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		cmd := scoretomidi.ScoreToMIDI{
+		cmd := midismf.ScoreToMIDI{
 			OutDir:     "",
 			ScoreFiles: []string{valid, invalid},
 		}
@@ -85,7 +86,7 @@ func TestScoreToMIDIValidAndInvalidScore(t *testing.T) {
 
 func TestScoreToMIDIValidScore(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		cmd := scoretomidi.ScoreToMIDI{
+		cmd := midismf.ScoreToMIDI{
 			OutDir:     "",
 			ScoreFiles: []string{valid},
 		}

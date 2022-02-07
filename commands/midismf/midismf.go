@@ -1,4 +1,4 @@
-package scoretomidi
+package midismf
 
 import (
 	"errors"
@@ -17,10 +17,12 @@ type ScoreToMIDI struct {
 	OutDir     string
 }
 
+const Name = "midi-smf"
+
 var errNoScoreFiles = errors.New("no score files")
 
 func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
-	flagSet := flag.NewFlagSet("midi", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(Name, flag.ExitOnError)
 	outDir := flagSet.String("outdir", "", "output directory")
 
 	if err := flagSet.Parse(cliArgs); err != nil {
@@ -36,7 +38,7 @@ func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
 }
 
 func (cmd *ScoreToMIDI) Name() string {
-	return "score-to-MIDI"
+	return Name
 }
 
 func (cmd *ScoreToMIDI) Execute() error {

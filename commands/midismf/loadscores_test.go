@@ -1,4 +1,4 @@
-package scoretomidi_test
+package midismf_test
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jamestunnell/go-musicality/commands/scoretomidi"
+	"github.com/jamestunnell/go-musicality/commands/midismf"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/notation/section"
@@ -21,14 +21,14 @@ const (
 )
 
 func TestLoadScoresEmpty(t *testing.T) {
-	scores, err := scoretomidi.LoadScores()
+	scores, err := midismf.LoadScores()
 
 	assert.NoError(t, err)
 	assert.Empty(t, scores)
 }
 
 func TestLoadScoresNonExistant(t *testing.T) {
-	scores, err := scoretomidi.LoadScores(bogusPath(t))
+	scores, err := midismf.LoadScores(bogusPath(t))
 
 	assert.Error(t, err)
 	assert.Empty(t, scores)
@@ -43,7 +43,7 @@ func TestLoadScoresNotScoreJSON(t *testing.T) {
 
 	require.NoError(t, err)
 
-	scores, err := scoretomidi.LoadScores(notJSON.Name())
+	scores, err := midismf.LoadScores(notJSON.Name())
 
 	assert.Error(t, err)
 	assert.Empty(t, scores)
@@ -51,7 +51,7 @@ func TestLoadScoresNotScoreJSON(t *testing.T) {
 
 func TestLoadScoresValidOnly(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		scores, err := scoretomidi.LoadScores(valid)
+		scores, err := midismf.LoadScores(valid)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, scores)
 	})
@@ -59,7 +59,7 @@ func TestLoadScoresValidOnly(t *testing.T) {
 
 func TestLoadScoresInvalidOnly(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		scores, err := scoretomidi.LoadScores(invalid)
+		scores, err := midismf.LoadScores(invalid)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, scores)
 	})
@@ -67,7 +67,7 @@ func TestLoadScoresInvalidOnly(t *testing.T) {
 
 func TestLoadScoresValidAndInvalid(t *testing.T) {
 	testLoadScores(t, func(valid, invalid string) {
-		scores, err := scoretomidi.LoadScores(valid, invalid)
+		scores, err := midismf.LoadScores(valid, invalid)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, scores)
 	})
@@ -126,7 +126,7 @@ func scoreJSON(t *testing.T, s *score.Score) []byte {
 }
 
 func createTemp(t *testing.T) *os.File {
-	f, err := os.CreateTemp("", "scoretomidi_test*")
+	f, err := os.CreateTemp("", "midismf_test*")
 
 	require.NoError(t, err)
 
