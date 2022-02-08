@@ -37,15 +37,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("executing %s command\n", cmd.Name())
-
 	if err := cmd.Execute(); err != nil {
 		fmt.Printf("%s command failed: %v\n", cmd.Name(), err)
 
 		os.Exit(1)
 	}
-
-	fmt.Printf("%s command completed successfully\n", cmd.Name())
 
 	os.Exit(0)
 }
