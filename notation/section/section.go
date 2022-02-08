@@ -20,7 +20,7 @@ type OptFunc func(*Section)
 
 const (
 	DefaultStartTempo   = 120.0
-	DefaultStartDynamic = 0.0
+	DefaultStartDynamic = note.ControlNormal
 )
 
 func New(opts ...OptFunc) *Section {

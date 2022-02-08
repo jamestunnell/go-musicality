@@ -13,7 +13,3 @@ func (rats Rats) Swap(i, j int) {
 func (rats Rats) Less(i, j int) bool {
 	return rats[i].Less(rats[j])
 }
-
-func (rats Rats) Last() Rat {
-	return rats[len(rats)-1]
-}

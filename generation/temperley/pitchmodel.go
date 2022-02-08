@@ -113,19 +113,19 @@ func (pm *PitchModel) makePitch(probArrays [][]float64) *pitch.Pitch {
 	return pitch.New(0, i)
 }
 
-func (pm *PitchModel) MakePitches(n uint) []*pitch.Pitch {
+func (pm *PitchModel) MakePitches(n uint) pitch.Pitches {
 	return pm.MakePitchesStartingAt(pm.MakeStartingPitch(), n)
 }
 
-func (pm *PitchModel) MakePitchesStartingAt(p *pitch.Pitch, n uint) []*pitch.Pitch {
+func (pm *PitchModel) MakePitchesStartingAt(p *pitch.Pitch, n uint) pitch.Pitches {
 	switch n {
 	case 0:
-		return []*pitch.Pitch{}
+		return pitch.Pitches{}
 	case 1:
-		return []*pitch.Pitch{p}
+		return pitch.Pitches{p}
 	}
 
-	pitches := make([]*pitch.Pitch, n)
+	pitches := make(pitch.Pitches, n)
 
 	pitches[0] = p
 

@@ -29,6 +29,10 @@ func NewFlatScore() *FlatScore {
 }
 
 func (s *FlatScore) Duration() rat.Rat {
+	if len(s.Parts) == 0 {
+		return rat.Zero()
+	}
+
 	durs := rat.Rats{}
 
 	for _, notes := range s.Parts {
@@ -37,7 +41,7 @@ func (s *FlatScore) Duration() rat.Rat {
 
 	sort.Sort(durs)
 
-	return durs.Last()
+	return durs[durs.Len()-1]
 }
 
 func (s *FlatScore) DynamicComputer() (*Computer, error) {

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jamestunnell/go-musicality/commands"
+	"github.com/jamestunnell/go-musicality/commands/generate/temperleypitches"
 	"github.com/jamestunnell/go-musicality/commands/midismf"
 )
 
@@ -24,8 +25,14 @@ func main() {
 
 			os.Exit(1)
 		}
+	case "generate-temperley-pitches":
+		if cmd, err = temperleypitches.NewFromArgs(os.Args[2:]...); err != nil {
+			fmt.Printf("%v\n", err)
+
+			os.Exit(1)
+		}
 	default:
-		fmt.Println("expected command 'midi'")
+		fmt.Println("expected command 'midi-smf' or 'generate-temperley-pitches'")
 
 		os.Exit(1)
 	}
