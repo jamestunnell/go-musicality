@@ -1,6 +1,7 @@
 package pitch
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -69,7 +70,7 @@ func (p *Pitch) Ratio() float64 {
 }
 
 func (p *Pitch) Freq() float64 {
-	return BaseFreq * p.Ratio()
+	return Freq(float64(p.TotalSemitone()))
 }
 
 func (p *Pitch) Transpose(semitones int) *Pitch {
@@ -82,6 +83,33 @@ func (p *Pitch) String() string {
 
 func (p *Pitch) TotalSemitone() int {
 	return totalSemitone(p.octave, p.semitone)
+}
+
+func (p *Pitch) MarshalJSON() ([]byte, error) {
+	str := fmt.Sprintf(`"%s"`, p.String())
+
+	return []byte(str), nil
+}
+
+func (p *Pitch) UnmarshalJSON(d []byte) error {
+	jsonStr := string(d)
+	n := len(jsonStr)
+
+	if jsonStr[0] != '"' || jsonStr[n-1] != '"' {
+		return fmt.Errorf("pitch JSON '%s' is not a string", jsonStr)
+	}
+
+	pStr := jsonStr[1 : n-1]
+
+	octave, semitone, err := parse(pStr)
+	if err != nil {
+		return fmt.Errorf("failed to parse pitch string '%s': %w", pStr, err)
+	}
+
+	p.octave = octave
+	p.semitone = semitone
+
+	return nil
 }
 
 func (p *Pitch) balance() {

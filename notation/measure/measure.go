@@ -28,16 +28,6 @@ func New(met *meter.Meter) *Measure {
 	}
 }
 
-func NewN(n int, met *meter.Meter) []*Measure {
-	measures := make([]*Measure, n)
-
-	for i := 0; i < n; i++ {
-		measures[i] = New(met)
-	}
-
-	return measures
-}
-
 var (
 	dynamicRange = &change.MinMaxInclRange{
 		Min: note.ControlMin,

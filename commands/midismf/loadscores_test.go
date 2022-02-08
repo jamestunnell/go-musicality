@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/jamestunnell/go-musicality/commands/midismf"
+	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/notation/section"
@@ -109,8 +110,9 @@ func validScoreJSON(t *testing.T) []byte {
 func validScore() *score.Score {
 	s := score.New()
 	sec := section.New()
+	m := measure.New(meter.New(4, 4))
 
-	sec.AppendMeasures(1, meter.New(4, 4))
+	sec.Measures = append(sec.Measures, m)
 
 	s.Sections[testSectionName] = sec
 

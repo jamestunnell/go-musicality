@@ -11,6 +11,6 @@ const (
 )
 
 type Link struct {
-	Target *pitch.Pitch
-	Type   string
+	Target *pitch.Pitch `json:"target"`
+	Type   string       `json:"type"`
 }

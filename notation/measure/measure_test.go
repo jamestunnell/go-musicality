@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
@@ -48,4 +49,28 @@ func TestInvalidPartDurs(t *testing.T) {
 	}
 
 	assert.NotNil(t, m.Validate())
+}
+
+func TestInvalidDynamicChange(t *testing.T) {
+	m := measure.New(meter.New(4, 4))
+
+	// duration is negative
+	m.DynamicChanges[rat.Zero()] = change.New(0.5, rat.New(-1, 1))
+
+	assert.NotNil(t, m.Validate())
+
+	// value is out-of-range
+	m.DynamicChanges[rat.Zero()] = change.NewImmediate(1.5)
+}
+
+func TestInvalidTempoChange(t *testing.T) {
+	m := measure.New(meter.New(4, 4))
+
+	// duration is negative
+	m.TempoChanges[rat.Zero()] = change.New(100.0, rat.New(-1, 1))
+
+	assert.NotNil(t, m.Validate())
+
+	// value is out-of-range
+	m.TempoChanges[rat.Zero()] = change.NewImmediate(-1)
 }

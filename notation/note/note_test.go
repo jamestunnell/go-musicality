@@ -42,32 +42,67 @@ func TestNoteInvalid(t *testing.T) {
 	testNoteInvalid(t, "separation too low", rat.New(1, 4), func(n *note.Note) { n.Separation = note.ControlMin - 0.01 })
 }
 
+type noteModFunc func(n *note.Note)
+
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 	dur := rat.New(3, 2)
 	p1 := pitch.New(3, 2)
 	p2 := pitch.New(4, 0)
 
-	testNoteMarshalUnmarshalJSON(t, "rest", note.New(dur))
-	testNoteMarshalUnmarshalJSON(t, "mono", note.New(dur, p1))
-	testNoteMarshalUnmarshalJSON(t, "poly", note.New(dur, p1, p2))
+	cases := map[string]noteModFunc{
+		"rest": func(n *note.Note) {},
+		"monophonic": func(n *note.Note) {
+			n.Pitches.Add(p1)
+		},
+		"polyphonic": func(n *note.Note) {
+			n.Pitches.Add(p1)
+			n.Pitches.Add(p2)
+		},
+		"valid, not normal attack": func(n *note.Note) {
+			n.Attack = note.ControlNormal + 0.01
+		},
+		"valid, not normal separation": func(n *note.Note) {
+			n.Separation = note.ControlNormal + 0.01
+		},
+		"invalid attack": func(n *note.Note) {
+			n.Attack = note.ControlMax + 0.01
+		},
+		"invalid separation": func(n *note.Note) {
+			n.Separation = note.ControlMax + 0.01
+		},
+		"with link": func(n *note.Note) {
+			n.Links[p1] = &note.Link{Type: note.Tie, Target: p1}
+		},
+	}
 
-	n := note.New(dur, p1)
+	for name, mod := range cases {
+		n := note.New(dur)
 
-	n.Attack = note.ControlMax + 0.1
+		mod(n)
 
-	testNoteMarshalUnmarshalJSON(t, "invalid attack", n)
+		testNoteMarshalUnmarshalJSON(t, name, n)
+	}
+}
 
-	n.Separation = note.ControlMax + 0.1
+func TestUnmarshalFail(t *testing.T) {
+	testUnmarshalFail(t, "wrong type", `"not-an-object"`)
 
-	testNoteMarshalUnmarshalJSON(t, "invalid separation", n)
+	str := `{"duration": "1", "links": {}}` //"not-a-pitch":{"type":"tie","target":"C5"}
+	testUnmarshalFail(t, "bad link pitch", str)
 
-	n.Attack = note.ControlNormal
+	// str = `{"duration": "1", "pitches": ["C5"], "links": {"C5":{"type":"tie","target":"not-a-pitch"}}}`
+	// testUnmarshalFail(t, "bad link target pitch", str)
+}
 
-	testNoteMarshalUnmarshalJSON(t, "normal attack", n)
+func testUnmarshalFail(t *testing.T, name, jsonStr string) {
+	t.Run(name, func(t *testing.T) {
+		var n note.Note
 
-	n.Separation = note.ControlNormal
+		d := []byte(jsonStr)
+		err := json.Unmarshal(d, &n)
 
-	testNoteMarshalUnmarshalJSON(t, "normal separation", n)
+		assert.Error(t, err)
+	})
 }
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {

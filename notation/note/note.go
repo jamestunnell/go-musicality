@@ -20,11 +20,11 @@ type Note struct {
 }
 
 type noteJSON struct {
-	Pitches    []string         `json:"pitches,omitempty"`
-	Duration   rat.Rat          `json:"duration"`
-	Attack     float64          `json:"attack"`
-	Separation float64          `json:"separation"`
-	Links      map[string]*Link `json: "links,omitempty"`
+	Pitches  []string `json:"pitches,omitempty"`
+	Duration rat.Rat  `json:"duration"`
+	// Attack     float64          `json:"attack"`
+	// Separation float64          `json:"separation"`
+	Links map[string]*Link `json: "links,omitempty"`
 }
 
 const (
@@ -77,11 +77,9 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 	}
 
 	j := noteJSON{
-		Pitches:    n.Pitches.Pitches().Strings(),
-		Duration:   n.Duration,
-		Attack:     n.Attack,
-		Separation: n.Separation,
-		Links:      links,
+		Pitches:  n.Pitches.Pitches().Strings(),
+		Duration: n.Duration,
+		Links:    links,
 	}
 
 	d, err := json.Marshal(j)
@@ -89,19 +87,19 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	if n.Attack == ControlNormal {
-		d, err = sjson.DeleteBytes(d, "attack")
+	if n.Attack != ControlNormal {
+		d, err = sjson.SetBytes(d, "attack", n.Attack)
 		if err != nil {
-			err = fmt.Errorf("failed to remove normal attack from JSON: %w", err)
+			err = fmt.Errorf("failed to add non-normal attack to JSON: %w", err)
 
 			return []byte{}, err
 		}
 	}
 
-	if n.Separation == ControlNormal {
-		d, err = sjson.DeleteBytes(d, "separation")
+	if n.Separation != ControlNormal {
+		d, err = sjson.SetBytes(d, "separation", n.Separation)
 		if err != nil {
-			err = fmt.Errorf("failed to remove normal separation from JSON: %w", err)
+			err = fmt.Errorf("failed to add non-normal separation to JSON: %w", err)
 
 			return []byte{}, err
 		}
@@ -111,27 +109,9 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 }
 
 func (n *Note) UnmarshalJSON(d []byte) error {
-	var err error
-
-	result := gjson.GetBytes(d, "attack")
-	if !result.Exists() {
-		d, err = sjson.SetBytes(d, "attack", ControlNormal)
-		if err != nil {
-			return fmt.Errorf("failed to add normal attack to JSON: %w", err)
-		}
-	}
-
-	result = gjson.GetBytes(d, "separation")
-	if !result.Exists() {
-		d, err = sjson.SetBytes(d, "separation", ControlNormal)
-		if err != nil {
-			return fmt.Errorf("failed to add normal separation to JSON: %w", err)
-		}
-	}
-
 	var j noteJSON
 
-	err = json.Unmarshal(d, &j)
+	err := json.Unmarshal(d, &j)
 	if err != nil {
 		return err
 	}
@@ -140,7 +120,7 @@ func (n *Note) UnmarshalJSON(d []byte) error {
 	for pStr, link := range j.Links {
 		p, err := pitch.Parse(pStr)
 		if err != nil {
-			return fmt.Errorf("failed to parse pitch '%s': %w", pStr, err)
+			return fmt.Errorf("failed to parse link pitch '%s': %w", pStr, err)
 		}
 
 		links[p] = link
@@ -156,10 +136,24 @@ func (n *Note) UnmarshalJSON(d []byte) error {
 		pitches.Add(p)
 	}
 
+	attack := ControlNormal
+
+	result := gjson.GetBytes(d, "attack")
+	if result.Exists() {
+		attack = result.Float()
+	}
+
+	separation := ControlNormal
+
+	result = gjson.GetBytes(d, "separation")
+	if result.Exists() {
+		separation = result.Float()
+	}
+
 	n.Pitches = pitches
 	n.Duration = j.Duration
-	n.Attack = j.Attack
-	n.Separation = j.Separation
+	n.Attack = attack
+	n.Separation = separation
 	n.Links = links
 
 	return nil

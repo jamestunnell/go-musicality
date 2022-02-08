@@ -1,16 +1,23 @@
 package pitch_test
 
 import (
+	"encoding/json"
 	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
 // TestNewPitch tests the NewPitch function, which should return a balanced pitch.
 func TestNewPitch(t *testing.T) {
+	p := pitch.New(7, 5)
+
+	assert.Equal(t, 7, p.Octave())
+	assert.Equal(t, 5, p.Semitone())
+
 	equivPitches1 := []*pitch.Pitch{
 		pitch.New(4, 5),
 		pitch.New(5, -7),
@@ -32,6 +39,15 @@ func TestNewPitch(t *testing.T) {
 	testNewPitch(t, equivPitches1)
 	testNewPitch(t, equivPitches2)
 	testNewPitch(t, equivPitches3)
+}
+
+func TestCompare(t *testing.T) {
+	p1 := pitch.C0
+	p2 := pitch.D0
+
+	assert.Equal(t, -1, p1.Compare(p2))
+	assert.Equal(t, 0, p1.Compare(p1))
+	assert.Equal(t, 1, p2.Compare(p1))
 }
 
 func TestPitchRatio(t *testing.T) {
@@ -73,6 +89,26 @@ func TestPitchTranpose(t *testing.T) {
 
 	for semitones, newPitch := range testCases {
 		assert.Equal(t, newPitch, startPitch.Transpose(semitones))
+	}
+}
+
+func TestPitchMarshalUnmarshal(t *testing.T) {
+	pitches := pitch.Pitches{
+		pitch.C1, pitch.Db1, pitch.D1, pitch.Eb1, pitch.E1, pitch.F1,
+		pitch.Gb1, pitch.G1, pitch.Ab1, pitch.A1, pitch.Bb1, pitch.B1,
+	}
+
+	for _, p := range pitches {
+		d, err := p.MarshalJSON()
+
+		require.NoError(t, err)
+
+		var p2 pitch.Pitch
+
+		err = json.Unmarshal(d, &p2)
+
+		require.NoError(t, err)
+		assert.True(t, p2.Equal(p))
 	}
 }
 

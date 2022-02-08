@@ -5,7 +5,6 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
-	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
@@ -46,18 +45,6 @@ func (s *Section) Duration() rat.Rat {
 	}
 
 	return dur
-}
-
-func (s *Section) AppendMeasures(n int, met *meter.Meter) {
-	s.Measures = append(s.Measures, measure.NewN(n, met)...)
-}
-
-func (s *Section) InsertMeasures(n int, met *meter.Meter, idx int) {
-	new := s.Measures[:idx]
-	new = append(new, measure.NewN(n, met)...)
-	new = append(new, s.Measures[idx:]...)
-
-	s.Measures = new
 }
 
 func (s *Section) Validate() *validation.Result {

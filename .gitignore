@@ -3,3 +3,5 @@
 *.mid
 *.exe
 .vscode/launch.json
+*.out
+*.html

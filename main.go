@@ -65,11 +65,3 @@ func main() {
 
 // 	fmt.Println(string(d))
 // }
-
-// func makeIntro() *section.Section {
-// 	intro := section.New("intro")
-
-// 	intro.AppendMeasures(8, meter.New(4, 4))
-
-// 	return intro
-// }
