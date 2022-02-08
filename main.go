@@ -5,8 +5,9 @@ import (
 	"os"
 
 	"github.com/jamestunnell/go-musicality/commands"
-	"github.com/jamestunnell/go-musicality/commands/generate/temperleypitches"
-	"github.com/jamestunnell/go-musicality/commands/midismf"
+	"github.com/jamestunnell/go-musicality/commands/generate"
+	"github.com/jamestunnell/go-musicality/commands/render"
+	"github.com/jamestunnell/go-musicality/commands/validate"
 )
 
 func main() {
@@ -15,24 +16,39 @@ func main() {
 		os.Exit(1)
 	}
 
+	if len(os.Args) == 2 {
+		fmt.Println("no subcommand")
+		os.Exit(1)
+	}
+
 	var cmd commands.Command
 	var err error
 
-	switch os.Args[1] {
-	case midismf.Name:
-		if cmd, err = midismf.NewFromArgs(os.Args[2:]...); err != nil {
+	cmdName := os.Args[1]
+	subCmdName := os.Args[2]
+	args := os.Args[3:]
+
+	switch cmdName {
+	case "render":
+		if cmd, err = render.NewSubcommand(subCmdName, args...); err != nil {
 			fmt.Printf("%v\n", err)
 
 			os.Exit(1)
 		}
-	case "generate-temperley-pitches":
-		if cmd, err = temperleypitches.NewFromArgs(os.Args[2:]...); err != nil {
+	case "generate":
+		if cmd, err = generate.NewSubcommand(subCmdName, args...); err != nil {
+			fmt.Printf("%v\n", err)
+
+			os.Exit(1)
+		}
+	case "validate":
+		if cmd, err = validate.NewSubcommand(subCmdName, args...); err != nil {
 			fmt.Printf("%v\n", err)
 
 			os.Exit(1)
 		}
 	default:
-		fmt.Println("expected command 'midi-smf' or 'generate-temperley-pitches'")
+		fmt.Printf("unknown command '%s'", cmdName)
 
 		os.Exit(1)
 	}

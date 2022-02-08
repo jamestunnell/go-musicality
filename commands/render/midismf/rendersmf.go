@@ -9,10 +9,11 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/jamestunnell/go-musicality/commands"
 	"github.com/jamestunnell/go-musicality/performance/midi"
 )
 
-type ScoreToMIDI struct {
+type RenderSMF struct {
 	ScoreFiles []string
 	OutDir     string
 }
@@ -21,7 +22,7 @@ const Name = "midi-smf"
 
 var errNoScoreFiles = errors.New("no score files")
 
-func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
+func NewFromArgs(cliArgs ...string) (*RenderSMF, error) {
 	flagSet := flag.NewFlagSet(Name, flag.ExitOnError)
 	outDir := flagSet.String("outdir", "", "output directory")
 
@@ -29,7 +30,7 @@ func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
 		return nil, fmt.Errorf("failed to parse midi args: %w", err)
 	}
 
-	cmd := &ScoreToMIDI{
+	cmd := &RenderSMF{
 		ScoreFiles: flagSet.Args(),
 		OutDir:     *outDir,
 	}
@@ -37,26 +38,26 @@ func NewFromArgs(cliArgs ...string) (*ScoreToMIDI, error) {
 	return cmd, nil
 }
 
-func (cmd *ScoreToMIDI) Name() string {
+func (cmd *RenderSMF) Name() string {
 	return Name
 }
 
-func (cmd *ScoreToMIDI) Execute() error {
+func (cmd *RenderSMF) Execute() error {
 	if len(cmd.ScoreFiles) == 0 {
 		return errNoScoreFiles
 	}
 
-	if err := VerifyFiles(cmd.ScoreFiles...); err != nil {
+	if err := commands.VerifyFiles(cmd.ScoreFiles...); err != nil {
 		return fmt.Errorf("failed to verify score files: %w", err)
 	}
 
 	if cmd.OutDir != "" {
-		if err := VerifyDirs(cmd.OutDir); err != nil {
+		if err := commands.VerifyDirs(cmd.OutDir); err != nil {
 			return fmt.Errorf("failed to verify output dir: %w", err)
 		}
 	}
 
-	scores, err := LoadScores(cmd.ScoreFiles...)
+	scores, err := commands.LoadScores(cmd.ScoreFiles...)
 	if err != nil {
 		return fmt.Errorf("failed to load scores: %w", err)
 	}

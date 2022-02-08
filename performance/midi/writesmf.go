@@ -31,6 +31,10 @@ func WriteSMF(s *score.Score, fpath string) error {
 		return fmt.Errorf("failed to make MIDI tracks: %w", err)
 	}
 
+	if len(tracks) == 0 {
+		return fmt.Errorf("score produced no MIDI tracks")
+	}
+
 	write := func(wr *writer.SMF) error {
 		for _, track := range tracks {
 			log.Info().Str("name", track.Name).Msg("writing track")

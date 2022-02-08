@@ -1,4 +1,4 @@
-package midismf
+package commands
 
 import (
 	"fmt"

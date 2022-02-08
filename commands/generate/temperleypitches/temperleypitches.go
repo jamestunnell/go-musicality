@@ -15,8 +15,10 @@ type GenerateTemperley struct {
 	Seed                  uint64
 }
 
+const Name = "temperley-pitches"
+
 func NewFromArgs(cliArgs ...string) (*GenerateTemperley, error) {
-	flagSet := flag.NewFlagSet("generate-temperley", flag.ExitOnError)
+	flagSet := flag.NewFlagSet("temperley-pitches", flag.ExitOnError)
 	key := flagSet.String("key", "C major", "Root pitch class and major/minor (e.g. E major)")
 	numPitches := flagSet.Uint("n", 20, "num pitches to generate")
 	// noteDur := flagSet.String("d", "1/4", "note duration")
@@ -40,7 +42,7 @@ func NewFromArgs(cliArgs ...string) (*GenerateTemperley, error) {
 }
 
 func (cmd *GenerateTemperley) Name() string {
-	return "generate-temperley"
+	return Name
 }
 
 func (cmd *GenerateTemperley) Execute() error {
