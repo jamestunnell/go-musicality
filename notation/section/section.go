@@ -115,29 +115,29 @@ func (s *Section) PartNotes(part string) []*note.Note {
 	return partNotes
 }
 
-func (s *Section) DynamicChanges(sectionOffset rat.Rat) change.Map {
+func (s *Section) DynamicChanges(sectionOffset rat.Rat) change.Changes {
 	return s.gatherChanges(sectionOffset, getDynamicChanges)
 }
 
-func (s *Section) TempoChanges(sectionOffset rat.Rat) change.Map {
+func (s *Section) TempoChanges(sectionOffset rat.Rat) change.Changes {
 	return s.gatherChanges(sectionOffset, getTempoChanges)
 }
 
-func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *measure.Measure) change.Map) change.Map {
+func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *measure.Measure) change.Changes) change.Changes {
 	measureOffset := sectionOffset
-	changes := change.Map{}
+	changes := change.Changes{}
 
 	for _, m := range s.Measures {
 		mChanges := measureChanges(m)
 
-		for offset, c := range mChanges {
-			changeOffset := measureOffset.Add(offset)
+		for _, c := range mChanges {
 			change := &change.Change{
+				Offset:   measureOffset.Add(c.Offset),
 				EndValue: c.EndValue,
 				Duration: c.Duration,
 			}
 
-			changes[changeOffset] = change
+			changes = append(changes, change)
 		}
 
 		measureOffset.Accum(m.Duration())
@@ -146,10 +146,10 @@ func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *me
 	return changes
 }
 
-func getDynamicChanges(m *measure.Measure) change.Map {
+func getDynamicChanges(m *measure.Measure) change.Changes {
 	return m.DynamicChanges
 }
 
-func getTempoChanges(m *measure.Measure) change.Map {
+func getTempoChanges(m *measure.Measure) change.Changes {
 	return m.TempoChanges
 }

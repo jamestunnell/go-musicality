@@ -13,7 +13,7 @@ import (
 type FlatScore struct {
 	Parts                        map[string]note.Notes
 	StartDynamic, StartTempo     float64
-	DynamicChanges, TempoChanges change.Map
+	DynamicChanges, TempoChanges change.Changes
 }
 
 var zero = big.NewRat(0, 1)
@@ -23,8 +23,8 @@ func NewFlatScore() *FlatScore {
 		Parts:          map[string]note.Notes{},
 		StartDynamic:   section.DefaultStartDynamic,
 		StartTempo:     section.DefaultStartTempo,
-		DynamicChanges: change.Map{},
-		TempoChanges:   change.Map{},
+		DynamicChanges: change.Changes{},
+		TempoChanges:   change.Changes{},
 	}
 }
 

@@ -44,12 +44,12 @@ func (sc *ScoreConverter) Process(s *score.Score) (*FlatScore, error) {
 			fs.Parts[partName] = part
 		}
 
-		for offset, change := range sec.DynamicChanges(secOffset.Clone()) {
-			fs.DynamicChanges[offset] = change
+		for _, change := range sec.DynamicChanges(secOffset.Clone()) {
+			fs.DynamicChanges = append(fs.DynamicChanges, change)
 		}
 
-		for offset, change := range sec.TempoChanges(secOffset.Clone()) {
-			fs.TempoChanges[offset] = change
+		for _, change := range sec.TempoChanges(secOffset.Clone()) {
+			fs.TempoChanges = append(fs.TempoChanges, change)
 		}
 
 		secOffset.Accum(secDur)

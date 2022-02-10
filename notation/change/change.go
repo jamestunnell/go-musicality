@@ -8,19 +8,21 @@ import (
 )
 
 type Change struct {
+	Offset   rat.Rat `json:"offset"`
 	EndValue float64 `json:"endValue"`
 	Duration rat.Rat `json:"duration"`
 }
 
-func New(endVal float64, dur rat.Rat) *Change {
+func New(offset rat.Rat, endVal float64, dur rat.Rat) *Change {
 	return &Change{
+		Offset:   offset,
 		EndValue: endVal,
 		Duration: dur,
 	}
 }
 
-func NewImmediate(endVal float64) *Change {
-	return New(endVal, rat.Zero())
+func NewImmediate(offset rat.Rat, endVal float64) *Change {
+	return New(offset, endVal, rat.Zero())
 }
 
 func (c *Change) Equal(other *Change) bool {

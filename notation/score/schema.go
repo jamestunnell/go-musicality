@@ -112,19 +112,18 @@ const schemaStr = `
 				},
 				"dynamicChanges": {
 					"title": "Dynamic changes",
-					"$ref": "#/definitions/changeMap"
+					"$ref": "#/definitions/changes"
 				},
 				"tempoChanges": {
 					"title": "Tempo changes",
-					"$ref": "#/definitions/changeMap"
+					"$ref": "#/definitions/changes"
 				}
 			}
 		},
-		"changeMap": {
+		"changes": {
 			"$id": "#/definitions/changeMap",
-			"type": "object",
-			"title": "Change map",
-			"description": "Changes mapped by offset",
+			"type": "array",
+			"title": "Change array",
 			"patternProperties": {
 				"^[0-9]+(/[1-9][0-9]*)?$": {
 					"$ref": "#/definitions/change"
@@ -137,8 +136,9 @@ const schemaStr = `
 			"title": "A value change",
 			"type": "object",
 			"properties": {
+				"offset": { "$ref": "#/definitions/rational"},
 				"endValue": {"type": "number"},
-				"duration": {"$ref": "#/definitions/duration"}
+				"duration": {"$ref": "#/definitions/rational"}
 			}
 		},
 		"meter": {
@@ -160,7 +160,7 @@ const schemaStr = `
 			],
 			"properties": {
 				"duration": {
-					"$ref": "#/definitions/duration"
+					"$ref": "#/definitions/rational"
 				},
 				"separation": {
 					"$ref": "#/definitions/control",
@@ -199,13 +199,15 @@ const schemaStr = `
 			"maximum": 1,
 			"default": 0.5
 		},
-		"duration": {
-			"$id": "#/definitions/duration",
+		"rational": {
+			"$id": "#/definitions/rational",
 			"type": "string",
-			"title": "Note duration",
-			"description": "Nominal note length.",
-			"pattern": "^[0-9]+(/[1-9][0-9]*)?$",
+			"title": "Rational number",
+			"description": "Numerator and optional denominator.",
+			"pattern": "^-?[0-9]+(/[1-9][0-9]*)?$",
 			"examples": [
+				"-2",
+				"-1/2",
 				"7",
 				"1/2"
 			]

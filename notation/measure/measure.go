@@ -13,8 +13,8 @@ import (
 type Measure struct {
 	Meter          *meter.Meter          `json:"meter"`
 	PartNotes      map[string]note.Notes `json:"partNotes"`
-	DynamicChanges change.Map            `json:"dynamicChanges"`
-	TempoChanges   change.Map            `json:"tempoChanges"`
+	DynamicChanges change.Changes        `json:"dynamicChanges"`
+	TempoChanges   change.Changes        `json:"tempoChanges"`
 }
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
@@ -23,8 +23,8 @@ func New(met *meter.Meter) *Measure {
 	return &Measure{
 		Meter:          met,
 		PartNotes:      map[string]note.Notes{},
-		DynamicChanges: change.Map{},
-		TempoChanges:   change.Map{},
+		DynamicChanges: change.Changes{},
+		TempoChanges:   change.Changes{},
 	}
 }
 
@@ -85,7 +85,7 @@ func (m *Measure) Validate() *validation.Result {
 		}
 	}
 
-	validateChanges := func(changeType string, changes change.Map, r change.ValueRange) {
+	validateChanges := func(changeType string, changes change.Changes, r change.ValueRange) {
 		result := changes.Validate(r)
 		if result != nil {
 			result.Context = fmt.Sprintf("%s %s", changeType, result.Context)

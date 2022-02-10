@@ -2,6 +2,7 @@ package change_test
 
 import (
 	"encoding/json"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,41 +12,40 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func TestChangeMap(t *testing.T) {
+func TestChanges(t *testing.T) {
 	o1 := rat.New(1, 3)
 	o2 := rat.New(2, 3)
 	o3 := rat.New(3, 3)
-	cm := change.Map{
-		rat.New(3, 3): change.NewImmediate(1.1),
-		rat.New(1, 3): change.NewImmediate(3.3),
-		rat.New(2, 3): change.NewImmediate(2.2),
+	changes := change.Changes{
+		change.NewImmediate(o1, 1.1),
+		change.NewImmediate(o3, 3.3),
+		change.NewImmediate(o2, 2.2),
 	}
 	r := &change.MinExclRange{Min: 0.0}
 
-	assert.Nil(t, cm.Validate(r))
+	assert.Nil(t, changes.Validate(r))
 
 	r.Min = 2.0
 
-	assert.NotNil(t, cm.Validate(r))
+	assert.NotNil(t, changes.Validate(r))
 
-	offsets := cm.SortedOffsets()
+	sort.Sort(changes)
 
-	require.Len(t, offsets, 3)
-
-	assert.True(t, offsets[0].Equal(o1))
-	assert.True(t, offsets[1].Equal(o2))
-	assert.True(t, offsets[2].Equal(o3))
+	assert.True(t, changes[0].Offset.Equal(o1))
+	assert.True(t, changes[1].Offset.Equal(o2))
+	assert.True(t, changes[2].Offset.Equal(o3))
 }
 
 func TestChangeMapUnmarshalJSON(t *testing.T) {
-	jsonStr := `{
-		"0": {
+	jsonStr := `[
+		{
+			"offset": "0",
 			"endValue": 0.5,
 			"duration": "2/1"
 		}
-	}`
+	]`
 
-	var cm change.Map
+	var cm change.Changes
 
 	err := json.Unmarshal([]byte(jsonStr), &cm)
 

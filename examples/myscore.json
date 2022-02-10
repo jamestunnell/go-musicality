@@ -18,12 +18,13 @@
       "measures": [
         {
           "meter": "4/4",
-          "dynamicChanges": {
-            "0": {
+          "dynamicChanges": [
+            {
+              "offset": "0",
               "endValue": 0.0,
               "duration": "2"
             }
-          },
+          ],
           "partNotes": {
             "piano": [
               {
@@ -59,12 +60,13 @@
         },
         {
           "meter": "4/4",
-          "tempoChanges": {
-            "0": {
+          "tempoChanges": [
+            {
+              "offset": "0",
               "endValue": 180,
               "duration": "1"
             }
-          },
+          ],
           "partNotes": {
             "piano": [
               {
@@ -100,12 +102,13 @@
         },
         {
           "meter": "4/4",
-          "dynamicChanges": {
-            "0": {
+          "dynamicChanges": [
+            {
+              "offset": "0",
               "duration": "0",
               "endValue": 1.0
             }
-          },
+          ],
           "partNotes": {
             "piano": [
               {

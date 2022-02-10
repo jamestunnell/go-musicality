@@ -2,9 +2,9 @@ package model
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/jamestunnell/go-musicality/notation/change"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
@@ -19,10 +19,12 @@ type Computer struct {
 // NewComputer takes an initial value and a set of changes and
 // produces a Computer which can calculate the value at any time.
 // Assumes that the changes are valid.
-func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
-	// if result := changes.Validate(); result != nil {
-	// 	return nil, result
-	// }
+func NewComputer(startVal float64, changes change.Changes) (*Computer, error) {
+	sort.Sort(changes)
+
+	if err := checkChangeOverlap(changes); err != nil {
+		return nil, err
+	}
 
 	pairs := []function.SubdomainFunctionPair{}
 
@@ -31,7 +33,7 @@ func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
 		return &Computer{pwf}, err
 	}
 
-	if len(changes) == 0 {
+	if changes.Len() == 0 {
 		pairs = append(pairs, function.SubdomainFunctionPair{
 			Subdomain: function.DomainAll(),
 			Function:  function.NewConstantFunction(startVal),
@@ -40,18 +42,11 @@ func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
 		return makeComputer()
 	}
 
-	offsets := changes.SortedOffsets()
-
-	if err := checkChangeOverlap(changes, offsets); err != nil {
-		return nil, err
-	}
-
-	n := len(offsets)
 	prevChangeEnd := function.DomainMin()
 	prevEndVal := startVal
 
-	for i := 0; i < n; i++ {
-		offset := offsets[i]
+	for _, change := range changes {
+		offset := change.Offset
 
 		// if there is a gap, fill in with a constant function
 		if offset.Greater(prevChangeEnd) {
@@ -60,8 +55,6 @@ func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
 				Function:  function.NewConstantFunction(prevEndVal),
 			})
 		}
-
-		change := changes[offset]
 
 		if change.Duration.Zero() {
 			// Don't do anything here. A constant function will be added at the
@@ -95,15 +88,16 @@ func NewComputer(startVal float64, changes change.Map) (*Computer, error) {
 	return makeComputer()
 }
 
-func checkChangeOverlap(changes change.Map, offsets rat.Rats) error {
-	n := len(changes)
+func checkChangeOverlap(changes change.Changes) error {
+	n := changes.Len()
 
+	// check for change overlap
 	for i := 0; i < (n - 1); i++ {
-		curr := changes[offsets[i]]
-		end := offsets[i].Add(curr.Duration)
+		curr := changes[i]
+		end := changes[i].Offset.Add(curr.Duration)
 
-		if end.Greater(offsets[i+1]) {
-			return fmt.Errorf("change at offset %v overlaps next", offsets[i])
+		if end.Greater(changes[i+1].Offset) {
+			return fmt.Errorf("change at offset %s overlaps next", curr.Offset.String())
 		}
 	}
 

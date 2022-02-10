@@ -74,8 +74,9 @@ func TestValidateJSON(t *testing.T) {
 
 		require.True(t, ok)
 
-		mm["dynamicChanges"] = Map{
-			"1/4": Map{
+		mm["dynamicChanges"] = Slice{
+			Map{
+				"offset":   "1/4",
 				"endValue": 1.0,
 				"duration": "3/4",
 			},

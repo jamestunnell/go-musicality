@@ -10,13 +10,14 @@ import (
 )
 
 func TestNewImmediate(t *testing.T) {
-	c := change.NewImmediate(2.5)
+	c := change.NewImmediate(rat.Zero(), 2.5)
 
 	assert.True(t, c.Duration.Zero())
+	assert.True(t, c.Offset.Zero())
 }
 
 func TestValidateDuration(t *testing.T) {
-	c := change.New(0.0, rat.FromInt64(0))
+	c := change.New(rat.Zero(), 0.0, rat.FromInt64(0))
 	r := &change.MinMaxInclRange{Min: 0.0, Max: 1.0}
 
 	assert.Nil(t, c.Validate(r))
@@ -27,7 +28,7 @@ func TestValidateDuration(t *testing.T) {
 }
 
 func TestValidateEndValue(t *testing.T) {
-	c := change.New(0.0, rat.FromInt64(1))
+	c := change.New(rat.Zero(), 0.0, rat.FromInt64(1))
 	r1 := &change.MinMaxInclRange{Min: 0.0, Max: 1.0}
 	r2 := &change.MinExclRange{Min: 0.0}
 

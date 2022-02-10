@@ -55,22 +55,22 @@ func TestInvalidDynamicChange(t *testing.T) {
 	m := measure.New(meter.New(4, 4))
 
 	// duration is negative
-	m.DynamicChanges[rat.Zero()] = change.New(0.5, rat.New(-1, 1))
+	m.DynamicChanges = append(m.DynamicChanges, change.New(rat.Zero(), 0.5, rat.New(-1, 1)))
 
 	assert.NotNil(t, m.Validate())
 
 	// value is out-of-range
-	m.DynamicChanges[rat.Zero()] = change.NewImmediate(1.5)
+	m.DynamicChanges[0] = change.NewImmediate(rat.Zero(), 1.5)
 }
 
 func TestInvalidTempoChange(t *testing.T) {
 	m := measure.New(meter.New(4, 4))
 
 	// duration is negative
-	m.TempoChanges[rat.Zero()] = change.New(100.0, rat.New(-1, 1))
+	m.TempoChanges = append(m.TempoChanges, change.New(rat.Zero(), 100.0, rat.New(-1, 1)))
 
 	assert.NotNil(t, m.Validate())
 
 	// value is out-of-range
-	m.TempoChanges[rat.Zero()] = change.NewImmediate(-1)
+	m.TempoChanges[0] = change.NewImmediate(rat.Zero(), -1)
 }
