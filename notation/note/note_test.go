@@ -87,11 +87,11 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 func TestUnmarshalFail(t *testing.T) {
 	testUnmarshalFail(t, "wrong type", `"not-an-object"`)
 
-	str := `{"duration": "1", "links": {}}` //"not-a-pitch":{"type":"tie","target":"C5"}
+	str := `{"duration": "1", "links": {"not-a-pitch":{"type": "tie", "target": "C5"}}}`
 	testUnmarshalFail(t, "bad link pitch", str)
 
-	// str = `{"duration": "1", "pitches": ["C5"], "links": {"C5":{"type":"tie","target":"not-a-pitch"}}}`
-	// testUnmarshalFail(t, "bad link target pitch", str)
+	str = `{"duration": "1", "pitches": ["C5"], "links": {"C5":{"type":"tie","target":"not-a-pitch"}}}`
+	testUnmarshalFail(t, "bad link target pitch", str)
 }
 
 func testUnmarshalFail(t *testing.T, name, jsonStr string) {
@@ -107,15 +107,11 @@ func testUnmarshalFail(t *testing.T, name, jsonStr string) {
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 	t.Run(name, func(t *testing.T) {
-		t.Log(n.Duration.String())
-
 		d, err := json.Marshal(n)
 
 		if !assert.Nil(t, err) {
 			t.Fatal(err.Error())
 		}
-
-		t.Log(string(d))
 
 		assert.Greater(t, len(d), 0)
 
