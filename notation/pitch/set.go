@@ -26,6 +26,20 @@ func (ps *Set) Len() int {
 	return len(ps.pitches)
 }
 
+func (ps *Set) Equal(other *Set) bool {
+	if ps.Len() != other.Len() {
+		return false
+	}
+
+	for _, p := range ps.pitches {
+		if !other.Contains(p) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (ps *Set) Union(other *Set) *Set {
 	union := make(Pitches, len(ps.pitches))
 

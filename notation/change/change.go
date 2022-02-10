@@ -23,6 +23,10 @@ func NewImmediate(endVal float64) *Change {
 	return New(endVal, rat.Zero())
 }
 
+func (c *Change) Equal(other *Change) bool {
+	return c.EndValue == other.EndValue && c.Duration.Equal(other.Duration)
+}
+
 func (c *Change) Validate(r ValueRange) *validation.Result {
 	errs := []error{}
 

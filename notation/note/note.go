@@ -16,15 +16,15 @@ type Note struct {
 	Pitches            *pitch.Set
 	Duration           rat.Rat
 	Attack, Separation float64
-	Links              map[*pitch.Pitch]*Link
+	Links              Links
 }
 
 type noteJSON struct {
-	Pitches  []string `json:"pitches,omitempty"`
-	Duration rat.Rat  `json:"duration"`
+	Pitches  []string         `json:"pitches,omitempty"`
+	Duration rat.Rat          `json:"duration"`
+	Links    map[string]*Link `json: "links,omitempty"`
 	// Attack     float64          `json:"attack"`
 	// Separation float64          `json:"separation"`
-	Links map[string]*Link `json: "links,omitempty"`
 }
 
 const (
@@ -41,6 +41,30 @@ func New(dur rat.Rat, pitches ...*pitch.Pitch) *Note {
 		Separation: ControlNormal,
 		Links:      make(map[*pitch.Pitch]*Link),
 	}
+}
+
+func (n *Note) Equal(other *Note) bool {
+	if !n.Duration.Equal(other.Duration) {
+		return false
+	}
+
+	if !n.Pitches.Equal(other.Pitches) {
+		return false
+	}
+
+	if n.Attack != other.Attack {
+		return false
+	}
+
+	if n.Separation != other.Separation {
+		return false
+	}
+
+	if !n.Links.Equal(other.Links) {
+		return false
+	}
+
+	return true
 }
 
 func (n *Note) Validate() *validation.Result {
