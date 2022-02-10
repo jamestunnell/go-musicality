@@ -31,12 +31,12 @@ func TestScoreToMIDIScoreNotFound(t *testing.T) {
 	assert.Error(t, cmd.Execute())
 }
 
-func TestScoreToMIDINotScoreJSON(t *testing.T) {
+func TestValidateScoreNotScoreJSON(t *testing.T) {
 	notJSON := testutil.CreateTemp(t)
 
 	defer os.Remove(notJSON.Name())
 
-	err := ioutil.WriteFile(notJSON.Name(), []byte("not-json-data"), fs.ModeExclusive)
+	err := ioutil.WriteFile(notJSON.Name(), []byte{1, 2, 3, 4, 5}, fs.ModeExclusive)
 
 	require.NoError(t, err)
 

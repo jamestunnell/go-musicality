@@ -112,20 +112,21 @@ const schemaStr = `
 				},
 				"dynamicChanges": {
 					"title": "Dynamic changes",
-					"$ref": "#/definitions/changes"
+					"$ref": "#/definitions/changeMap"
 				},
 				"tempoChanges": {
 					"title": "Tempo changes",
-					"$ref": "#/definitions/changes"
+					"$ref": "#/definitions/changeMap"
 				}
 			}
 		},
 		"changes": {
 			"$id": "#/definitions/changeMap",
-			"type": "array",
-			"title": "Change array",
+			"type": "object",
+			"title": "Change map",
+			"description": "Maps changes by offset",
 			"patternProperties": {
-				"^[0-9]+(/[1-9][0-9]*)?$": {
+				"^-?[0-9]+(/[1-9][0-9]*)?$": {
 					"$ref": "#/definitions/change"
 				}
 			},

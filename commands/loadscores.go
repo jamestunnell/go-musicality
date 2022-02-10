@@ -14,7 +14,7 @@ import (
 
 type Scores map[string]*score.Score
 
-func LoadScores(scorePaths ...string) (map[string]*score.Score, error) {
+func LoadScores(validateJSON bool, scorePaths ...string) (map[string]*score.Score, error) {
 	scores := Scores{}
 
 	for _, fpath := range scorePaths {
@@ -32,24 +32,26 @@ func LoadScores(scorePaths ...string) (map[string]*score.Score, error) {
 			return Scores{}, err
 		}
 
-		// before unmarshaling, verify with JSON schema
-		result, err := score.Schema().Validate(gojsonschema.NewBytesLoader(d))
-		if err != nil {
-			err = fmt.Errorf("failed to validate score file '%s': %w", fpath, err)
+		if validateJSON {
+			// before unmarshaling, verify with JSON schema
+			result, err := score.Schema().Validate(gojsonschema.NewBytesLoader(d))
+			if err != nil {
+				err = fmt.Errorf("failed to validate score file '%s': %w", fpath, err)
 
-			return Scores{}, err
-		}
-
-		if !result.Valid() {
-			details := &strings.Builder{}
-			for _, err := range result.Errors() {
-				details.WriteString("\n - ")
-				details.WriteString(err.String())
+				return Scores{}, err
 			}
 
-			err := fmt.Errorf("score file '%s' is not valid: %s", fpath, details.String())
+			if !result.Valid() {
+				details := &strings.Builder{}
+				for _, err := range result.Errors() {
+					details.WriteString("\n - ")
+					details.WriteString(err.String())
+				}
 
-			return Scores{}, err
+				err := fmt.Errorf("score file '%s' is not valid: %s", fpath, details.String())
+
+				return Scores{}, err
+			}
 		}
 
 		var s score.Score

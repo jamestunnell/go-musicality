@@ -18,14 +18,14 @@ const (
 )
 
 func TestLoadScoresEmpty(t *testing.T) {
-	scores, err := commands.LoadScores()
+	scores, err := commands.LoadScores(true)
 
 	assert.NoError(t, err)
 	assert.Empty(t, scores)
 }
 
 func TestLoadScoresNonExistant(t *testing.T) {
-	scores, err := commands.LoadScores(testutil.BogusPath(t))
+	scores, err := commands.LoadScores(true, testutil.BogusPath(t))
 
 	assert.Error(t, err)
 	assert.Empty(t, scores)
@@ -40,7 +40,7 @@ func TestLoadScoresNotScoreJSON(t *testing.T) {
 
 	require.NoError(t, err)
 
-	scores, err := commands.LoadScores(notJSON.Name())
+	scores, err := commands.LoadScores(true, notJSON.Name())
 
 	assert.Error(t, err)
 	assert.Empty(t, scores)
@@ -52,7 +52,7 @@ func TestLoadScoresValidOnly(t *testing.T) {
 	}
 
 	testutil.WriteScoreFiles(t, scoreJSONs, func(names []string) {
-		scores, err := commands.LoadScores(names...)
+		scores, err := commands.LoadScores(true, names...)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, scores)
@@ -65,7 +65,7 @@ func TestLoadScoresInvalidOnly(t *testing.T) {
 	}
 
 	testutil.WriteScoreFiles(t, scoreJSONs, func(names []string) {
-		scores, err := commands.LoadScores(names...)
+		scores, err := commands.LoadScores(true, names...)
 
 		assert.Error(t, err)
 		assert.Empty(t, scores)
@@ -79,7 +79,7 @@ func TestLoadScoresValidAndInvalid(t *testing.T) {
 	}
 
 	testutil.WriteScoreFiles(t, scoreJSONs, func(names []string) {
-		scores, err := commands.LoadScores(names...)
+		scores, err := commands.LoadScores(true, names...)
 
 		assert.Error(t, err)
 		assert.Empty(t, scores)

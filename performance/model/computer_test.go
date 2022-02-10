@@ -13,7 +13,7 @@ import (
 
 func TestComputerNoChanges(t *testing.T) {
 	startVal := 7.2
-	c, err := model.NewComputer(startVal, change.Map{})
+	c, err := model.NewComputer(startVal, change.Changes{})
 
 	assert.Nil(t, err)
 	assert.NotNil(t, c)
@@ -27,7 +27,7 @@ func TestComputerOneImmediateChange(t *testing.T) {
 	offset := rat.FromInt64(2)
 	startVal := 20.0
 	newVal := 10.0
-	changes := change.Map{offset: change.NewImmediate(newVal)}
+	changes := change.Changes{change.NewImmediate(offset, newVal)}
 	c, err := model.NewComputer(startVal, changes)
 
 	assert.Nil(t, err)
@@ -45,7 +45,7 @@ func TestComputerOneGradualChange(t *testing.T) {
 	startVal := 15.0
 	newVal := 25.0
 	dur := rat.FromInt64(10)
-	changes := change.Map{offset: change.New(newVal, dur)}
+	changes := change.Changes{change.New(offset, newVal, dur)}
 	c, err := model.NewComputer(startVal, changes)
 
 	assert.Nil(t, err)

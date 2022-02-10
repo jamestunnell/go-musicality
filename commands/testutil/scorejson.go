@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 
@@ -21,11 +22,9 @@ const (
 
 func InvalidScoreJSON(t *testing.T) []byte {
 	s := ValidScore()
+	d := ScoreJSON(t, s)
 
-	// invalidate
-	s.Sections[TestSectionName].Measures[0].PartNotes[TestPartName][0].Duration.Accum(rat.New(1, 4))
-
-	return ScoreJSON(t, s)
+	return bytes.Replace(d, []byte("sections"), []byte("not-sections"), 1)
 }
 
 func ValidScoreJSON(t *testing.T) []byte {

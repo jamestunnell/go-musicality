@@ -57,7 +57,7 @@ func (cmd *RenderSMF) Execute() error {
 		}
 	}
 
-	scores, err := commands.LoadScores(cmd.ScoreFiles...)
+	scores, err := commands.LoadScores(true, cmd.ScoreFiles...)
 	if err != nil {
 		return fmt.Errorf("failed to load scores: %w", err)
 	}

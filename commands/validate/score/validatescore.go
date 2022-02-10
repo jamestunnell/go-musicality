@@ -37,11 +37,9 @@ func (cmd *ValidateScore) Execute() error {
 	}
 
 	for _, fpath := range cmd.ScoreFiles {
-		scores, err := commands.LoadScores(fpath)
+		scores, err := commands.LoadScores(false, fpath)
 		if err != nil {
-			fmt.Printf("'%s' is invalid: %v", fpath, err)
-
-			continue
+			return fmt.Errorf("failed to load '%s'", fpath)
 		}
 
 		result := scores[fpath].Validate()

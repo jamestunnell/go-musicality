@@ -1,7 +1,9 @@
 package measure
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/meter"
@@ -15,6 +17,20 @@ type Measure struct {
 	PartNotes      map[string]note.Notes `json:"partNotes"`
 	DynamicChanges change.Changes        `json:"dynamicChanges"`
 	TempoChanges   change.Changes        `json:"tempoChanges"`
+}
+
+type measureJSON struct {
+	Meter          *meter.Meter          `json:"meter"`
+	PartNotes      map[string]note.Notes `json:"partNotes"`
+	DynamicChanges changeLiteMap         `json:"dynamicChanges"`
+	TempoChanges   changeLiteMap         `json:"tempoChanges"`
+}
+
+type changeLiteMap map[string]*changeLite
+
+type changeLite struct {
+	EndValue float64 `json:"endValue"`
+	Duration rat.Rat `json:"duration"`
 }
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
@@ -106,4 +122,111 @@ func (m *Measure) Validate() *validation.Result {
 		Errors:     errs,
 		SubResults: results,
 	}
+}
+
+func (m *Measure) MarshalJSON() ([]byte, error) {
+	dcs, err := toChangeLiteMap(m.DynamicChanges)
+	if err != nil {
+		err = fmt.Errorf("failed to convert dynamic changes: %w", err)
+
+		return []byte{}, err
+	}
+
+	tcs, err := toChangeLiteMap(m.TempoChanges)
+	if err != nil {
+		err = fmt.Errorf("failed to convert tempo changes: %w", err)
+
+		return []byte{}, err
+	}
+
+	mj := &measureJSON{
+		Meter:          m.Meter,
+		PartNotes:      m.PartNotes,
+		DynamicChanges: dcs,
+		TempoChanges:   tcs,
+	}
+
+	d, err := json.Marshal(mj)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return d, nil
+}
+
+func (m *Measure) UnmarshalJSON(d []byte) error {
+	var mj measureJSON
+
+	err := json.Unmarshal(d, &mj)
+	if err != nil {
+		return err
+	}
+
+	dcs, err := fromChangeLiteMap(mj.DynamicChanges)
+	if err != nil {
+		err = fmt.Errorf("failed to convert dynamic changes: %w", err)
+
+		return err
+	}
+
+	tcs, err := fromChangeLiteMap(mj.TempoChanges)
+	if err != nil {
+		err = fmt.Errorf("failed to convert tempo changes: %w", err)
+
+		return err
+	}
+
+	m.DynamicChanges = dcs
+	m.TempoChanges = tcs
+	m.Meter = mj.Meter
+	m.PartNotes = mj.PartNotes
+
+	return nil
+}
+
+func toChangeLiteMap(changes change.Changes) (changeLiteMap, error) {
+	clm := map[string]*changeLite{}
+
+	for _, c := range changes {
+		d, err := c.Offset.MarshalJSON()
+		if err != nil {
+			err = fmt.Errorf("failed to marshal offset: %w", err)
+
+			return changeLiteMap{}, err
+		}
+
+		str := strings.Replace(string(d), `"`, "", 2)
+		clm[str] = &changeLite{
+			EndValue: c.EndValue,
+			Duration: c.Duration,
+		}
+	}
+
+	return clm, nil
+}
+
+func fromChangeLiteMap(clm changeLiteMap) (change.Changes, error) {
+	changes := change.Changes{}
+
+	for offsetStr, cl := range clm {
+		offsetJSONStr := fmt.Sprintf(`"%s"`, offsetStr)
+
+		var offset rat.Rat
+
+		err := json.Unmarshal([]byte(offsetJSONStr), &offset)
+		if err != nil {
+			err = fmt.Errorf("failed to unmarshal offset: %w", err)
+
+			return change.Changes{}, err
+		}
+
+		change := &change.Change{
+			Offset:   offset,
+			EndValue: cl.EndValue,
+			Duration: cl.Duration,
+		}
+		changes = append(changes, change)
+	}
+
+	return changes, nil
 }
