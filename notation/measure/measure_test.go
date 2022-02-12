@@ -13,34 +13,35 @@ import (
 )
 
 func TestEmpty(t *testing.T) {
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
-	assert.Nil(t, m.Validate())
+	assert.Nil(t, m.Validate(rat.New(1, 1)))
 	assert.Empty(t, m.PartNotes)
 }
 
-func TestInvalidMeter(t *testing.T) {
-	m := measure.New(meter.New(0, 2))
+func TestInvalidMeterChange(t *testing.T) {
+	m := measure.New()
 
-	assert.NotNil(t, m.Validate())
+	m.MeterChange = meter.New(0, rat.New(1, 2))
+
+	assert.NotNil(t, m.Validate(rat.New(1, 1)))
 }
 
 func TestInvalidPartNote(t *testing.T) {
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	m.PartNotes["piano"] = []*note.Note{
 		note.New(rat.New(0, 2)),
 	}
 
-	assert.NotNil(t, m.Validate())
+	assert.NotNil(t, m.Validate(rat.New(1, 1)))
 }
 
 func TestInvalidPartDurs(t *testing.T) {
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	m.PartNotes["piano"] = []*note.Note{
-		note.New(rat.New(1, 1)),
-		note.New(rat.New(1, 1)),
+		note.New(rat.New(1, 2)),
 	}
 
 	m.PartNotes["piano"] = []*note.Note{
@@ -48,28 +49,32 @@ func TestInvalidPartDurs(t *testing.T) {
 		note.New(rat.New(1, 4)),
 	}
 
-	assert.NotNil(t, m.Validate())
+	assert.NotNil(t, m.Validate(rat.New(1, 1)))
+
+	m.MeterChange = meter.TwoFour()
+
+	assert.Nil(t, m.Validate(rat.New(1, 1)))
 }
 
 func TestInvalidDynamicChange(t *testing.T) {
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	// duration is negative
 	m.DynamicChanges = append(m.DynamicChanges, change.New(rat.Zero(), 0.5, rat.New(-1, 1)))
 
-	assert.NotNil(t, m.Validate())
+	assert.NotNil(t, m.Validate(rat.New(1, 1)))
 
 	// value is out-of-range
 	m.DynamicChanges[0] = change.NewImmediate(rat.Zero(), 1.5)
 }
 
 func TestInvalidTempoChange(t *testing.T) {
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	// duration is negative
 	m.TempoChanges = append(m.TempoChanges, change.New(rat.Zero(), 100.0, rat.New(-1, 1)))
 
-	assert.NotNil(t, m.Validate())
+	assert.NotNil(t, m.Validate(rat.New(1, 1)))
 
 	// value is out-of-range
 	m.TempoChanges[0] = change.NewImmediate(rat.Zero(), -1)

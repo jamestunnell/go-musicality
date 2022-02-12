@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/jamestunnell/go-musicality/notation/measure"
-	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/rat"
@@ -34,7 +33,7 @@ func ValidScoreJSON(t *testing.T) []byte {
 func ValidScore() *score.Score {
 	s := score.New()
 	sec := section.New()
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	m.PartNotes[TestPartName] = []*note.Note{
 		note.New(rat.New(1, 1), pitch.C4),

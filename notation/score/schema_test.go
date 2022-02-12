@@ -25,9 +25,12 @@ func TestValidateJSON(t *testing.T) {
 				"section1": Map{
 					"startTempo":   120,
 					"startDynamic": 0.0,
+					"startMeter": Map{
+						"beatsPerMeasure": 4,
+						"beatDuration":    "1/4",
+					},
 					"measures": Slice{
 						Map{
-							"meter": "4/4",
 							"partNotes": Map{
 								"piano": Slice{
 									Map{"duration": "3/4"},
@@ -102,10 +105,10 @@ func TestValidateJSON(t *testing.T) {
 		assert.True(t, RemoveMapValue(m, "partNotes"))
 	})
 	testValidateJSONInvalid(t, "bad meter", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "meter", "0/4"))
+		assert.True(t, ChangeMapValue(m, "beatDuration", 42.5))
 	})
 	testValidateJSONInvalid(t, "meter wrong type", makeValidScoreMap(), func(m Map) {
-		assert.True(t, ChangeMapValue(m, "meter", 5.5))
+		assert.True(t, ChangeMapValue(m, "startMeter", 5.5))
 	})
 	testValidateJSONInvalid(t, "bad pitch", makeValidScoreMap(), func(m Map) {
 		assert.True(t, ChangeMapValue(m, "pitches", Slice{"not-a-pitch"}))

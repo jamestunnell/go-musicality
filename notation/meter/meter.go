@@ -26,7 +26,7 @@ func (m *Meter) MeasureDuration() rat.Rat {
 }
 
 func (m *Meter) Equal(other *Meter) bool {
-	return m.BeatDuration == other.BeatDuration && m.BeatsPerMeasure == other.BeatsPerMeasure
+	return m.BeatDuration.Equal(other.BeatDuration) && m.BeatsPerMeasure == other.BeatsPerMeasure
 }
 
 func (m *Meter) Validate() *validation.Result {

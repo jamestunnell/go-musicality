@@ -42,7 +42,7 @@ func TestSectionEmpty(t *testing.T) {
 
 func TestSectionNotEmpty(t *testing.T) {
 	s := section.New()
-	m := measure.New(meter.New(4, 4))
+	m := measure.New()
 
 	s.Measures = append(s.Measures, m)
 
@@ -51,7 +51,9 @@ func TestSectionNotEmpty(t *testing.T) {
 
 func TestSectionInvalid(t *testing.T) {
 	s := section.New()
-	m := measure.New(meter.New(0, 4))
+	m := measure.New()
+
+	m.MeterChange = meter.New(0, rat.New(1, 4))
 
 	s.Measures = append(s.Measures, m)
 
@@ -63,13 +65,17 @@ func TestSectionDuration(t *testing.T) {
 
 	assert.True(t, s.Duration().Zero())
 
-	m := measure.New(meter.New(3, 4))
+	s.StartMeter = meter.ThreeFour()
+
+	m := measure.New()
 
 	s.Measures = append(s.Measures, m)
 
 	assert.True(t, s.Duration().Equal(rat.New(3, 4)))
 
-	m2 := measure.New(meter.New(2, 4))
+	m2 := measure.New()
+
+	m2.MeterChange = meter.TwoFour()
 
 	s.Measures = append(s.Measures, m2)
 
@@ -78,10 +84,15 @@ func TestSectionDuration(t *testing.T) {
 
 func TestSectionParts(t *testing.T) {
 	s := section.New()
-	m1 := measure.New(meter.New(3, 4))
-	m2 := measure.New(meter.New(4, 4))
+
+	s.StartMeter = meter.ThreeFour()
+
+	m1 := measure.New()
+	m2 := measure.New()
 	n1 := note.Quarter(pitch.C4)
 	n2 := note.Half(pitch.C2)
+
+	m2.MeterChange = meter.FourFour()
 
 	m1.PartNotes["piano"] = []*note.Note{note.Half(), n1}
 	m2.PartNotes["bass"] = []*note.Note{note.Half(), n2}

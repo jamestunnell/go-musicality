@@ -34,19 +34,19 @@ func (sc *ScoreConverter) Process(s *score.Score) (*FlatScore, error) {
 	for _, sec := range sections {
 		// section start dynamic can count as a change
 		if lastDC := fs.DynamicChanges.Last(); lastDC != nil && lastDC.EndValue != sec.StartDynamic {
-			c := change.NewImmediate(secOffset, sec.StartDynamic)
+			c := change.NewImmediate(secOffset.Clone(), sec.StartDynamic)
 
 			fs.DynamicChanges = append(fs.DynamicChanges, c)
 		}
 
 		// section start meter can count as a change
 		if lastBDC := fs.BeatDurChanges.Last(); lastBDC != nil && lastBDC.EndValue != sec.StartMeter.BeatDur().Float64() {
-			c := change.NewImmediate(secOffset, sec.StartMeter.BeatDur().Float64())
+			c := change.NewImmediate(secOffset.Clone(), sec.StartMeter.BeatDur().Float64())
 
 			fs.BeatDurChanges = append(fs.BeatDurChanges, c)
 		}
 
-		fs.BeatDurChanges = append(fs.BeatDurChanges, sec.BeatDurChanges(secOffset)...)
+		fs.BeatDurChanges = append(fs.BeatDurChanges, sec.BeatDurChanges(secOffset.Clone())...)
 
 		for _, partName := range sec.PartNames() {
 			part, partFound := fs.Parts[partName]

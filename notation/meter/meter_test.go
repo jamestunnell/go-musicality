@@ -8,36 +8,31 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/jamestunnell/go-musicality/notation/meter"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func TestNew(t *testing.T) {
-	m := meter.New(3, 4)
-
-	assert.Nil(t, m.Validate())
-	assert.Equal(t, uint64(3), m.Numerator)
-	assert.Equal(t, uint64(4), m.Denominator)
-}
-
-func TestString(t *testing.T) {
-	assert.Equal(t, "3/4", meter.New(3, 4).String())
-	assert.Equal(t, "4/4", meter.New(4, 4).String())
-	assert.Equal(t, "6/8", meter.New(6, 8).String())
+func TestConvenience(t *testing.T) {
+	assert.Nil(t, meter.ThreeFour().Validate())
+	assert.Nil(t, meter.TwoFour().Validate())
+	assert.Nil(t, meter.FourFour().Validate())
+	assert.Nil(t, meter.SixEight().Validate())
+	assert.Nil(t, meter.TwoTwo().Validate())
 }
 
 func TestInvalid(t *testing.T) {
-	m := meter.New(0, 4)
+	m := meter.New(0, rat.New(1, 4))
 	results := m.Validate()
 
 	require.NotNil(t, results)
 	assert.Len(t, results.Errors, 1)
 
-	m = meter.New(4, 0)
+	m = meter.New(4, rat.Zero())
 	results = m.Validate()
 
 	require.NotNil(t, results)
 	assert.Len(t, results.Errors, 1)
 
-	m = meter.New(0, 0)
+	m = meter.New(0, rat.Zero())
 	results = m.Validate()
 
 	require.NotNil(t, results)
@@ -45,7 +40,7 @@ func TestInvalid(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
-	m := meter.New(4, 4)
+	m := meter.New(4, rat.New(1, 4))
 
 	d, err := json.Marshal(m)
 
@@ -58,12 +53,4 @@ func TestMarshalUnmarshal(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.True(t, m2.Equal(m))
-}
-
-func TestUnmarshalWrongType(t *testing.T) {
-	var m2 meter.Meter
-
-	err := json.Unmarshal([]byte(`"-4/4"`), &m2)
-
-	assert.Error(t, err)
 }
