@@ -51,6 +51,7 @@ const schemaStr = `
 			"required": [
 				"startTempo",
 				"startDynamic",
+				"startMeter",
 				"measures"
 			],
 			"properties": {
@@ -59,6 +60,9 @@ const schemaStr = `
 				},
 				"startDynamic": {
 					"$ref": "#/definitions/dynamic"
+				},
+				"startMeter": {
+					"$ref": "#/definitions/meter"
 				},
 				"measures": {
 					"type": "array",
@@ -89,11 +93,10 @@ const schemaStr = `
 			"title": "Measure",
 			"description": "One measure with notes divided by part.",
 			"required": [
-				"meter",
 				"partNotes"
 			],
 			"properties": {
-				"meter": {
+				"meterChange": {
 					"$ref": "#/definitions/meter"
 				},
 				"partNotes": {
@@ -144,12 +147,19 @@ const schemaStr = `
 		},
 		"meter": {
 			"$id": "#/definitions/meter",
-			"type": "string",
+			"type": "object",
 			"title": "Meter",
 			"description": "Measure time signature",
-			"pattern": "^[1-9][0-9]*/[1-9][0-9]*$",
+			"required": ["beatDuration","beatsPerMeasure"],
+			"properties": {
+				"beatDuration": {"$ref": "#/definitions/rational"},
+				"beatsPerMeasure": {
+					"type": "integer",
+					"exclusiveMinimum": 0
+				}
+			},
 			"examples": [
-				"4/4"
+				{"beatDuration":"1/4","beatsPerMeasure":4}
 			]
 		},
 		"note": {

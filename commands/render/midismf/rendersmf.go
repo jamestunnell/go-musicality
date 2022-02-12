@@ -85,7 +85,7 @@ func (cmd *RenderSMF) Execute() error {
 		log.Info().
 			Str("input", fpath).
 			Str("output", midiFPath).
-			Msg("converting score")
+			Msg("rendering score")
 
 		if err = midi.WriteSMF(s, midiFPath); err != nil {
 			return fmt.Errorf("failed to convert '%s' to MIDI: %w", fpath, err)

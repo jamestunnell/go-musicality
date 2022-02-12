@@ -15,16 +15,18 @@
     "intro": {
       "startTempo": 120,
       "startDynamic": 1.0,
+      "startMeter": {
+        "beatsPerMeasure": 4,
+        "beatDuration": "1/4"
+      },
       "measures": [
         {
-          "meter": "4/4",
-          "dynamicChanges": [
-            {
-              "offset": "0",
+          "dynamicChanges": {
+            "0": {
               "endValue": 0.0,
               "duration": "2"
             }
-          ],
+          },
           "partNotes": {
             "piano": [
               {
@@ -59,14 +61,12 @@
           }
         },
         {
-          "meter": "4/4",
-          "tempoChanges": [
-            {
-              "offset": "0",
+          "tempoChanges": {
+            "0": {
               "endValue": 180,
               "duration": "1"
             }
-          ],
+          },
           "partNotes": {
             "piano": [
               {
@@ -101,14 +101,12 @@
           }
         },
         {
-          "meter": "4/4",
-          "dynamicChanges": [
-            {
-              "offset": "0",
+          "dynamicChanges": {
+            "0": {
               "duration": "0",
               "endValue": 1.0
             }
-          ],
+          },
           "partNotes": {
             "piano": [
               {
@@ -143,7 +141,10 @@
           }
         },
         {
-          "meter": "3/4",
+          "meterChange": {
+            "beatsPerMeasure": 3,
+            "beatDuration": "1/4"
+          },
           "partNotes": {
             "piano": [
               {
@@ -171,19 +172,15 @@
           }
         },
         {
-          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": "4/4",
           "partNotes": {}
         },
         {
-          "meter": "4/4",
           "partNotes": {}
         }
       ]

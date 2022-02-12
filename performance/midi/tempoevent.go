@@ -12,8 +12,8 @@ type TempoWriter struct {
 	bpm float64
 }
 
-func NewTempoEvent(offset rat.Rat, bpm float64) *Event {
-	return NewEvent(offset, &TempoWriter{bpm: bpm})
+func NewTempoEvent(offset rat.Rat, bpm float64) *SMFEvent {
+	return NewSMFEvent(offset, &TempoWriter{bpm: bpm})
 }
 
 func (e *TempoWriter) Summary() string {

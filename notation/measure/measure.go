@@ -13,14 +13,14 @@ import (
 )
 
 type Measure struct {
-	Meter          *meter.Meter          `json:"meter"`
-	PartNotes      map[string]note.Notes `json:"partNotes"`
-	DynamicChanges change.Changes        `json:"dynamicChanges"`
-	TempoChanges   change.Changes        `json:"tempoChanges"`
+	MeterChange    *meter.Meter
+	PartNotes      map[string]note.Notes
+	DynamicChanges change.Changes
+	TempoChanges   change.Changes
 }
 
 type measureJSON struct {
-	Meter          *meter.Meter          `json:"meter"`
+	MeterChange    *meter.Meter          `json:"meterChange,omitempty"`
 	PartNotes      map[string]note.Notes `json:"partNotes"`
 	DynamicChanges changeLiteMap         `json:"dynamicChanges"`
 	TempoChanges   changeLiteMap         `json:"tempoChanges"`
@@ -35,9 +35,9 @@ type changeLite struct {
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
 
-func New(met *meter.Meter) *Measure {
+func New() *Measure {
 	return &Measure{
-		Meter:          met,
+		MeterChange:    nil,
 		PartNotes:      map[string]note.Notes{},
 		DynamicChanges: change.Changes{},
 		TempoChanges:   change.Changes{},
@@ -54,21 +54,16 @@ var (
 	}
 )
 
-func (m *Measure) Duration() rat.Rat {
-	return rat.New(int64(m.Meter.Numerator), int64(m.Meter.Denominator))
-}
-
-func (m *Measure) Validate() *validation.Result {
+func (m *Measure) Validate(measureDur rat.Rat) *validation.Result {
 	results := []*validation.Result{}
 	errs := []error{}
 
-	if result := m.Meter.Validate(); result != nil {
-		results = append(results, result)
-	}
+	if m.MeterChange != nil {
+		measureDur = m.MeterChange.MeasureDuration()
 
-	dur := m.Duration()
-	if err := validation.VerifyPositiveRat("duration", dur); err != nil {
-		errs = append(errs, err)
+		if result := m.MeterChange.Validate(); result != nil {
+			results = append(results, result)
+		}
 	}
 
 	for part, notes := range m.PartNotes {
@@ -85,8 +80,8 @@ func (m *Measure) Validate() *validation.Result {
 
 		notesDur := notes.TotalDuration()
 
-		if !notesDur.Equal(dur) {
-			err := fmt.Errorf(notesDurErrFmt, notesDur.String(), dur.String())
+		if !notesDur.Equal(measureDur) {
+			err := fmt.Errorf(notesDurErrFmt, notesDur.String(), measureDur.String())
 
 			partErrs = append(partErrs, err)
 		}
@@ -140,7 +135,7 @@ func (m *Measure) MarshalJSON() ([]byte, error) {
 	}
 
 	mj := &measureJSON{
-		Meter:          m.Meter,
+		MeterChange:    m.MeterChange,
 		PartNotes:      m.PartNotes,
 		DynamicChanges: dcs,
 		TempoChanges:   tcs,
@@ -178,7 +173,7 @@ func (m *Measure) UnmarshalJSON(d []byte) error {
 
 	m.DynamicChanges = dcs
 	m.TempoChanges = tcs
-	m.Meter = mj.Meter
+	m.MeterChange = mj.MeterChange
 	m.PartNotes = mj.PartNotes
 
 	return nil

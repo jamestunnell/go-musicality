@@ -11,6 +11,7 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
+	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
 const ticksPerQuarter = 960
@@ -26,9 +27,19 @@ func WriteSMF(s *score.Score, fpath string) error {
 		return fmt.Errorf("failed to get MIDI settings: %w", err)
 	}
 
-	tracks, err := MakeTracks(s, settings)
+	fs, err := (&model.ScoreConverter{}).Process(s)
+	if err != nil {
+		return fmt.Errorf("failed to convert to flat score: %w", err)
+	}
+
+	tracks, err := MakeTracks(fs, settings)
 	if err != nil {
 		return fmt.Errorf("failed to make MIDI tracks: %w", err)
+	}
+
+	tempoEvents, err := MakeTempoEvents(fs, fs.Duration(), settings.TempoSamplePeriod)
+	if err != nil {
+		return fmt.Errorf("failed to make tempo events: %w", err)
 	}
 
 	if len(tracks) == 0 {
@@ -36,7 +47,7 @@ func WriteSMF(s *score.Score, fpath string) error {
 	}
 
 	write := func(wr *writer.SMF) error {
-		for _, track := range tracks {
+		for i, track := range tracks {
 			log.Info().Str("name", track.Name).Msg("writing track")
 
 			writer.TrackSequenceName(wr, track.Name)
@@ -45,8 +56,15 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 			prev := rat.Zero()
 
+			// combine tempo events for first track
+			if i == 0 {
+				track.Events = append(track.Events, tempoEvents...)
+
+				SortEvents(track.Events)
+			}
+
 			for _, event := range track.Events {
-				current := event.Offset
+				current := event.Offset()
 
 				if current.Greater(prev) {
 					diff := current.Sub(prev).Float64()
@@ -59,11 +77,11 @@ func WriteSMF(s *score.Score, fpath string) error {
 
 				err := event.Write(wr)
 				if err != nil {
-					return fmt.Errorf("failed to write event at %s: %w", event.Offset.String(), err)
+					return fmt.Errorf("failed to write event at %s: %w", current.String(), err)
 				} else {
 					log.Debug().
 						Float64("offset", current.Float64()).
-						Str("summary", event.Writer.Summary()).
+						Str("summary", event.Summary()).
 						Msg("wrote event")
 				}
 			}

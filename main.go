@@ -6,6 +6,7 @@ import (
 
 	"github.com/jamestunnell/go-musicality/commands"
 	"github.com/jamestunnell/go-musicality/commands/generate"
+	"github.com/jamestunnell/go-musicality/commands/play"
 	"github.com/jamestunnell/go-musicality/commands/render"
 	"github.com/jamestunnell/go-musicality/commands/validate"
 )
@@ -37,6 +38,12 @@ func main() {
 		}
 	case "generate":
 		if cmd, err = generate.NewSubcommand(subCmdName, args...); err != nil {
+			fmt.Printf("%v\n", err)
+
+			os.Exit(1)
+		}
+	case "play":
+		if cmd, err = play.NewSubcommand(subCmdName, args...); err != nil {
 			fmt.Printf("%v\n", err)
 
 			os.Exit(1)

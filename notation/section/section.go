@@ -5,6 +5,7 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
+	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
@@ -13,6 +14,7 @@ import (
 type Section struct {
 	StartTempo   float64            `json:"startTempo"`
 	StartDynamic float64            `json:"startDynamic"`
+	StartMeter   *meter.Meter       `json:"startMeter"`
 	Measures     []*measure.Measure `json:"measures"`
 }
 
@@ -27,6 +29,7 @@ func New(opts ...OptFunc) *Section {
 	s := &Section{
 		StartTempo:   DefaultStartTempo,
 		StartDynamic: DefaultStartDynamic,
+		StartMeter:   meter.FourFour(),
 		Measures:     []*measure.Measure{},
 	}
 
@@ -39,9 +42,14 @@ func New(opts ...OptFunc) *Section {
 
 func (s *Section) Duration() rat.Rat {
 	dur := rat.Zero()
+	mDur := s.StartMeter.MeasureDuration()
 
 	for _, m := range s.Measures {
-		dur.Accum(m.Duration())
+		if m.MeterChange != nil {
+			mDur = m.MeterChange.MeasureDuration()
+		}
+
+		dur.Accum(mDur)
 	}
 
 	return dur
@@ -59,11 +67,17 @@ func (s *Section) Validate() *validation.Result {
 		errs = append(errs, err)
 	}
 
+	mDur := s.StartMeter.MeasureDuration()
+
 	for i, m := range s.Measures {
-		if result := m.Validate(); result != nil {
+		if result := m.Validate(mDur); result != nil {
 			result.Context = fmt.Sprintf("%s %d", result.Context, i)
 
 			results = append(results, result)
+		}
+
+		if m.MeterChange != nil {
+			mDur = m.MeterChange.MeasureDuration()
 		}
 	}
 
@@ -102,17 +116,26 @@ func (s *Section) PartNames() []string {
 
 func (s *Section) PartNotes(part string) []*note.Note {
 	partNotes := []*note.Note{}
+	mDur := s.StartMeter.MeasureDuration()
 
 	for _, m := range s.Measures {
+		if m.MeterChange != nil {
+			mDur = m.MeterChange.MeasureDuration()
+		}
+
 		notes, found := m.PartNotes[part]
 		if found {
 			partNotes = append(partNotes, notes...)
 		} else {
-			partNotes = append(partNotes, note.New(m.Duration()))
+			partNotes = append(partNotes, note.New(mDur))
 		}
 	}
 
 	return partNotes
+}
+
+func (s *Section) BeatDurChanges(sectionOffset rat.Rat) change.Changes {
+	return s.gatherChanges(sectionOffset, getBeatDurChanges)
 }
 
 func (s *Section) DynamicChanges(sectionOffset rat.Rat) change.Changes {
@@ -124,10 +147,15 @@ func (s *Section) TempoChanges(sectionOffset rat.Rat) change.Changes {
 }
 
 func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *measure.Measure) change.Changes) change.Changes {
-	measureOffset := sectionOffset
+	measureOffset := sectionOffset.Clone()
 	changes := change.Changes{}
+	mDur := s.StartMeter.MeasureDuration()
 
 	for _, m := range s.Measures {
+		if m.MeterChange != nil {
+			mDur = m.MeterChange.MeasureDuration()
+		}
+
 		mChanges := measureChanges(m)
 
 		for _, c := range mChanges {
@@ -140,7 +168,7 @@ func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *me
 			changes = append(changes, change)
 		}
 
-		measureOffset.Accum(m.Duration())
+		measureOffset.Accum(mDur)
 	}
 
 	return changes
@@ -148,6 +176,16 @@ func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *me
 
 func getDynamicChanges(m *measure.Measure) change.Changes {
 	return m.DynamicChanges
+}
+
+func getBeatDurChanges(m *measure.Measure) change.Changes {
+	if m.MeterChange == nil {
+		return change.Changes{}
+	}
+
+	c := change.NewImmediate(rat.Zero(), m.MeterChange.BeatDur().Float64())
+
+	return change.Changes{c}
 }
 
 func getTempoChanges(m *measure.Measure) change.Changes {

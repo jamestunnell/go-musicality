@@ -11,18 +11,22 @@ import (
 )
 
 type FlatScore struct {
-	Parts                        map[string]note.Notes
-	StartDynamic, StartTempo     float64
-	DynamicChanges, TempoChanges change.Changes
+	Parts                                        map[string]note.Notes
+	StartBeatDur, StartDynamic, StartTempo       float64
+	BeatDurChanges, DynamicChanges, TempoChanges change.Changes
 }
+
+const DefaultStartBeatDur = 0.25
 
 var zero = big.NewRat(0, 1)
 
 func NewFlatScore() *FlatScore {
 	return &FlatScore{
 		Parts:          map[string]note.Notes{},
+		StartBeatDur:   DefaultStartBeatDur,
 		StartDynamic:   section.DefaultStartDynamic,
 		StartTempo:     section.DefaultStartTempo,
+		BeatDurChanges: change.Changes{},
 		DynamicChanges: change.Changes{},
 		TempoChanges:   change.Changes{},
 	}
@@ -42,6 +46,10 @@ func (s *FlatScore) Duration() rat.Rat {
 	sort.Sort(durs)
 
 	return durs[durs.Len()-1]
+}
+
+func (s *FlatScore) BeatDurComputer() (*Computer, error) {
+	return NewComputer(s.StartBeatDur, s.BeatDurChanges)
 }
 
 func (s *FlatScore) DynamicComputer() (*Computer, error) {

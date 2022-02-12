@@ -8,10 +8,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func collectTempoEvents(
+func MakeTempoEvents(
 	fs *model.FlatScore,
 	samplingDur rat.Rat,
-	samplePeriod rat.Rat) ([]*Event, error) {
+	samplePeriod rat.Rat) ([]Event, error) {
 	log.Debug().
 		Str("sampling dur", samplingDur.String()).
 		Str("sample period", samplePeriod.String()).
@@ -21,12 +21,12 @@ func collectTempoEvents(
 	if err != nil {
 		err = fmt.Errorf("failed to make tempo computer: %w", err)
 
-		return []*Event{}, err
+		return []Event{}, err
 	}
 
 	offset := rat.Zero()
 	bpm := tc.At(offset)
-	events := []*Event{
+	events := []Event{
 		NewTempoEvent(offset.Clone(), bpm),
 	}
 

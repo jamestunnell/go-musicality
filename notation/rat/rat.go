@@ -25,6 +25,10 @@ func FromInt64(x int64) Rat {
 	return Rat{Rat: new(big.Rat).SetInt64(x)}
 }
 
+func FromUint64(x uint64) Rat {
+	return Rat{Rat: new(big.Rat).SetUint64(x)}
+}
+
 func Zero() Rat {
 	return Rat{Rat: big.NewRat(0, 1)}
 }
@@ -106,6 +110,10 @@ func (r Rat) MulFloat64(x float64) Rat {
 
 func (r Rat) MulInt64(i int64) Rat {
 	return Rat{Rat: new(big.Rat).Mul(r.Rat, new(big.Rat).SetInt64(i))}
+}
+
+func (r Rat) MulUint64(i uint64) Rat {
+	return Rat{Rat: new(big.Rat).Mul(r.Rat, new(big.Rat).SetUint64(i))}
 }
 
 func (r Rat) Div(other Rat) Rat {

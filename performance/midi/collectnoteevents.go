@@ -8,20 +8,20 @@ import (
 	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
-func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]*Event, error) {
-	events := []*Event{}
+func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]Event, error) {
+	events := []Event{}
 
 	notes := fs.Parts[part]
 	converter := model.NewNoteConverter(model.OptionReplaceSlursAndGlides())
 
 	notes2, err := converter.Process(notes)
 	if err != nil {
-		return []*Event{}, fmt.Errorf("failed to convert notes: %w", err)
+		return []Event{}, fmt.Errorf("failed to convert notes: %w", err)
 	}
 
 	for i, n := range notes2 {
 		if len(n.PitchDurs) > 1 {
-			return []*Event{}, fmt.Errorf("note %d has multiple pitch durs", i)
+			return []Event{}, fmt.Errorf("note %d has multiple pitch durs", i)
 		}
 
 		pd := n.PitchDurs[0]
@@ -31,14 +31,14 @@ func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]
 		if err != nil {
 			err = fmt.Errorf("failed to get MIDI note for pitch '%s': %w", p.String(), err)
 
-			return []*Event{}, err
+			return []Event{}, err
 		}
 
 		dynamic, err := function.At(dc, n.Start)
 		if err != nil {
 			err = fmt.Errorf("failed compute dynamic at note start %s: %w", n.Start, err)
 
-			return []*Event{}, err
+			return []Event{}, err
 		}
 
 		vel := Velocity(n.Attack * dynamic)

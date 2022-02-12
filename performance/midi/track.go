@@ -3,7 +3,7 @@ package midi
 type Track struct {
 	Name                string
 	Channel, Instrument uint8
-	Events              []*Event
+	Events              NoteEvents
 }
 
 const DefaultInstrument = uint8(0)

@@ -12,8 +12,8 @@ type MeterWriter struct {
 	num, denom uint8
 }
 
-func NewMeterEvent(offset rat.Rat, num, denom uint8) *Event {
-	return NewEvent(offset, &MeterWriter{num: num, denom: denom})
+func NewMeterEvent(offset rat.Rat, num, denom uint8) *SMFEvent {
+	return NewSMFEvent(offset, &MeterWriter{num: num, denom: denom})
 }
 
 func (e *MeterWriter) Summary() string {
