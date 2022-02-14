@@ -12,6 +12,25 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
+func TestEqual(t *testing.T) {
+	n1 := note.Whole(pitch.A0)
+	n2 := note.Half(pitch.A0)
+	n3 := note.Whole(pitch.A0, pitch.A1)
+
+	assert.True(t, n1.Equal(n1))
+	assert.False(t, n1.Equal(n2))
+	assert.False(t, n1.Equal(n3))
+
+	n4 := note.Whole(pitch.A0)
+	n5 := note.Whole(pitch.A0)
+
+	n4.Attack = 0.33
+	n5.Separation = 0.67
+
+	assert.False(t, n1.Equal(n4))
+	assert.False(t, n1.Equal(n5))
+}
+
 func TestNoteValid(t *testing.T) {
 	testNoteValid(t, "rest", rat.New(1, 2), func(n *note.Note) {})
 	testNoteValid(t, "monophonic", rat.New(1, 2), func(n *note.Note) { n.Pitches.Add(pitch.A0) })

@@ -16,6 +16,19 @@ func TestNewImmediate(t *testing.T) {
 	assert.True(t, c.Offset.Zero())
 }
 
+func TestChangeEqual(t *testing.T) {
+	const testValue = 2.2
+	c1 := change.NewImmediate(rat.Zero(), testValue)
+	c2 := change.NewImmediate(rat.Zero(), testValue+0.1)
+	c3 := change.NewImmediate(rat.New(1, 100), testValue)
+	c4 := change.New(rat.Zero(), testValue, rat.New(1, 2))
+
+	assert.True(t, c1.Equal(c1))
+	assert.False(t, c1.Equal(c2))
+	assert.False(t, c1.Equal(c3))
+	assert.False(t, c1.Equal(c4))
+}
+
 func TestValidateDuration(t *testing.T) {
 	c := change.New(rat.Zero(), 0.0, rat.FromInt64(0))
 	r := &change.MinMaxInclRange{Min: 0.0, Max: 1.0}

@@ -26,7 +26,7 @@ func NewImmediate(offset rat.Rat, endVal float64) *Change {
 }
 
 func (c *Change) Equal(other *Change) bool {
-	return c.EndValue == other.EndValue && c.Duration.Equal(other.Duration)
+	return c.Offset.Equal(other.Offset) && c.EndValue == other.EndValue && c.Duration.Equal(other.Duration)
 }
 
 func (c *Change) Validate(r ValueRange) *validation.Result {
