@@ -2,6 +2,7 @@ package note_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,12 +24,16 @@ func TestEqual(t *testing.T) {
 
 	n4 := note.Whole(pitch.A0)
 	n5 := note.Whole(pitch.A0)
+	n6 := note.Whole(pitch.A0)
+	l := &note.Link{Source: pitch.A4, Target: pitch.A4, Type: note.LinkTie}
 
 	n4.Attack = 0.33
 	n5.Separation = 0.67
+	n6.Links = append(n6.Links, l)
 
 	assert.False(t, n1.Equal(n4))
 	assert.False(t, n1.Equal(n5))
+	assert.False(t, n1.Equal(n6))
 }
 
 func TestNoteValid(t *testing.T) {
@@ -90,7 +95,8 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 			n.Separation = note.ControlMax + 0.01
 		},
 		"with link": func(n *note.Note) {
-			n.Links[p1] = &note.Link{Type: note.Tie, Target: p1}
+			l := &note.Link{Source: pitch.C0, Target: pitch.C0, Type: note.LinkTie}
+			n.Links = append(n.Links, l)
 		},
 	}
 
@@ -106,10 +112,28 @@ func TestNoteMarshalUnmarshalJSON(t *testing.T) {
 func TestUnmarshalFail(t *testing.T) {
 	testUnmarshalFail(t, "wrong type", `"not-an-object"`)
 
-	str := `{"duration": "1", "links": {"not-a-pitch":{"type": "tie", "target": "C5"}}}`
-	testUnmarshalFail(t, "bad link pitch", str)
+	str := `{
+		"duration": "1",
+		"pitches": ["not-a-pitch"]
+	}`
 
-	str = `{"duration": "1", "pitches": ["C5"], "links": {"C5":{"type":"tie","target":"not-a-pitch"}}}`
+	testUnmarshalFail(t, "bad pitch", str)
+
+	str = `{
+		"duration": "1",
+		"pitches": ["C5"],
+		"links": {
+			"not-a-pitch":{
+				"type":"tie",
+				"target": "C5"
+			}
+		}
+	}`
+	testUnmarshalFail(t, "bad link source pitch", str)
+
+	str = strings.Replace(str, "not-a-pitch", "C5", 1)
+	str = strings.Replace(str, `"target": "C5"`, `"target": "not-a-pitch"`, 1)
+
 	testUnmarshalFail(t, "bad link target pitch", str)
 }
 

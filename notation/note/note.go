@@ -20,9 +20,9 @@ type Note struct {
 }
 
 type noteJSON struct {
-	Pitches  []string         `json:"pitches,omitempty"`
-	Duration rat.Rat          `json:"duration"`
-	Links    map[string]*Link `json: "links,omitempty"`
+	Pitches  []string    `json:"pitches,omitempty"`
+	Duration rat.Rat     `json:"duration"`
+	LinkMap  linkLiteMap `json:"links,omitempty"`
 	// Attack     float64          `json:"attack"`
 	// Separation float64          `json:"separation"`
 }
@@ -39,7 +39,7 @@ func New(dur rat.Rat, pitches ...*pitch.Pitch) *Note {
 		Duration:   dur,
 		Attack:     ControlNormal,
 		Separation: ControlNormal,
-		Links:      make(map[*pitch.Pitch]*Link),
+		Links:      Links{},
 	}
 }
 
@@ -94,16 +94,10 @@ func (n *Note) Validate() *validation.Result {
 }
 
 func (n *Note) MarshalJSON() ([]byte, error) {
-	links := map[string]*Link{}
-
-	for p, link := range n.Links {
-		links[p.String()] = link
-	}
-
 	j := noteJSON{
 		Pitches:  n.Pitches.Pitches().Strings(),
 		Duration: n.Duration,
-		Links:    links,
+		LinkMap:  n.Links.ToLinkLiteMap(),
 	}
 
 	d, err := json.Marshal(j)
@@ -140,14 +134,9 @@ func (n *Note) UnmarshalJSON(d []byte) error {
 		return err
 	}
 
-	links := map[*pitch.Pitch]*Link{}
-	for pStr, link := range j.Links {
-		p, err := pitch.Parse(pStr)
-		if err != nil {
-			return fmt.Errorf("failed to parse link pitch '%s': %w", pStr, err)
-		}
-
-		links[p] = link
+	links, err := j.LinkMap.ToLinks()
+	if err != nil {
+		return fmt.Errorf("failed to make links from map: %w", err)
 	}
 
 	pitches := pitch.NewSet()

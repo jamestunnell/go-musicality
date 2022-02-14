@@ -92,16 +92,16 @@ func (nc *NoteConverter) processNote(current, next *note.Note) error {
 	dur := current.Duration
 
 	for _, p := range current.Pitches.Pitches() {
-		link := current.Links[p]
+		link, found := current.Links.FindBySource(p)
 
-		if link != nil && nc.replaceSlursAndGlides {
+		if found && nc.replaceSlursAndGlides {
 			switch link.Type {
-			case note.Slur:
+			case note.LinkSlur:
 				link = nil
 				s = note.ControlMin
-			case note.StepSlurred, note.Glide:
+			case note.LinkStepSlurred, note.LinkGlide:
 				link = &note.Link{
-					Type:   note.Step,
+					Type:   note.LinkStep,
 					Target: link.Target,
 				}
 			}
@@ -121,16 +121,16 @@ func (nc *NoteConverter) processNote(current, next *note.Note) error {
 		}
 
 		switch link.Type {
-		case note.Tie, note.Slur:
+		case note.LinkTie, note.LinkSlur:
 			nc.processPitchDurs(p, target, a, s, NewPitchDur(NewPitch(p, 0), dur))
-		case note.Glide:
+		case note.LinkGlide:
 			pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
 
 			nc.processPitchDurs(p, target, a, s, pds...)
-		case note.StepSlurred, note.Step:
+		case note.LinkStepSlurred, note.LinkStep:
 			pds := MakeSteps(dur, p, link.Target, CentsPerSemitoneInt)
 
-			if link.Type == note.Step {
+			if link.Type == note.LinkStep {
 				for _, pd := range pds {
 					nc.processPitchDurs(p, nil, a, s, pd)
 				}
