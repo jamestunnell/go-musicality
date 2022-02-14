@@ -55,7 +55,15 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/jamestunnell/go-musicality/notation/pitch/pitch.go (95.8%)</option>
+				<option value="file0">github.com/jamestunnell/go-musicality/notation/pitch/freq.go (100.0%)</option>
+				
+				<option value="file1">github.com/jamestunnell/go-musicality/notation/pitch/parse.go (91.4%)</option>
+				
+				<option value="file2">github.com/jamestunnell/go-musicality/notation/pitch/pitch.go (95.0%)</option>
+				
+				<option value="file3">github.com/jamestunnell/go-musicality/notation/pitch/pitches.go (100.0%)</option>
+				
+				<option value="file4">github.com/jamestunnell/go-musicality/notation/pitch/set.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -71,17 +79,132 @@
 		
 		<pre class="file" id="file0" style="display: none">package pitch
 
-import (
-        "encoding/json"
-        "math"
-)
+import "math"
 
 const (
         // BaseFreq is frequency of C0
         BaseFreq = 16.351597831287414667365624595207
         // SemitonesPerOctave is the number of semitones per octave
-        SemitonesPerOctave = 12
+        SemitonesPerOctave = 12.0
 )
+
+func Freq(totalSemitoneOffset float64) float64 <span class="cov8" title="1">{
+        return BaseFreq * Ratio(totalSemitoneOffset)
+}</span>
+
+func Ratio(totalSemitoneOffset float64) float64 <span class="cov8" title="1">{
+        return math.Pow(2.0, totalSemitoneOffset/float64(SemitonesPerOctave))
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package pitch
+
+import (
+        "errors"
+        "fmt"
+        "strconv"
+)
+
+var (
+        errExpectedSemitone           = errors.New("expected semitone letter")
+        errExpectedAccidentalOrOctave = errors.New("expected accidental or octave")
+        errExpectedOctave             = errors.New("expected octave")
+
+        baseSemitoneMap = map[rune]int{
+                'C': 0,
+                'D': 2,
+                'E': 4,
+                'F': 5,
+                'G': 7,
+                'A': 9,
+                'B': 11,
+        }
+)
+
+func ParseSemitone(s string) (int, error) <span class="cov8" title="1">{
+        if len(s) == 0 </span><span class="cov8" title="1">{
+                return 0, errExpectedSemitone
+        }</span>
+
+        <span class="cov8" title="1">semitone, found := baseSemitoneMap[rune(s[0])]
+        if !found </span><span class="cov8" title="1">{
+                return 0, fmt.Errorf("invalid semitone '%s'", s[:1])
+        }</span>
+
+        <span class="cov8" title="1">switch len(s) </span>{
+        case 1:<span class="cov8" title="1"></span>
+        case 2:<span class="cov8" title="1">
+                switch rune(s[1]) </span>{
+                case '#':<span class="cov8" title="1">
+                        semitone++</span>
+                case 'b':<span class="cov8" title="1">
+                        semitone--</span>
+                default:<span class="cov8" title="1">
+                        return 0, fmt.Errorf("unexpected accidental rune %c", s[1])</span>
+                }
+        default:<span class="cov8" title="1">
+                return 0, fmt.Errorf("semitone string is too long")</span>
+        }
+
+        <span class="cov8" title="1">return semitone, nil</span>
+}
+
+func parse(s string) (octave, semitone int, err error) <span class="cov8" title="1">{
+        if len(s) == 0 </span><span class="cov0" title="0">{
+                return 0, 0, errExpectedSemitone
+        }</span>
+
+        <span class="cov8" title="1">semitone, found := baseSemitoneMap[rune(s[0])]
+        if !found </span><span class="cov8" title="1">{
+                return 0, 0, fmt.Errorf("invalid semitone '%s'", s[:1])
+        }</span>
+
+        <span class="cov8" title="1">if len(s) == 1 </span><span class="cov0" title="0">{
+                return 0, 0, errExpectedAccidentalOrOctave
+        }</span>
+
+        <span class="cov8" title="1">hasAccidental := false
+
+        switch rune(s[1]) </span>{
+        case '#':<span class="cov8" title="1">
+                semitone++
+
+                hasAccidental = true</span>
+        case 'b':<span class="cov8" title="1">
+                semitone--
+
+                hasAccidental = true</span>
+        }
+
+        <span class="cov8" title="1">var octaveStr string
+
+        if hasAccidental </span><span class="cov8" title="1">{
+                octaveStr = s[2:]
+        }</span> else<span class="cov8" title="1"> {
+                octaveStr = s[1:]
+        }</span>
+
+        <span class="cov8" title="1">if len(octaveStr) == 0 </span><span class="cov0" title="0">{
+                return 0, 0, errExpectedOctave
+        }</span>
+
+        <span class="cov8" title="1">octave, err = strconv.Atoi(octaveStr)
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, 0, fmt.Errorf("invalid octave '%s': %w", octaveStr, err)
+        }</span>
+
+        <span class="cov8" title="1">return octave, semitone, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package pitch
+
+import (
+        "fmt"
+        "strconv"
+)
+
+var semitoneNames = []string{"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"}
 
 // Pitch represents a musical pitch using octave, semitone, and cent.
 type Pitch struct {
@@ -95,35 +218,42 @@ type pitchJSON struct {
 
 // New returns a balance pitch
 func New(octave, semitone int) *Pitch <span class="cov8" title="1">{
-        if semitone &lt; 0 || semitone &gt;= SemitonesPerOctave </span><span class="cov8" title="1">{
-                octave, semitone = balanced(totalSemitone(octave, semitone))
-        }</span>
+        p := &amp;Pitch{octave: octave, semitone: semitone}
 
-        <span class="cov8" title="1">return &amp;Pitch{octave: octave, semitone: semitone}</span>
-}
+        p.balance()
 
-func (p *Pitch) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
-        j := pitchJSON{Octave: p.octave, Semitone: p.semitone}
-
-        return json.Marshal(j)
+        return p
 }</span>
 
-func (p *Pitch) UnmarshalJSON(d []byte) error <span class="cov8" title="1">{
-        var j pitchJSON
-
-        err := json.Unmarshal(d, &amp;j)
-        if err != nil </span><span class="cov0" title="0">{
-                return err
+func Parse(str string) (*Pitch, error) <span class="cov8" title="1">{
+        octave, semitone, err := parse(str)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
         }</span>
 
-        <span class="cov8" title="1">if j.Semitone &lt; 0 || j.Semitone &gt; SemitonesPerOctave </span><span class="cov8" title="1">{
-                p.octave, p.semitone = balanced(totalSemitone(j.Octave, j.Semitone))
-        }</span> else<span class="cov8" title="1"> {
-                p.octave = j.Octave
-                p.semitone = j.Semitone
+        <span class="cov8" title="1">return New(octave, semitone), nil</span>
+}
+
+func (p *Pitch) Equal(other *Pitch) bool <span class="cov8" title="1">{
+        return p.semitone == other.semitone &amp;&amp; p.octave == other.octave
+}</span>
+
+func (p *Pitch) Diff(other *Pitch) int <span class="cov8" title="1">{
+        return p.TotalSemitone() - other.TotalSemitone()
+}</span>
+
+func (p *Pitch) Compare(other *Pitch) int <span class="cov8" title="1">{
+        diff := p.Diff(other)
+
+        if diff &lt; 0 </span><span class="cov8" title="1">{
+                return -1
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov8" title="1">if diff &gt; 0 </span><span class="cov8" title="1">{
+                return 1
+        }</span>
+
+        <span class="cov8" title="1">return 0</span>
 }
 
 func (p *Pitch) Octave() int <span class="cov8" title="1">{
@@ -134,54 +264,208 @@ func (p *Pitch) Semitone() int <span class="cov8" title="1">{
         return p.semitone
 }</span>
 
-func totalSemitone(octave, semitone int) int <span class="cov8" title="1">{
-        return octave*SemitonesPerOctave + semitone
-}</span>
-
-func balanced(totalSemitone int) (octave, semitone int) <span class="cov8" title="1">{
-        octave = totalSemitone / SemitonesPerOctave
-        semitone = totalSemitone - (octave * SemitonesPerOctave)
-
-        return octave, semitone
-}</span>
-
 func (p *Pitch) Ratio() float64 <span class="cov8" title="1">{
-        totalSem := totalSemitone(p.octave, p.semitone)
-
-        return math.Pow(2.0, float64(totalSem)/float64(SemitonesPerOctave))
+        return Ratio(float64(p.TotalSemitone()))
 }</span>
 
 func (p *Pitch) Freq() float64 <span class="cov8" title="1">{
-        return BaseFreq * p.Ratio()
+        return Freq(float64(p.TotalSemitone()))
 }</span>
 
 func (p *Pitch) Transpose(semitones int) *Pitch <span class="cov8" title="1">{
         return New(p.octave, p.semitone+semitones)
 }</span>
 
-// // MIDINote converts the (semitone-rounded) pitch to a MIDI note number.
-// // If the
-// func (p *Pitch) MIDINote() (uint8, error) {
-//         const (
-//                 // minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
-//                 minTotalSemitone = -12
-//                 // maxTotalSemitone is the total semitone value of MIDI note 127 (G9)
-//                 maxTotalSemitone = 115
-//         )
+func (p *Pitch) String() string <span class="cov8" title="1">{
+        return semitoneNames[p.semitone] + strconv.Itoa(p.octave)
+}</span>
 
-//         totalSemitone := p.TotalSemitoneOffset()
+func (p *Pitch) TotalSemitone() int <span class="cov8" title="1">{
+        return totalSemitone(p.octave, p.semitone)
+}</span>
 
-//         if totalSemitone &lt; minTotalSemitone || totalSemitone &gt; maxTotalSemitone {
-//                 return 0, fmt.Errorf("semitone total %d is outside of MIDI note number range", totalSemitone)
-//         }
+func (p *Pitch) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
+        str := fmt.Sprintf(`"%s"`, p.String())
 
-//         return uint8(totalSemitone + 12), nil
-// }
+        return []byte(str), nil
+}</span>
 
-// // isIntInRange checks if the given value is in the range [min,max)
-// func isIntInRange(val, min, max int) bool {
-//         return (val &gt;= min) &amp;&amp; (val &lt; max)
-// }
+func (p *Pitch) UnmarshalJSON(d []byte) error <span class="cov8" title="1">{
+        jsonStr := string(d)
+        n := len(jsonStr)
+
+        if jsonStr[0] != '"' || jsonStr[n-1] != '"' </span><span class="cov0" title="0">{
+                return fmt.Errorf("pitch JSON '%s' is not a string", jsonStr)
+        }</span>
+
+        <span class="cov8" title="1">pStr := jsonStr[1 : n-1]
+
+        octave, semitone, err := parse(pStr)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to parse pitch string '%s': %w", pStr, err)
+        }</span>
+
+        <span class="cov8" title="1">p.octave = octave
+        p.semitone = semitone
+
+        return nil</span>
+}
+
+func (p *Pitch) balance() <span class="cov8" title="1">{
+        if p.semitone &lt; 0 || p.semitone &gt;= SemitonesPerOctave </span><span class="cov8" title="1">{
+                totalSemitone := p.TotalSemitone()
+                p.octave = totalSemitone / SemitonesPerOctave
+                p.semitone = totalSemitone - (p.octave * SemitonesPerOctave)
+        }</span>
+}
+
+func totalSemitone(octave, semitone int) int <span class="cov8" title="1">{
+        return octave*SemitonesPerOctave + semitone
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package pitch
+
+type Pitches []*Pitch
+
+func (ps Pitches) Len() int <span class="cov8" title="1">{
+        return len(ps)
+}</span>
+
+func (ps Pitches) Strings() []string <span class="cov8" title="1">{
+        strs := make([]string, len(ps))
+        for i, p := range ps </span><span class="cov8" title="1">{
+                strs[i] = p.String()
+        }</span>
+
+        <span class="cov8" title="1">return strs</span>
+}
+
+func (ps Pitches) Swap(i, j int) <span class="cov8" title="1">{
+        ps[i], ps[j] = ps[j], ps[i]
+}</span>
+
+func (ps Pitches) Less(i, j int) bool <span class="cov8" title="1">{
+        return ps[i].Compare(ps[j]) == -1
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package pitch
+
+type Set struct {
+        pitches Pitches
+}
+
+func NewSet(pitches ...*Pitch) *Set <span class="cov8" title="1">{
+        ps := &amp;Set{
+                pitches: make(Pitches, 0, len(pitches)),
+        }
+
+        for _, p := range pitches </span><span class="cov8" title="1">{
+                ps.Add(p)
+        }</span>
+
+        <span class="cov8" title="1">return ps</span>
+}
+
+func (ps *Set) Pitches() Pitches <span class="cov8" title="1">{
+        return ps.pitches
+}</span>
+
+func (ps *Set) Len() int <span class="cov8" title="1">{
+        return len(ps.pitches)
+}</span>
+
+func (ps *Set) Equal(other *Set) bool <span class="cov8" title="1">{
+        if ps.Len() != other.Len() </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        <span class="cov8" title="1">for _, p := range ps.pitches </span><span class="cov8" title="1">{
+                if !other.Contains(p) </span><span class="cov8" title="1">{
+                        return false
+                }</span>
+        }
+
+        <span class="cov8" title="1">return true</span>
+}
+
+func (ps *Set) Union(other *Set) *Set <span class="cov8" title="1">{
+        union := make(Pitches, len(ps.pitches))
+
+        for i, p := range ps.pitches </span><span class="cov8" title="1">{
+                union[i] = p
+        }</span>
+
+        <span class="cov8" title="1">for _, p := range other.pitches </span><span class="cov8" title="1">{
+                if indexOf(union, p) == -1 </span><span class="cov8" title="1">{
+                        union = append(union, p)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;Set{pitches: union}</span>
+}
+
+func (ps *Set) Intersect(other *Set) *Set <span class="cov8" title="1">{
+        intersect := Pitches{}
+
+        for _, p := range ps.pitches </span><span class="cov8" title="1">{
+                if other.Contains(p) </span><span class="cov8" title="1">{
+                        intersect = append(intersect, p)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;Set{pitches: intersect}</span>
+}
+
+func (ps *Set) Diff(other *Set) *Set <span class="cov8" title="1">{
+        diff := Pitches{}
+
+        for _, p := range ps.pitches </span><span class="cov8" title="1">{
+                if !other.Contains(p) </span><span class="cov8" title="1">{
+                        diff = append(diff, p)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;Set{
+                pitches: diff,
+        }</span>
+}
+
+func (ps *Set) Add(p *Pitch) <span class="cov8" title="1">{
+        if ps.indexOf(p) == -1 </span><span class="cov8" title="1">{
+                ps.pitches = append(ps.pitches, p)
+        }</span>
+}
+
+func (ps *Set) Remove(p *Pitch) bool <span class="cov8" title="1">{
+        idx := ps.indexOf(p)
+        if idx == -1 </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        <span class="cov8" title="1">ps.pitches = append(ps.pitches[:idx], ps.pitches[idx+1:]...)
+
+        return true</span>
+}
+
+func (ps *Set) Contains(tgt *Pitch) bool <span class="cov8" title="1">{
+        return ps.indexOf(tgt) != -1
+}</span>
+
+func (ps *Set) indexOf(tgt *Pitch) int <span class="cov8" title="1">{
+        return indexOf(ps.pitches, tgt)
+}</span>
+
+func indexOf(pitches Pitches, tgt *Pitch) int <span class="cov8" title="1">{
+        for i, p := range pitches </span><span class="cov8" title="1">{
+                if p.Equal(tgt) </span><span class="cov8" title="1">{
+                        return i
+                }</span>
+        }
+
+        <span class="cov8" title="1">return -1</span>
+}
 </pre>
 		
 		</div>

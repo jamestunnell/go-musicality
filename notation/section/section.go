@@ -67,17 +67,23 @@ func (s *Section) Validate() *validation.Result {
 		errs = append(errs, err)
 	}
 
-	mDur := s.StartMeter.MeasureDuration()
+	if result := s.StartMeter.Validate(); result != nil {
+		result.Context = "start " + result.Context
 
-	for i, m := range s.Measures {
-		if result := m.Validate(mDur); result != nil {
-			result.Context = fmt.Sprintf("%s %d", result.Context, i)
+		results = append(results, result)
+	} else {
+		mDur := s.StartMeter.MeasureDuration()
 
-			results = append(results, result)
-		}
+		for i, m := range s.Measures {
+			if result := m.Validate(mDur); result != nil {
+				result.Context = fmt.Sprintf("%s %d", result.Context, i)
 
-		if m.MeterChange != nil {
-			mDur = m.MeterChange.MeasureDuration()
+				results = append(results, result)
+			}
+
+			if m.MeterChange != nil {
+				mDur = m.MeterChange.MeasureDuration()
+			}
 		}
 	}
 

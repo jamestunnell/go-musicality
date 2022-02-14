@@ -1,7 +1,6 @@
 package pitch_test
 
 import (
-	"fmt"
 	"sort"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
-func TestPitchesSort(t *testing.T) {
+func TestPitches(t *testing.T) {
 	ps := pitch.Pitches{pitch.C1, pitch.C3, pitch.C2}
 
 	sort.Sort(ps)
@@ -18,109 +17,18 @@ func TestPitchesSort(t *testing.T) {
 	assert.True(t, ps[0].Equal(pitch.C1))
 	assert.True(t, ps[1].Equal(pitch.C2))
 	assert.True(t, ps[2].Equal(pitch.C3))
+
+	pStrings := ps.Strings()
+
+	assert.Equal(t, []string{"C1", "C2", "C3"}, pStrings)
 }
 
-func TestPitchesCombinationFrom0Pitches(t *testing.T) {
-	ps := pitch.Pitches{}
+func TestPitchesStrings(t *testing.T) {
+	ps := pitch.Pitches{pitch.C1, pitch.C3, pitch.C2}
 
-	testComb(t, ps, 0, []pitch.Pitches{
-		{},
-	})
-	testComb(t, ps, 1, []pitch.Pitches{})
-}
+	sort.Sort(ps)
 
-func TestPitchesCombinationFrom1Pitches(t *testing.T) {
-	ps := pitch.Pitches{pitch.C1}
-
-	testComb(t, ps, 0, []pitch.Pitches{
-		{},
-	})
-	testComb(t, ps, 1, []pitch.Pitches{
-		{pitch.C1},
-	})
-}
-
-func TestPitchesCombinationFrom2Pitches(t *testing.T) {
-	ps := pitch.Pitches{pitch.C1, pitch.C2}
-
-	testComb(t, ps, -1, []pitch.Pitches{})
-	testComb(t, ps, 0, []pitch.Pitches{
-		{},
-	})
-	testComb(t, ps, 1, []pitch.Pitches{
-		{pitch.C1},
-		{pitch.C2},
-	})
-	testComb(t, ps, 2, []pitch.Pitches{
-		{pitch.C1, pitch.C2},
-	})
-	testComb(t, ps, 3, []pitch.Pitches{})
-}
-
-func TestPitchesCombinationFrom3Pitches(t *testing.T) {
-	ps := pitch.Pitches{pitch.C1, pitch.C2, pitch.C3}
-
-	testComb(t, ps, 0, []pitch.Pitches{
-		{},
-	})
-	testComb(t, ps, 1, []pitch.Pitches{
-		{pitch.C1},
-		{pitch.C2},
-		{pitch.C3},
-	})
-	testComb(t, ps, 2, []pitch.Pitches{
-		{pitch.C1, pitch.C2},
-		{pitch.C1, pitch.C3},
-		{pitch.C2, pitch.C3},
-	})
-	testComb(t, ps, 3, []pitch.Pitches{
-		{pitch.C1, pitch.C2, pitch.C3},
-	})
-}
-
-func TestPitchesCombinationFrom4Pitches(t *testing.T) {
-	ps := pitch.Pitches{pitch.C1, pitch.C2, pitch.C3, pitch.C4}
-
-	testComb(t, ps, 0, []pitch.Pitches{
-		{},
-	})
-	testComb(t, ps, 1, []pitch.Pitches{
-		{pitch.C1},
-		{pitch.C2},
-		{pitch.C3},
-		{pitch.C4},
-	})
-	testComb(t, ps, 2, []pitch.Pitches{
-		{pitch.C1, pitch.C2},
-		{pitch.C1, pitch.C3},
-		{pitch.C1, pitch.C4},
-		{pitch.C2, pitch.C3},
-		{pitch.C2, pitch.C4},
-		{pitch.C3, pitch.C4},
-	})
-	testComb(t, ps, 3, []pitch.Pitches{
-		{pitch.C1, pitch.C2, pitch.C3},
-		{pitch.C1, pitch.C2, pitch.C4},
-		{pitch.C1, pitch.C3, pitch.C4},
-		{pitch.C2, pitch.C3, pitch.C4},
-	})
-	testComb(t, ps, 4, []pitch.Pitches{
-		{pitch.C1, pitch.C2, pitch.C3, pitch.C4},
-	})
-}
-
-func testComb(t *testing.T, ps pitch.Pitches, n int, expectedCombs []pitch.Pitches) {
-	name := fmt.Sprintf("comb %d from %d pitches", n, ps.Len())
-
-	t.Run(name, func(t *testing.T) {
-		combs := []pitch.Pitches{}
-		gatherCombs := func(comb pitch.Pitches) {
-			sort.Sort(comb)
-			combs = append(combs, comb)
-		}
-
-		ps.Combination(n, gatherCombs)
-
-		assert.ElementsMatch(t, expectedCombs, combs)
-	})
+	assert.True(t, ps[0].Equal(pitch.C1))
+	assert.True(t, ps[1].Equal(pitch.C2))
+	assert.True(t, ps[2].Equal(pitch.C3))
 }

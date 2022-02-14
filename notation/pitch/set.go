@@ -1,7 +1,5 @@
 package pitch
 
-import "sort"
-
 type Set struct {
 	pitches Pitches
 }
@@ -97,12 +95,6 @@ func (ps *Set) Remove(p *Pitch) bool {
 	ps.pitches = append(ps.pitches[:idx], ps.pitches[idx+1:]...)
 
 	return true
-}
-
-func (ps *Set) Sorted() Pitches {
-	sort.Sort(ps.pitches)
-
-	return ps.pitches
 }
 
 func (ps *Set) Contains(tgt *Pitch) bool {

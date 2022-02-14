@@ -37,3 +37,32 @@ func TestScoreMissingSection(t *testing.T) {
 
 	assert.NotNil(t, s.Validate())
 }
+
+func TestScoreProgramSections(t *testing.T) {
+	s := score.New()
+
+	secs := s.ProgramSections()
+
+	assert.Empty(t, secs)
+
+	s.Program = append(s.Program, "section1")
+	secs = s.ProgramSections()
+
+	assert.Empty(t, secs)
+
+	s.Sections["section1"] = section.New()
+	secs = s.ProgramSections()
+
+	assert.Len(t, secs, 1)
+
+	s.Program = append(s.Program, "section1")
+	secs = s.ProgramSections()
+
+	assert.Len(t, secs, 2)
+
+	s.Sections["section2"] = section.New()
+	s.Program = append(s.Program, "section2")
+	secs = s.ProgramSections()
+
+	assert.Len(t, secs, 3)
+}

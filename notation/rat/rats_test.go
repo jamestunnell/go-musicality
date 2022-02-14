@@ -32,3 +32,16 @@ func TestRatsNotEmpty(t *testing.T) {
 	assert.Equal(t, r2, rats[1])
 	assert.Equal(t, r3, rats[2])
 }
+
+func TestRatsUnion(t *testing.T) {
+	r1 := rat.New(3, 7)
+	r2 := rat.New(7, 8)
+	r3 := rat.New(7, 8)
+	r4 := rat.New(25, 4)
+
+	rats1 := rat.Rats{r1, r2}
+	rats2 := rat.Rats{r3, r4}
+	rats3 := rats1.Union(rats2)
+
+	assert.Len(t, rats3, 3)
+}

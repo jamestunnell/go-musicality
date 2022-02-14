@@ -9,22 +9,29 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
-// func TestParseSemitone(t *testing.T) {
-// 	// s, err := pitch.ParseSemitone("C#")
+func TestParseSemitone(t *testing.T) {
+	testParseSemitoneOK(t, "C", 0)
+	testParseSemitoneOK(t, "C#", 1)
+	testParseSemitoneOK(t, "Db", 1)
+	testParseSemitoneFail(t, "C@")
+	testParseSemitoneFail(t, "C #")
+	testParseSemitoneFail(t, "D b")
+	testParseSemitoneFail(t, "H")
+	testParseSemitoneFail(t, "")
+}
 
-// 	// require.NoError(t, err)
-// 	// assert.Equal(t, 1, s)
+func testParseSemitoneOK(t *testing.T, str string, semitone int) {
+	s, err := pitch.ParseSemitone(str)
 
-// 	// s, err = pitch.ParseSemitone("C")
+	require.NoError(t, err)
+	assert.Equal(t, semitone, s)
+}
 
-// 	// require.NoError(t, err)
-// 	// assert.Equal(t, 0, s)
+func testParseSemitoneFail(t *testing.T, str string) {
+	_, err := pitch.ParseSemitone(str)
 
-// 	s, err := pitch.ParseSemitone("D b")
-
-// 	require.NoError(t, err)
-// 	assert.Equal(t, 1, s)
-// }
+	require.Error(t, err)
+}
 
 func TestParseOK(t *testing.T) {
 	testParse(t, "C3", pitch.C3)

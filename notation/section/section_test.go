@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
@@ -30,6 +31,15 @@ func TestNewWithOpt(t *testing.T) {
 	assert.Equal(t, float64(200), s.StartTempo)
 
 	s = section.New(section.OptStartTempo(0))
+
+	assert.NotNil(t, s.Validate())
+
+	s = section.New(section.OptStartMeter(meter.FourFour()))
+
+	assert.Nil(t, s.Validate())
+	assert.True(t, s.StartMeter.Equal(meter.FourFour()))
+
+	s = section.New(section.OptStartMeter(meter.New(0, rat.New(1, 4))))
 
 	assert.NotNil(t, s.Validate())
 }
@@ -116,30 +126,91 @@ func TestSectionParts(t *testing.T) {
 	assert.True(t, bassNotes[2].Equal(n2))
 }
 
-// func TestDynamics(t *testing.T) {
-// 	s := section.New()
-// 	m1 := measure.New(meter.New(4, 4))
-// 	m2 := measure.New(meter.New(4, 4))
-// 	ch1 := change.New(0.0, rat.New(1, 1))
-// 	ch2 := change.NewImmediate(1.0)
+func TestDynamicChanges(t *testing.T) {
+	s := section.New(
+		section.OptStartDynamic(1.0),
+		section.OptStartMeter(meter.FourFour()),
+	)
+	m1 := measure.New()
+	m2 := measure.New()
+	m3 := measure.New()
 
-// 	assert.Empty(t, s.DynamicChanges(rat.Zero()))
+	s.Measures = append(s.Measures, m1, m2, m3)
 
-// 	m1.DynamicChanges[rat.Zero()] = ch1
-// 	m2.DynamicChanges[rat.New(1, 2)] = ch2
+	dc := s.DynamicChanges(rat.Zero())
 
-// 	s.Measures = append(s.Measures, m1, m2)
+	assert.Empty(t, dc)
 
-// 	dc := s.DynamicChanges(rat.Zero())
-// 	off1 := rat.Zero()
+	m2.DynamicChanges = append(m2.DynamicChanges, change.NewImmediate(rat.Zero(), 0.8))
 
-// 	require.Len(t, dc, 2)
+	dc = s.DynamicChanges(rat.Zero())
 
-// 	c := dc[off1]
+	require.Len(t, dc, 1)
 
-// 	require.NotNil(t, c)
-// 	// require.NotNil(t, dc[off2])
+	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
 
-// 	// assert.True(t, dc[off1].Equal(ch1))
-// 	// assert.True(t, dc[off2].Equal(ch2))
-// }
+	dc = s.DynamicChanges(rat.New(4, 1))
+
+	require.Len(t, dc, 1)
+
+	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
+}
+
+func TestTempoChanges(t *testing.T) {
+	s := section.New(
+		section.OptStartTempo(100),
+		section.OptStartMeter(meter.FourFour()),
+	)
+	m1 := measure.New()
+	m2 := measure.New()
+	m3 := measure.New()
+
+	s.Measures = append(s.Measures, m1, m2, m3)
+
+	dc := s.TempoChanges(rat.Zero())
+
+	assert.Empty(t, dc)
+
+	m2.TempoChanges = append(m2.TempoChanges, change.NewImmediate(rat.Zero(), 90))
+
+	dc = s.TempoChanges(rat.Zero())
+
+	require.Len(t, dc, 1)
+
+	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
+
+	dc = s.TempoChanges(rat.New(4, 1))
+
+	require.Len(t, dc, 1)
+
+	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
+}
+
+func TestBeatDurChanges(t *testing.T) {
+	s := section.New(
+		section.OptStartMeter(meter.FourFour()),
+	)
+	m1 := measure.New()
+	m2 := measure.New()
+	m3 := measure.New()
+
+	s.Measures = append(s.Measures, m1, m2, m3)
+
+	dc := s.BeatDurChanges(rat.Zero())
+
+	assert.Empty(t, dc)
+
+	m2.MeterChange = meter.ThreeFour()
+
+	dc = s.BeatDurChanges(rat.Zero())
+
+	require.Len(t, dc, 1)
+
+	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
+
+	dc = s.BeatDurChanges(rat.New(4, 1))
+
+	require.Len(t, dc, 1)
+
+	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
+}

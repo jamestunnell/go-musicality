@@ -22,6 +22,13 @@ func TestFromInt64(t *testing.T) {
 	assert.True(t, r2.Equal(r))
 }
 
+func TestFromUint64(t *testing.T) {
+	r := rat.New(73, 1)
+	r2 := rat.FromUint64(73)
+
+	assert.True(t, r2.Equal(r))
+}
+
 func TestClone(t *testing.T) {
 	r := rat.New(1, 2)
 	r2 := r.Clone()
@@ -112,6 +119,7 @@ func TestMaths(t *testing.T) {
 	assert.True(t, r1.Div(r2).Equal(rat.New(2, 3)))
 
 	assert.True(t, r1.MulInt64(4).Equal(rat.New(2, 1)))
+	assert.True(t, r1.MulUint64(4).Equal(rat.New(2, 1)))
 	assert.InDelta(t, 0.25, r1.MulFloat64(0.5).Float64(), 1e-10)
 }
 
