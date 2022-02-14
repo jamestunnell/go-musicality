@@ -14,6 +14,25 @@ var (
 	hundredth    = rat.FromFloat64(0.01)
 )
 
+func TestPiecewiseFunctionEmpty(t *testing.T) {
+	pairs := []function.SubdomainFunctionPair{}
+
+	_, err := function.NewPiecewiseFunction(pairs)
+
+	assert.Error(t, err)
+}
+
+func TestPiecewiseFunctionOverlappingDomains(t *testing.T) {
+	pairs := []function.SubdomainFunctionPair{
+		{Subdomain: function.NewRange(negTwo, one), Function: function.NewConstantFunction(-1)},
+		{Subdomain: function.NewRange(zero, two), Function: function.NewConstantFunction(1)},
+	}
+
+	_, err := function.NewPiecewiseFunction(pairs)
+
+	assert.Error(t, err)
+}
+
 func TestPiecewiseFunctionLimitedDomain(t *testing.T) {
 	pairs := []function.SubdomainFunctionPair{
 		{Subdomain: function.NewRange(negTwo, zero), Function: function.NewConstantFunction(-1)},
