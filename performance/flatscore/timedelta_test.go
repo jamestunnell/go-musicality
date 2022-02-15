@@ -1,4 +1,4 @@
-package model_test
+package flatscore_test
 
 import (
 	"testing"
@@ -9,23 +9,24 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/computer"
+	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/jamestunnell/go-musicality/performance/function"
-	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
 func TestTimeDelta(t *testing.T) {
-	tc, err := model.NewComputer(120.0, change.Changes{})
+	tc, err := computer.New(120.0, change.Changes{})
 
 	require.NoError(t, err)
 
-	bdc, err := model.NewComputer(0.25, change.Changes{})
+	bdc, err := computer.New(0.25, change.Changes{})
 
 	require.NoError(t, err)
 
 	xrange := function.NewRange(rat.Zero(), rat.New(1, 1))
 	samplePeriod := rat.New(1, 16)
 
-	dt, err := model.TimeDelta(tc, bdc, xrange, samplePeriod)
+	dt, err := flatscore.TimeDelta(tc, bdc, xrange, samplePeriod)
 
 	require.NoError(t, err)
 
@@ -33,20 +34,20 @@ func TestTimeDelta(t *testing.T) {
 }
 
 func TestTimeDeltaOneTempoChange(t *testing.T) {
-	tc, err := model.NewComputer(120.0, change.Changes{
+	tc, err := computer.New(120.0, change.Changes{
 		change.NewImmediate(rat.New(1, 2), 150.0),
 	})
 
 	require.NoError(t, err)
 
-	bdc, err := model.NewComputer(0.25, change.Changes{})
+	bdc, err := computer.New(0.25, change.Changes{})
 
 	require.NoError(t, err)
 
 	xrange := function.NewRange(rat.Zero(), rat.New(1, 1))
 	samplePeriod := rat.New(1, 16)
 
-	dt, err := model.TimeDelta(tc, bdc, xrange, samplePeriod)
+	dt, err := flatscore.TimeDelta(tc, bdc, xrange, samplePeriod)
 
 	require.NoError(t, err)
 

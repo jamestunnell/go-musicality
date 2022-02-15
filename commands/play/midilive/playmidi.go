@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/jamestunnell/go-musicality/commands"
-	"github.com/jamestunnell/go-musicality/performance/midi"
+	"github.com/jamestunnell/go-musicality/rendering/midi"
 )
 
 type PlayMIDI struct {

@@ -36,20 +36,6 @@ func TestSortChanges(t *testing.T) {
 	assert.True(t, changes[2].Offset.Equal(o3))
 }
 
-func TestChangesLast(t *testing.T) {
-	changes := change.Changes{}
-
-	assert.Nil(t, changes.Last())
-
-	changes = append(changes, change.NewImmediate(rat.Zero(), 1.2))
-
-	assert.True(t, changes.Last().Equal(changes[0]))
-
-	changes = append(changes, change.NewImmediate(rat.New(2, 1), 7.5))
-
-	assert.True(t, changes.Last().Equal(changes[1]))
-}
-
 func TestChangeMapUnmarshalJSON(t *testing.T) {
 	jsonStr := `[
 		{

@@ -13,8 +13,8 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
+	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/jamestunnell/go-musicality/performance/function"
-	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
 type playStep struct {
@@ -30,19 +30,9 @@ func PlayMIDI(s *score.Score) error {
 		return fmt.Errorf("failed to get MIDI settings: %w", err)
 	}
 
-	fs, err := (&model.ScoreConverter{}).Process(s)
+	fs, err := (&flatscore.Converter{}).Process(s)
 	if err != nil {
 		return fmt.Errorf("failed to convert to flat score: %w", err)
-	}
-
-	tc, err := fs.TempoComputer()
-	if err != nil {
-		return fmt.Errorf("failed to make tempo computer: %w", err)
-	}
-
-	bdc, err := fs.BeatDurComputer()
-	if err != nil {
-		return fmt.Errorf("failed to make beat duration computer: %w", err)
 	}
 
 	tracks, err := MakeTracks(fs, settings)
@@ -77,10 +67,10 @@ func PlayMIDI(s *score.Score) error {
 	// make sure to close all open ports at the end
 	defer drv.Close()
 
-	return playMIDI(settings, out, tc, bdc, tracks)
+	return playMIDI(settings, out, tracks, fs)
 }
 
-func playMIDI(settings *MIDISettings, out midi.Out, tempoComp, beatDurComp *model.Computer, tracks []*Track) error {
+func playMIDI(settings *MIDISettings, out midi.Out, tracks []*Track, fs *flatscore.FlatScore) error {
 	log.Info().Str("name", out.String()).Msg("opened MIDI output port")
 
 	offset := rat.Zero()
@@ -94,7 +84,7 @@ func playMIDI(settings *MIDISettings, out midi.Out, tempoComp, beatDurComp *mode
 		if diff.Positive() {
 			xRange := function.NewRange(offset.Clone(), step.Offset.Clone())
 
-			timeDelta, err := model.TimeDelta(tempoComp, beatDurComp, xRange, settings.TempoSamplePeriod.Clone())
+			timeDelta, err := fs.TimeDelta(xRange, settings.TempoSamplePeriod.Clone())
 			if err != nil {
 				return fmt.Errorf("failed to compute time delta: %w", err)
 			}

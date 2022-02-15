@@ -1,4 +1,4 @@
-package model
+package computer
 
 import (
 	"fmt"
@@ -16,11 +16,13 @@ type Computer struct {
 	*function.PiecewiseFunction
 }
 
-// NewComputer takes an initial value and a set of changes and
+// New takes an initial value and a set of changes and
 // produces a Computer which can calculate the value at any time.
 // Assumes that the changes are valid.
-func NewComputer(startVal float64, changes change.Changes) (*Computer, error) {
+func New(startVal float64, changes change.Changes) (*Computer, error) {
 	sort.Sort(changes)
+
+	changes = SimplifyChanges(startVal, changes)
 
 	if err := checkChangeOverlap(changes); err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package model
+package midi
 
 import (
 	"github.com/jamestunnell/go-musicality/notation/note"

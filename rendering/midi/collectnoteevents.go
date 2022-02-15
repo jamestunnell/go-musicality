@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/jamestunnell/go-musicality/performance/centpitch"
+	"github.com/jamestunnell/go-musicality/performance/computer"
+	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/jamestunnell/go-musicality/performance/function"
-	"github.com/jamestunnell/go-musicality/performance/model"
+	"github.com/jamestunnell/go-musicality/performance/mononote"
 )
 
-func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]Event, error) {
+func CollectNoteEvents(fs *flatscore.FlatScore, dc *computer.Computer, part string) ([]Event, error) {
 	events := []Event{}
 
 	notes := fs.Parts[part]
-	converter := model.NewNoteConverter(model.OptionReplaceSlursAndGlides())
+	converter := mononote.NewConverter(mononote.OptionReplaceSlursAndGlides())
 
 	notes2, err := converter.Process(notes)
 	if err != nil {
@@ -42,7 +45,7 @@ func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]
 		}
 
 		vel := Velocity(n.Attack * dynamic)
-		newDur := model.AdjustDuration(pd.Duration, n.Separation)
+		newDur := AdjustDuration(pd.Duration, n.Separation)
 		endOffset := n.Start.Add(newDur)
 
 		events = append(events, NewNoteOnEvent(n.Start, key, vel))
@@ -54,7 +57,7 @@ func CollectNoteEvents(fs *model.FlatScore, dc *model.Computer, part string) ([]
 
 // Key converts the pitch to a MIDI note number.
 // Returns a non-nil error if the pitch is not in the range [C-1, G9].
-func Key(p *model.Pitch) (uint8, error) {
+func Key(p *centpitch.CentPitch) (uint8, error) {
 	const (
 		// minTotalSemitone is the total semitone value of MIDI note 0 (octave below C0)
 		minTotalSemitone = -12

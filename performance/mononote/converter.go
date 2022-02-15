@@ -1,4 +1,4 @@
-package model
+package mononote
 
 import (
 	"fmt"
@@ -6,22 +6,24 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/centpitch"
+	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
-type NoteConverter struct {
+type Converter struct {
 	replaceSlursAndGlides bool
 	centsPerStep          int
 	offset                rat.Rat
-	completed             []*Note
-	continuing            map[*pitch.Pitch]*Note
+	completed             []*MonoNote
+	continuing            map[*pitch.Pitch]*MonoNote
 }
 
-type NoteConverterOptionFunc func(nc *NoteConverter)
+type ConverterOptionFunc func(nc *Converter)
 
 const DefaultCentsPerStep = 10
 
-func NewNoteConverter(opts ...NoteConverterOptionFunc) *NoteConverter {
-	nc := &NoteConverter{
+func NewConverter(opts ...ConverterOptionFunc) *Converter {
+	nc := &Converter{
 		replaceSlursAndGlides: false,
 		centsPerStep:          DefaultCentsPerStep,
 	}
@@ -33,10 +35,10 @@ func NewNoteConverter(opts ...NoteConverterOptionFunc) *NoteConverter {
 	return nc
 }
 
-func OptionReplaceSlursAndGlides() NoteConverterOptionFunc { return setReplaceSlursAndGlides }
+func OptionReplaceSlursAndGlides() ConverterOptionFunc { return setReplaceSlursAndGlides }
 
-func OptionCentsPerStep(centsPerStep int) NoteConverterOptionFunc {
-	return func(nc *NoteConverter) {
+func OptionCentsPerStep(centsPerStep int) ConverterOptionFunc {
+	return func(nc *Converter) {
 		if centsPerStep < 1 {
 			centsPerStep = 1
 		}
@@ -45,14 +47,14 @@ func OptionCentsPerStep(centsPerStep int) NoteConverterOptionFunc {
 	}
 }
 
-func setReplaceSlursAndGlides(nc *NoteConverter) {
+func setReplaceSlursAndGlides(nc *Converter) {
 	nc.replaceSlursAndGlides = true
 }
 
-func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
+func (nc *Converter) Process(notes []*note.Note) ([]*MonoNote, error) {
 	nc.offset = rat.Zero()
-	nc.completed = []*Note{}
-	nc.continuing = map[*pitch.Pitch]*Note{}
+	nc.completed = []*MonoNote{}
+	nc.continuing = map[*pitch.Pitch]*MonoNote{}
 
 	for i, current := range notes {
 		var next *note.Note
@@ -67,7 +69,7 @@ func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 		if err := nc.processNote(current, next); err != nil {
 			err = fmt.Errorf("failed to process note %d: %w", i, err)
 
-			return []*Note{}, err
+			return []*MonoNote{}, err
 		}
 
 		nc.offset.Accum(current.Duration)
@@ -76,7 +78,7 @@ func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 	if len(nc.continuing) > 0 {
 		err := fmt.Errorf("continuing notes left over: %v", nc.continuing)
 
-		return []*Note{}, err
+		return []*MonoNote{}, err
 	}
 
 	for _, n := range nc.completed {
@@ -86,7 +88,7 @@ func (nc *NoteConverter) Process(notes []*note.Note) ([]*Note, error) {
 	return nc.completed, nil
 }
 
-func (nc *NoteConverter) processNote(current, next *note.Note) error {
+func (nc *Converter) processNote(current, next *note.Note) error {
 	a := current.Attack
 	s := current.Separation
 	dur := current.Duration
@@ -115,20 +117,20 @@ func (nc *NoteConverter) processNote(current, next *note.Note) error {
 
 		// no link or a link where pitch doesn't change can be handled simply
 		if link == nil || link.Target == p {
-			nc.processPitchDurs(p, target, a, s, NewPitchDur(NewPitch(p, 0), dur))
+			nc.processPitchDurs(p, target, a, s, pitchdur.New(centpitch.New(p, 0), dur))
 
 			continue
 		}
 
 		switch link.Type {
 		case note.LinkTie, note.LinkSlur:
-			nc.processPitchDurs(p, target, a, s, NewPitchDur(NewPitch(p, 0), dur))
+			nc.processPitchDurs(p, target, a, s, pitchdur.New(centpitch.New(p, 0), dur))
 		case note.LinkGlide:
 			pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
 
 			nc.processPitchDurs(p, target, a, s, pds...)
 		case note.LinkStepSlurred, note.LinkStep:
-			pds := MakeSteps(dur, p, link.Target, CentsPerSemitoneInt)
+			pds := MakeSteps(dur, p, link.Target, centpitch.CentsPerSemitoneInt)
 
 			if link.Type == note.LinkStep {
 				for _, pd := range pds {
@@ -145,7 +147,10 @@ func (nc *NoteConverter) processNote(current, next *note.Note) error {
 	return nil
 }
 
-func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, separation float64, pitchDurs ...*PitchDur) {
+func (nc *Converter) processPitchDurs(
+	current, next *pitch.Pitch,
+	attack, separation float64,
+	pitchDurs ...*pitchdur.PitchDur) {
 	// is this a continuation?
 	n := nc.continuing[current]
 
@@ -155,7 +160,7 @@ func (nc *NoteConverter) processPitchDurs(current, next *pitch.Pitch, attack, se
 
 		delete(nc.continuing, current)
 	} else {
-		n = NewNote(nc.offset.Clone(), pitchDurs...)
+		n = New(nc.offset.Clone(), pitchDurs...)
 
 		n.Attack = attack
 		n.Separation = separation

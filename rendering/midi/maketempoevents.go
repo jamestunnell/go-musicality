@@ -1,15 +1,13 @@
 package midi
 
 import (
-	"fmt"
-
 	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/model"
+	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/rs/zerolog/log"
 )
 
 func MakeTempoEvents(
-	fs *model.FlatScore,
+	fs *flatscore.FlatScore,
 	samplingDur rat.Rat,
 	samplePeriod rat.Rat) ([]Event, error) {
 	log.Debug().
@@ -17,15 +15,8 @@ func MakeTempoEvents(
 		Str("sample period", samplePeriod.String()).
 		Msg("collecting tempo events")
 
-	tc, err := fs.TempoComputer()
-	if err != nil {
-		err = fmt.Errorf("failed to make tempo computer: %w", err)
-
-		return []Event{}, err
-	}
-
 	offset := rat.Zero()
-	bpm := tc.At(offset)
+	bpm := fs.TempoComputer.At(offset)
 	events := []Event{
 		NewTempoEvent(offset.Clone(), bpm),
 	}
@@ -33,7 +24,7 @@ func MakeTempoEvents(
 	offset.Accum(samplePeriod)
 
 	for offset.Less(samplingDur) {
-		newBPM := tc.At(offset)
+		newBPM := fs.TempoComputer.At(offset)
 		if newBPM != bpm {
 			events = append(events, NewTempoEvent(offset.Clone(), newBPM))
 			bpm = newBPM

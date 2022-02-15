@@ -1,18 +1,22 @@
-package model
+package mononote
 
 import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
-type Note struct {
+// MonoNote is a note with only one pitch at a time.
+// Pitch changes are meant to be immediate, with no separation.
+type MonoNote struct {
 	Start      rat.Rat
-	PitchDurs  []*PitchDur
+	PitchDurs  []*pitchdur.PitchDur
 	Attack     float64
 	Separation float64
 }
 
-func NewNote(start rat.Rat, pitchDurs ...*PitchDur) *Note {
-	return &Note{
+// New makes a new MonoNote.
+func New(start rat.Rat, pitchDurs ...*pitchdur.PitchDur) *MonoNote {
+	return &MonoNote{
 		Start:      start,
 		Attack:     0.0,
 		Separation: 0.0,
@@ -20,20 +24,9 @@ func NewNote(start rat.Rat, pitchDurs ...*PitchDur) *Note {
 	}
 }
 
-func (n *Note) Offsets() rat.Rats {
-	offsets := make(rat.Rats, len(n.PitchDurs))
-	currentOffset := n.Start.Clone()
-
-	for i, e := range n.PitchDurs {
-		offsets[i] = currentOffset.Clone()
-		currentOffset.Accum(e.Duration)
-	}
-
-	return offsets
-}
-
-// Duration is not modified to account for Note separation.
-func (n *Note) Duration() rat.Rat {
+// Duration is the sum of the durations from PitchDurs.
+// Not modified to account for Note separation.
+func (n *MonoNote) Duration() rat.Rat {
 	dur := rat.Zero()
 
 	for _, pd := range n.PitchDurs {
@@ -44,11 +37,11 @@ func (n *Note) Duration() rat.Rat {
 }
 
 // End is not modified to account for separation
-func (n *Note) End() rat.Rat {
+func (n *MonoNote) End() rat.Rat {
 	return n.Start.Add(n.Duration())
 }
 
-func (n *Note) Simplify() {
+func (n *MonoNote) Simplify() {
 	i := 1
 
 	for i < len(n.PitchDurs) {

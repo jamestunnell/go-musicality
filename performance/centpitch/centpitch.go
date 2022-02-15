@@ -1,4 +1,4 @@
-package model
+package centpitch
 
 import (
 	"strconv"
@@ -11,14 +11,14 @@ const (
 	CentsPerSemitoneFlt = 100.0
 )
 
-// Pitch is a cent-adjusted pitch.Pitch.
-type Pitch struct {
+// CentPitch is a cent-adjusted pitch.Pitch.
+type CentPitch struct {
 	centAdjust int
 	*pitch.Pitch
 }
 
-func NewPitch(p *pitch.Pitch, centAdjust int) *Pitch {
-	p2 := &Pitch{
+func New(p *pitch.Pitch, centAdjust int) *CentPitch {
+	p2 := &CentPitch{
 		centAdjust: centAdjust,
 		Pitch:      p,
 	}
@@ -28,15 +28,15 @@ func NewPitch(p *pitch.Pitch, centAdjust int) *Pitch {
 	return p2
 }
 
-func (p *Pitch) Equal(other *Pitch) bool {
+func (p *CentPitch) Equal(other *CentPitch) bool {
 	return p.Pitch.Equal(other.Pitch) && p.centAdjust == other.centAdjust
 }
 
-func (p *Pitch) Diff(other *Pitch) int {
+func (p *CentPitch) Diff(other *CentPitch) int {
 	return p.TotalCent() - other.TotalCent()
 }
 
-func (p *Pitch) Compare(other *Pitch) int {
+func (p *CentPitch) Compare(other *CentPitch) int {
 	diff := p.Diff(other)
 
 	if diff < 0 {
@@ -50,7 +50,7 @@ func (p *Pitch) Compare(other *Pitch) int {
 	return 0
 }
 
-func (p *Pitch) RoundedSemitone() int {
+func (p *CentPitch) RoundedSemitone() int {
 	totalSem := p.TotalSemitone()
 
 	switch {
@@ -63,21 +63,21 @@ func (p *Pitch) RoundedSemitone() int {
 	return totalSem
 }
 
-func (p *Pitch) TotalCent() int {
+func (p *CentPitch) TotalCent() int {
 	return p.TotalSemitone()*CentsPerSemitoneInt + p.centAdjust
 }
 
-func (p *Pitch) Ratio() float64 {
+func (p *CentPitch) Ratio() float64 {
 	totalSemitone := float64(p.Pitch.TotalSemitone()) + float64(p.centAdjust)/CentsPerSemitoneFlt
 
 	return pitch.Ratio(totalSemitone)
 }
 
-func (p *Pitch) Freq() float64 {
+func (p *CentPitch) Freq() float64 {
 	return pitch.Freq(p.Ratio())
 }
 
-func (p *Pitch) String() string {
+func (p *CentPitch) String() string {
 	str := p.Pitch.String()
 	if p.centAdjust != 0 {
 		str += strconv.Itoa(p.centAdjust)
@@ -86,7 +86,7 @@ func (p *Pitch) String() string {
 	return str
 }
 
-func (p *Pitch) balance() {
+func (p *CentPitch) balance() {
 	if p.centAdjust < -CentsPerSemitoneInt || p.centAdjust >= CentsPerSemitoneInt {
 		semitoneAdjust := p.centAdjust / CentsPerSemitoneInt
 

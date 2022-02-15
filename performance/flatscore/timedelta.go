@@ -1,17 +1,22 @@
-package model
+package flatscore
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/computer"
 	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 // TimeDelta takes two note offsets, and uses the tempo and beat duration computers to
 // determine how much time passes between them.
+func (fs *FlatScore) TimeDelta(xrange function.Range, samplePeriod rat.Rat) (time.Duration, error) {
+	return TimeDelta(fs.TempoComputer, fs.BeatDurComputer, xrange, samplePeriod)
+}
+
 func TimeDelta(
-	tempoComp, beatDurComp *Computer,
+	tempoComp, beatDurComp *computer.Computer,
 	xrange function.Range,
 	samplePeriod rat.Rat) (time.Duration, error) {
 	bpms, err := function.Sample(tempoComp, xrange, samplePeriod)

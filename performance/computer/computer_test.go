@@ -1,4 +1,4 @@
-package model_test
+package computer_test
 
 import (
 	"testing"
@@ -7,13 +7,13 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/computer"
 	"github.com/jamestunnell/go-musicality/performance/function"
-	"github.com/jamestunnell/go-musicality/performance/model"
 )
 
 func TestComputerNoChanges(t *testing.T) {
 	startVal := 7.2
-	c, err := model.NewComputer(startVal, change.Changes{})
+	c, err := computer.New(startVal, change.Changes{})
 
 	assert.Nil(t, err)
 	assert.NotNil(t, c)
@@ -28,7 +28,7 @@ func TestComputerOneImmediateChange(t *testing.T) {
 	startVal := 20.0
 	newVal := 10.0
 	changes := change.Changes{change.NewImmediate(offset, newVal)}
-	c, err := model.NewComputer(startVal, changes)
+	c, err := computer.New(startVal, changes)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, c)
@@ -46,7 +46,7 @@ func TestComputerOneGradualChange(t *testing.T) {
 	newVal := 25.0
 	dur := rat.FromInt64(10)
 	changes := change.Changes{change.New(offset, newVal, dur)}
-	c, err := model.NewComputer(startVal, changes)
+	c, err := computer.New(startVal, changes)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, c)
@@ -59,14 +59,14 @@ func TestComputerOneGradualChange(t *testing.T) {
 	testComputerAt(t, c, function.DomainMax(), newVal)
 }
 
-func testComputerAt(t *testing.T, c *model.Computer, x rat.Rat, expected float64) {
+func testComputerAt(t *testing.T, c *computer.Computer, x rat.Rat, expected float64) {
 	y, err := function.At(c, x)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, y)
 }
 
-func testComputerAtNear(t *testing.T, c *model.Computer, x rat.Rat, expected float64) {
+func testComputerAtNear(t *testing.T, c *computer.Computer, x rat.Rat, expected float64) {
 	y, err := function.At(c, x)
 
 	assert.Nil(t, err)
@@ -82,7 +82,7 @@ func testComputerAtNear(t *testing.T, c *model.Computer, x rat.Rat, expected flo
 // 	changeHalfDoneAt := changeAt + change.Duration/2
 // 	changeDoneAt := changeAt + change.Duration
 // 	changes := map[float64]*change.Change{changeAt: change}
-// 	c, err := model.NewComputer(startVal, changes)
+// 	c, err := computer.New(startVal, changes)
 
 // 	assert.Nil(t, err)
 // 	assert.NotNil(t, c)

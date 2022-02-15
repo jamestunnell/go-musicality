@@ -1,4 +1,4 @@
-package model_test
+package mononote_test
 
 import (
 	"testing"
@@ -8,25 +8,27 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/model"
+	"github.com/jamestunnell/go-musicality/performance/centpitch"
+	"github.com/jamestunnell/go-musicality/performance/mononote"
+	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
 var zero = rat.Zero()
 
 func TestNewEmpty(t *testing.T) {
 
-	s := model.NewNote(zero)
+	s := mononote.New(zero)
 
 	assert.Equal(t, zero, s.Duration())
 	assert.Equal(t, zero, s.End())
 }
 
 func TestNoteInvalid(t *testing.T) {
-	e1 := &model.PitchDur{Duration: rat.New(1, 4), Pitch: model.NewPitch(pitch.D4, 0)}
-	e2 := &model.PitchDur{Duration: zero, Pitch: model.NewPitch(pitch.C4, 0)}
-	e3 := &model.PitchDur{Duration: rat.New(1, 2), Pitch: model.NewPitch(pitch.E4, 0)}
+	e1 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 4))
+	e2 := pitchdur.New(centpitch.New(pitch.C4, 0), zero)
+	e3 := pitchdur.New(centpitch.New(pitch.E4, 0), rat.New(1, 2))
 	start := rat.New(1, 2)
-	s := model.NewNote(start, e1, e2, e3)
+	s := mononote.New(start, e1, e2, e3)
 	expectedDur := rat.New(3, 4)
 	expectedEnd := start.Add(expectedDur)
 
@@ -35,12 +37,12 @@ func TestNoteInvalid(t *testing.T) {
 }
 
 func TestValidNoteValid(t *testing.T) {
-	e1 := &model.PitchDur{Duration: rat.New(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
-	e2 := &model.PitchDur{Duration: rat.New(1, 8), Pitch: model.NewPitch(pitch.D4, 0)}
-	e3 := &model.PitchDur{Duration: rat.New(1, 2), Pitch: model.NewPitch(pitch.D4, 0)}
-	e4 := &model.PitchDur{Duration: rat.New(1, 1), Pitch: model.NewPitch(pitch.E4, 0)}
+	e1 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 8))
+	e2 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 8))
+	e3 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 2))
+	e4 := pitchdur.New(centpitch.New(pitch.E4, 0), rat.New(1, 1))
 	start := rat.New(1, 1)
-	s := model.NewNote(start, e1, e2, e3, e4)
+	s := mononote.New(start, e1, e2, e3, e4)
 	expectedDur := rat.New(7, 4)
 	expectedEnd := start.Add(expectedDur)
 

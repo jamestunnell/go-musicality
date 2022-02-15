@@ -189,7 +189,7 @@ func getBeatDurChanges(m *measure.Measure) change.Changes {
 		return change.Changes{}
 	}
 
-	c := change.NewImmediate(rat.Zero(), m.MeterChange.BeatDur().Float64())
+	c := change.NewImmediate(rat.Zero(), m.MeterChange.BeatDuration.Float64())
 
 	return change.Changes{c}
 }

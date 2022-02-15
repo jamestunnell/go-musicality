@@ -1,4 +1,4 @@
-package model_test
+package mononote_test
 
 import (
 	"testing"
@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/performance/model"
+	"github.com/jamestunnell/go-musicality/performance/mononote"
 )
 
 func TestNoteConverter(t *testing.T) {
-	nc := model.NewNoteConverter()
+	nc := mononote.NewConverter()
 	notes := []*note.Note{}
 
 	notes2, err := nc.Process(notes)

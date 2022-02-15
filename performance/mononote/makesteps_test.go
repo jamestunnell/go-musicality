@@ -1,12 +1,13 @@
-package model_test
+package mononote_test
 
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/performance/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/performance/mononote"
 )
 
 func TestStepPitches(t *testing.T) {
@@ -23,8 +24,8 @@ func testStepPitches(
 	start, end *pitch.Pitch,
 	centsPerStep int, expected ...*pitch.Pitch) {
 	t.Run(name, func(t *testing.T) {
-		actual := model.StepPitches(start, end, centsPerStep)
-		actual2 := model.StepPitches(end, start, centsPerStep)
+		actual := mononote.MakeStepPitches(start, end, centsPerStep)
+		actual2 := mononote.MakeStepPitches(end, start, centsPerStep)
 		n := len(expected)
 
 		require.Len(t, actual, n)

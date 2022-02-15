@@ -17,10 +17,6 @@ func New(beatsPerMeasure uint64, beatDuration rat.Rat) *Meter {
 	}
 }
 
-func (m *Meter) BeatDur() rat.Rat {
-	return m.BeatDuration
-}
-
 func (m *Meter) MeasureDuration() rat.Rat {
 	return m.BeatDuration.MulUint64(uint64(m.BeatsPerMeasure))
 }

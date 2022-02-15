@@ -20,15 +20,6 @@ func (changes Changes) Less(i, j int) bool {
 	return changes[i].Offset.Less(changes[j].Offset)
 }
 
-func (changes Changes) Last() *Change {
-	n := changes.Len()
-	if n == 0 {
-		return nil
-	}
-
-	return changes[n-1]
-}
-
 func (changes Changes) Validate(r ValueRange) *validation.Result {
 	results := []*validation.Result{}
 	errs := []error{}
