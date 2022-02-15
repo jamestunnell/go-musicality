@@ -38,8 +38,12 @@ func OptionReplaceSlursAndGlides() ConverterOptionFunc { return setReplaceSlursA
 
 func OptionCentsPerStep(centsPerStep int) ConverterOptionFunc {
 	return func(nc *Converter) {
-		if centsPerStep < 1 {
+		if centsPerStep <= 0 {
 			centsPerStep = 1
+		}
+
+		if centsPerStep > centpitch.CentsPerSemitoneFlt {
+			centsPerStep = centpitch.CentsPerSemitoneFlt
 		}
 
 		nc.centsPerStep = centsPerStep
@@ -48,6 +52,14 @@ func OptionCentsPerStep(centsPerStep int) ConverterOptionFunc {
 
 func setReplaceSlursAndGlides(nc *Converter) {
 	nc.replaceSlursAndGlides = true
+}
+
+func (nc *Converter) CentsPerStep() int {
+	return nc.centsPerStep
+}
+
+func (nc *Converter) ReplaceSlursAndGlides() bool {
+	return nc.replaceSlursAndGlides
 }
 
 func (nc *Converter) Process(notes []*note.Note) ([]*MonoNote, error) {
@@ -91,6 +103,14 @@ func (nc *Converter) processNote(current, next *note.Note) error {
 	a := current.Attack
 	s := current.Separation
 	dur := current.Duration
+
+	for _, l := range current.Links {
+		switch l.Type {
+		case note.LinkTie, note.LinkGlide, note.LinkSlur, note.LinkStep, note.LinkStepSlurred:
+		default:
+			return fmt.Errorf("note link has unknown type '%s'", l.Type)
+		}
+	}
 
 	for _, p := range current.Pitches.Pitches() {
 		link, found := current.Links.FindBySource(p)
@@ -138,8 +158,6 @@ func (nc *Converter) processNote(current, next *note.Note) error {
 			} else {
 				nc.processPitchDurs(p, target, a, s, pds...)
 			}
-		default:
-			return fmt.Errorf("unknown link type '%s' from pitch '%s'", link.Type, p.String())
 		}
 	}
 

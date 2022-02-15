@@ -24,3 +24,39 @@ func Eighth(pitches ...*pitch.Pitch) *Note {
 func Sixteenth(pitches ...*pitch.Pitch) *Note {
 	return New(rat.New(1, 16), pitches...)
 }
+
+func (n *Note) Tie(p *pitch.Pitch) *Note {
+	l := &Link{Type: LinkTie, Source: p, Target: p}
+
+	return n.Link(l)
+}
+
+func (n *Note) Slur(src, tgt *pitch.Pitch) *Note {
+	l := &Link{Type: LinkSlur, Source: src, Target: tgt}
+
+	return n.Link(l)
+}
+
+func (n *Note) Glide(src, tgt *pitch.Pitch) *Note {
+	l := &Link{Type: LinkGlide, Source: src, Target: tgt}
+
+	return n.Link(l)
+}
+
+func (n *Note) Step(src, tgt *pitch.Pitch) *Note {
+	l := &Link{Type: LinkStep, Source: src, Target: tgt}
+
+	return n.Link(l)
+}
+
+func (n *Note) StepSlurred(src, tgt *pitch.Pitch) *Note {
+	l := &Link{Type: LinkStepSlurred, Source: src, Target: tgt}
+
+	return n.Link(l)
+}
+
+func (n *Note) Link(l *Link) *Note {
+	n.Links = append(n.Links, l)
+
+	return n
+}
