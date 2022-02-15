@@ -10,7 +10,6 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
 	"github.com/jamestunnell/go-musicality/performance/mononote"
-	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
 var zero = rat.Zero()
@@ -24,9 +23,9 @@ func TestNewEmpty(t *testing.T) {
 }
 
 func TestNoteInvalid(t *testing.T) {
-	e1 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 4))
-	e2 := pitchdur.New(centpitch.New(pitch.C4, 0), zero)
-	e3 := pitchdur.New(centpitch.New(pitch.E4, 0), rat.New(1, 2))
+	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 4))
+	e2 := mononote.NewPitchDur(centpitch.New(pitch.C4, 0), zero)
+	e3 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), rat.New(1, 2))
 	start := rat.New(1, 2)
 	s := mononote.New(start, e1, e2, e3)
 	expectedDur := rat.New(3, 4)
@@ -37,10 +36,10 @@ func TestNoteInvalid(t *testing.T) {
 }
 
 func TestValidNoteValid(t *testing.T) {
-	e1 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 8))
-	e2 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 8))
-	e3 := pitchdur.New(centpitch.New(pitch.D4, 0), rat.New(1, 2))
-	e4 := pitchdur.New(centpitch.New(pitch.E4, 0), rat.New(1, 1))
+	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 8))
+	e2 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 8))
+	e3 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 2))
+	e4 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), rat.New(1, 1))
 	start := rat.New(1, 1)
 	s := mononote.New(start, e1, e2, e3, e4)
 	expectedDur := rat.New(7, 4)

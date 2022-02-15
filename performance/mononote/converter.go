@@ -7,7 +7,6 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
-	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
 type Converter struct {
@@ -117,14 +116,14 @@ func (nc *Converter) processNote(current, next *note.Note) error {
 
 		// no link or a link where pitch doesn't change can be handled simply
 		if link == nil || link.Target == p {
-			nc.processPitchDurs(p, target, a, s, pitchdur.New(centpitch.New(p, 0), dur))
+			nc.processPitchDurs(p, target, a, s, NewPitchDur(centpitch.New(p, 0), dur))
 
 			continue
 		}
 
 		switch link.Type {
 		case note.LinkTie, note.LinkSlur:
-			nc.processPitchDurs(p, target, a, s, pitchdur.New(centpitch.New(p, 0), dur))
+			nc.processPitchDurs(p, target, a, s, NewPitchDur(centpitch.New(p, 0), dur))
 		case note.LinkGlide:
 			pds := MakeSteps(dur, p, link.Target, nc.centsPerStep)
 
@@ -150,7 +149,7 @@ func (nc *Converter) processNote(current, next *note.Note) error {
 func (nc *Converter) processPitchDurs(
 	current, next *pitch.Pitch,
 	attack, separation float64,
-	pitchDurs ...*pitchdur.PitchDur) {
+	pitchDurs ...*PitchDur) {
 	// is this a continuation?
 	n := nc.continuing[current]
 

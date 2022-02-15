@@ -2,20 +2,19 @@ package mononote
 
 import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
 // MonoNote is a note with only one pitch at a time.
 // Pitch changes are meant to be immediate, with no separation.
 type MonoNote struct {
 	Start      rat.Rat
-	PitchDurs  []*pitchdur.PitchDur
+	PitchDurs  []*PitchDur
 	Attack     float64
 	Separation float64
 }
 
 // New makes a new MonoNote.
-func New(start rat.Rat, pitchDurs ...*pitchdur.PitchDur) *MonoNote {
+func New(start rat.Rat, pitchDurs ...*PitchDur) *MonoNote {
 	return &MonoNote{
 		Start:      start,
 		Attack:     0.0,

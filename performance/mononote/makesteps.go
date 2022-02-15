@@ -4,10 +4,13 @@ import (
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
-	"github.com/jamestunnell/go-musicality/performance/pitchdur"
 )
 
-func MakeSteps(dur rat.Rat, start, end *pitch.Pitch, centsPerStep int) []*pitchdur.PitchDur {
+func MakeSteps(dur rat.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
+	if dur.LessEqual(rat.Zero()) {
+		return []*PitchDur{}
+	}
+
 	ps := MakeStepPitches(start, end, centsPerStep)
 	nSteps := rat.FromInt64(int64(len(ps)))
 	subDur := dur.Div(nSteps)
@@ -37,12 +40,12 @@ func MakeStepPitches(startPitch, endPitch *pitch.Pitch, centsPerStep int) []*cen
 	return pitches
 }
 
-func MakePitchDurs(dur rat.Rat, pitches []*centpitch.CentPitch) []*pitchdur.PitchDur {
+func MakePitchDurs(dur rat.Rat, pitches []*centpitch.CentPitch) []*PitchDur {
 	n := len(pitches)
-	pds := make([]*pitchdur.PitchDur, n)
+	pds := make([]*PitchDur, n)
 
 	for i := 0; i < n; i++ {
-		pds[i] = pitchdur.New(pitches[i], dur)
+		pds[i] = NewPitchDur(pitches[i], dur)
 	}
 
 	return pds

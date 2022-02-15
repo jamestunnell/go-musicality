@@ -1,4 +1,4 @@
-package pitchdur
+package mononote
 
 import (
 	"github.com/jamestunnell/go-musicality/notation/rat"
@@ -10,7 +10,7 @@ type PitchDur struct {
 	Pitch    *centpitch.CentPitch
 }
 
-func New(p *centpitch.CentPitch, dur rat.Rat) *PitchDur {
+func NewPitchDur(p *centpitch.CentPitch, dur rat.Rat) *PitchDur {
 	return &PitchDur{
 		Pitch:    p,
 		Duration: dur,

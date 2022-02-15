@@ -7,6 +7,8 @@ import (
 )
 
 const (
+	MinCentAdjust       = -50
+	MaxCentAdjust       = 49
 	CentsPerSemitoneInt = 100
 	CentsPerSemitoneFlt = 100.0
 )
@@ -51,16 +53,7 @@ func (p *CentPitch) Compare(other *CentPitch) int {
 }
 
 func (p *CentPitch) RoundedSemitone() int {
-	totalSem := p.Pitch.TotalSemitone()
-
-	switch {
-	case p.centAdjust <= -50:
-		totalSem -= 1
-	case p.centAdjust >= 50:
-		totalSem += 1
-	}
-
-	return totalSem
+	return p.Pitch.TotalSemitone()
 }
 
 func (p *CentPitch) TotalCent() int {
@@ -92,10 +85,33 @@ func (p *CentPitch) String() string {
 }
 
 func (p *CentPitch) balance() {
-	if p.centAdjust < -CentsPerSemitoneInt || p.centAdjust >= CentsPerSemitoneInt {
-		semitoneAdjust := p.centAdjust / CentsPerSemitoneInt
+	semitoneAdjust, centAdjust := Balance(p.centAdjust)
 
+	if semitoneAdjust != 0 {
 		p.Pitch = p.Pitch.Transpose(semitoneAdjust)
-		p.centAdjust -= semitoneAdjust * CentsPerSemitoneInt
 	}
+
+	p.centAdjust = centAdjust
+}
+
+func Balance(startCentAdjust int) (semitoneAdjust, centAdjust int) {
+	semitoneAdjust = 0
+	centAdjust = startCentAdjust
+
+	// An initial adjustment should bring the cent adjust to within [-99,99]
+	if centAdjust <= -CentsPerSemitoneInt || centAdjust >= CentsPerSemitoneInt {
+		semitoneAdjust = centAdjust / CentsPerSemitoneInt
+		centAdjust -= semitoneAdjust * CentsPerSemitoneInt
+	}
+
+	// Further adjustment to bring it into [-50,49]
+	if centAdjust < MinCentAdjust {
+		semitoneAdjust -= 1
+		centAdjust += CentsPerSemitoneInt
+	} else if centAdjust > MaxCentAdjust {
+		semitoneAdjust += 1
+		centAdjust -= CentsPerSemitoneInt
+	}
+
+	return
 }
