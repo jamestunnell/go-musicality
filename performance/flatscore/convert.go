@@ -34,19 +34,19 @@ func Convert(s *score.Score) (*FlatScore, error) {
 	secOffset := rat.Zero()
 
 	for _, sec := range sections {
-		dynamicChanges = append(dynamicChanges, change.NewImmediate(secOffset.Clone(), sec.StartDynamic))
-		tempoChanges = append(tempoChanges, change.NewImmediate(secOffset.Clone(), sec.StartTempo))
-		beatDurChanges = append(beatDurChanges, change.NewImmediate(secOffset.Clone(), sec.StartMeter.BeatDuration.Float64()))
+		dynamicChanges = append(dynamicChanges, change.NewImmediate(secOffset, sec.StartDynamic))
+		tempoChanges = append(tempoChanges, change.NewImmediate(secOffset, sec.StartTempo))
+		beatDurChanges = append(beatDurChanges, change.NewImmediate(secOffset, sec.StartMeter.BeatDuration.Float64()))
 
-		dynamicChanges = append(dynamicChanges, sec.DynamicChanges(secOffset.Clone())...)
-		tempoChanges = append(tempoChanges, sec.TempoChanges(secOffset.Clone())...)
-		beatDurChanges = append(beatDurChanges, sec.BeatDurChanges(secOffset.Clone())...)
+		dynamicChanges = append(dynamicChanges, sec.DynamicChanges(secOffset)...)
+		tempoChanges = append(tempoChanges, sec.TempoChanges(secOffset)...)
+		beatDurChanges = append(beatDurChanges, sec.BeatDurChanges(secOffset)...)
 
 		for _, partName := range sec.PartNames() {
 			part, partFound := parts[partName]
 			if !partFound && secOffset.Positive() {
 				// insert a rest for previous sections, before adding notes in current section
-				part = note.Notes{note.New(secOffset.Clone())}
+				part = note.Notes{note.New(secOffset)}
 			}
 
 			part = append(part, sec.PartNotes(partName)...)
@@ -54,7 +54,7 @@ func Convert(s *score.Score) (*FlatScore, error) {
 			parts[partName] = part
 		}
 
-		secOffset.Accum(sec.Duration())
+		secOffset = secOffset.Add(sec.Duration())
 	}
 
 	dc, err := computer.New(startDynamic, dynamicChanges)

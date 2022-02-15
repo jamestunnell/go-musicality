@@ -29,15 +29,6 @@ func TestFromUint64(t *testing.T) {
 	assert.True(t, r2.Equal(r))
 }
 
-func TestClone(t *testing.T) {
-	r := rat.New(1, 2)
-	r2 := r.Clone()
-
-	r.Accum(r2)
-
-	assert.False(t, r2.Equal(r))
-}
-
 func TestMarshalUnmarshal(t *testing.T) {
 	testMarshalUnmarshal(t, rat.New(1, 2), `"1/2"`)
 	testMarshalUnmarshal(t, rat.New(7, 1), `"7"`)
@@ -67,18 +58,6 @@ func testMarshalUnmarshal(t *testing.T, r rat.Rat, expected string) {
 
 		assert.True(t, r2.Equal(r))
 	})
-}
-
-func TestAccum(t *testing.T) {
-	r := rat.Zero()
-
-	r.Accum(rat.New(1, 1))
-
-	assert.True(t, r.Equal(rat.New(1, 1)))
-
-	r.Accum(rat.New(2, 1))
-
-	assert.True(t, r.Equal(rat.New(3, 1)))
 }
 
 func TestPositiveZeroNegative(t *testing.T) {

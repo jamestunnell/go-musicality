@@ -26,11 +26,11 @@ func Sample(f Function, xrange Range, xstep rat.Rat) ([]float64, error) {
 	n := 1 + int(math.Floor(xrange.Span().Div(xstep).Float64()))
 	samples := make([]float64, n)
 
-	x := xrange.Start.Clone()
+	x := xrange.Start
 	for i := 0; i < n; i++ {
 		samples[i] = f.At(x)
 
-		x.Accum(xstep)
+		x = x.Add(xstep)
 	}
 
 	return samples, nil

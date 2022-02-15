@@ -83,7 +83,7 @@ func (nc *Converter) Process(notes []*note.Note) ([]*MonoNote, error) {
 			return []*MonoNote{}, err
 		}
 
-		nc.offset.Accum(current.Duration)
+		nc.offset = nc.offset.Add(current.Duration)
 	}
 
 	if len(nc.continuing) > 0 {
@@ -177,7 +177,7 @@ func (nc *Converter) processPitchDurs(
 
 		delete(nc.continuing, current)
 	} else {
-		n = New(nc.offset.Clone(), pitchDurs...)
+		n = New(nc.offset, pitchDurs...)
 
 		n.Attack = attack
 		n.Separation = separation

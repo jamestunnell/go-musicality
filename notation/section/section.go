@@ -49,7 +49,7 @@ func (s *Section) Duration() rat.Rat {
 			mDur = m.MeterChange.MeasureDuration()
 		}
 
-		dur.Accum(mDur)
+		dur = dur.Add(mDur)
 	}
 
 	return dur
@@ -153,7 +153,7 @@ func (s *Section) TempoChanges(sectionOffset rat.Rat) change.Changes {
 }
 
 func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *measure.Measure) change.Changes) change.Changes {
-	measureOffset := sectionOffset.Clone()
+	measureOffset := sectionOffset
 	changes := change.Changes{}
 	mDur := s.StartMeter.MeasureDuration()
 
@@ -174,7 +174,7 @@ func (s *Section) gatherChanges(sectionOffset rat.Rat, measureChanges func(m *me
 			changes = append(changes, change)
 		}
 
-		measureOffset.Accum(mDur)
+		measureOffset = measureOffset.Add(mDur)
 	}
 
 	return changes

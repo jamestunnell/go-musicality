@@ -82,9 +82,9 @@ func playMIDI(settings *MIDISettings, out midi.Out, tracks []*Track, fs *flatsco
 
 		diff := step.Offset.Sub(offset)
 		if diff.Positive() {
-			xRange := function.NewRange(offset.Clone(), step.Offset.Clone())
+			xRange := function.NewRange(offset, step.Offset)
 
-			timeDelta, err := fs.TimeDelta(xRange, settings.TempoSamplePeriod.Clone())
+			timeDelta, err := fs.TimeDelta(xRange, settings.TempoSamplePeriod)
 			if err != nil {
 				return fmt.Errorf("failed to compute time delta: %w", err)
 			}
@@ -103,7 +103,7 @@ func playMIDI(settings *MIDISettings, out midi.Out, tracks []*Track, fs *flatsco
 			}
 		}
 
-		offset = step.Offset.Clone()
+		offset = step.Offset
 	}
 
 	log.Info().Msg("MIDI playback done")

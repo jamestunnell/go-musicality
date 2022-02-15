@@ -18,7 +18,7 @@ func (events NoteEvents) Offsets() rat.Rats {
 		}
 
 		if !found {
-			offsets = append(offsets, event.Offset().Clone())
+			offsets = append(offsets, event.Offset())
 		}
 	}
 

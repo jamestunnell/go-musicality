@@ -29,7 +29,7 @@ func (n *MonoNote) Duration() rat.Rat {
 	dur := rat.Zero()
 
 	for _, pd := range n.PitchDurs {
-		dur.Accum(pd.Duration)
+		dur = dur.Add(pd.Duration)
 	}
 
 	return dur
@@ -49,7 +49,7 @@ func (n *MonoNote) Simplify() {
 
 		if cur.Pitch.Equal(prev.Pitch) {
 			// combine current with previous element
-			prev.Duration.Accum(cur.Duration)
+			prev.Duration = prev.Duration.Add(cur.Duration)
 
 			n.PitchDurs = append(n.PitchDurs[:i], n.PitchDurs[i+1:]...)
 		} else {

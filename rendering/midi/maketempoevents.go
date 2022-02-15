@@ -18,19 +18,19 @@ func MakeTempoEvents(
 	offset := rat.Zero()
 	bpm := fs.TempoComputer.At(offset)
 	events := []Event{
-		NewTempoEvent(offset.Clone(), bpm),
+		NewTempoEvent(offset, bpm),
 	}
 
-	offset.Accum(samplePeriod)
+	offset = offset.Add(samplePeriod)
 
 	for offset.Less(samplingDur) {
 		newBPM := fs.TempoComputer.At(offset)
 		if newBPM != bpm {
-			events = append(events, NewTempoEvent(offset.Clone(), newBPM))
+			events = append(events, NewTempoEvent(offset, newBPM))
 			bpm = newBPM
 		}
 
-		offset.Accum(samplePeriod)
+		offset = offset.Add(samplePeriod)
 	}
 
 	return events, nil

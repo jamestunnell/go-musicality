@@ -8,7 +8,7 @@ func (notes Notes) TotalDuration() rat.Rat {
 	sum := rat.Zero()
 
 	for _, n := range notes {
-		sum.Accum(n.Duration)
+		sum = sum.Add(n.Duration)
 	}
 
 	return sum

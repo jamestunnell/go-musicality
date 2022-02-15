@@ -56,10 +56,6 @@ func (r Rat) Float64() float64 {
 	return f
 }
 
-func (r Rat) Clone() Rat {
-	return Rat{Rat: new(big.Rat).Set(r.Rat)}
-}
-
 func (r Rat) Positive() bool {
 	return r.Rat.Cmp(zero) == 1
 }
@@ -118,8 +114,4 @@ func (r Rat) MulUint64(i uint64) Rat {
 
 func (r Rat) Div(other Rat) Rat {
 	return Rat{Rat: new(big.Rat).Quo(r.Rat, other.Rat)}
-}
-
-func (r Rat) Accum(other Rat) {
-	r.Rat.Add(r.Rat, other.Rat)
 }
