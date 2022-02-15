@@ -27,7 +27,7 @@ func WriteSMF(s *score.Score, fpath string) error {
 		return fmt.Errorf("failed to get MIDI settings: %w", err)
 	}
 
-	fs, err := (&flatscore.Converter{}).Process(s)
+	fs, err := flatscore.Convert(s)
 	if err != nil {
 		return fmt.Errorf("failed to convert to flat score: %w", err)
 	}

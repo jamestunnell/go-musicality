@@ -11,10 +11,7 @@ import (
 	"github.com/jamestunnell/go-musicality/performance/computer"
 )
 
-type Converter struct {
-}
-
-func (sc *Converter) Process(s *score.Score) (*FlatScore, error) {
+func Convert(s *score.Score) (*FlatScore, error) {
 	if result := s.Validate(); result != nil {
 		return nil, fmt.Errorf("score is invalid: %w", result)
 	}
