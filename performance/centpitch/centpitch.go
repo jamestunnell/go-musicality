@@ -51,7 +51,7 @@ func (p *CentPitch) Compare(other *CentPitch) int {
 }
 
 func (p *CentPitch) RoundedSemitone() int {
-	totalSem := p.TotalSemitone()
+	totalSem := p.Pitch.TotalSemitone()
 
 	switch {
 	case p.centAdjust <= -50:
@@ -64,22 +64,27 @@ func (p *CentPitch) RoundedSemitone() int {
 }
 
 func (p *CentPitch) TotalCent() int {
-	return p.TotalSemitone()*CentsPerSemitoneInt + p.centAdjust
+	return p.Pitch.TotalSemitone()*CentsPerSemitoneInt + p.centAdjust
 }
 
-func (p *CentPitch) Ratio() float64 {
-	totalSemitone := float64(p.Pitch.TotalSemitone()) + float64(p.centAdjust)/CentsPerSemitoneFlt
-
-	return pitch.Ratio(totalSemitone)
+func (p *CentPitch) TotalSemitone() float64 {
+	return float64(p.TotalCent()) / CentsPerSemitoneFlt
 }
+
+// func (p *CentPitch) Ratio() float64 {
+// 	return pitch.Ratio(p.TotalSemitone())
+// }
 
 func (p *CentPitch) Freq() float64 {
-	return pitch.Freq(p.Ratio())
+	return pitch.Freq(p.TotalSemitone())
 }
 
 func (p *CentPitch) String() string {
 	str := p.Pitch.String()
 	if p.centAdjust != 0 {
+		if p.centAdjust > 0 {
+			str += "+"
+		}
 		str += strconv.Itoa(p.centAdjust)
 	}
 
