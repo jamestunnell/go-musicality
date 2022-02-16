@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,8 @@ func TestPlayMIDINotScoreJSON(t *testing.T) {
 }
 
 func TestPlayMIDIHappyPath(t *testing.T) {
+	const errNoDefaultOutput = "can't open default MIDI out"
+
 	scoreJSONs := [][]byte{testutil.ValidScoreJSON(t)}
 
 	testutil.WriteScoreFiles(t, scoreJSONs, func(names []string) {
@@ -67,6 +70,12 @@ func TestPlayMIDIHappyPath(t *testing.T) {
 			ScoreFile: names[0],
 		}
 
-		assert.NoError(t, cmd.Execute())
+		err := cmd.Execute()
+		if err != nil {
+			// This command will fail if there is no default MIDI output, like on a CI build machine
+			if !strings.Contains(err.Error(), errNoDefaultOutput) {
+				t.Fatal(err)
+			}
+		}
 	})
 }
