@@ -18,18 +18,18 @@ func (s *Subdivider) Subdivide() *Node {
 	root := NewNode(s.Meter.MeasureDuration())
 	beatNumer := s.Meter.BeatDuration.Rat.Num().Uint64()
 
-	root.Subdivide(s.Meter.BeatsPerMeasure, func(sub *Node) {
+	root.Subdivide(s.Meter.BeatsPerMeasure, func(i uint64, sub *Node) {
 		if beatNumer > 1 {
 			sub.Subdivide(beatNumer, s.subdivideByTwo)
 		} else {
-			s.subdivideByTwo(sub)
+			s.subdivideByTwo(i, sub)
 		}
 	})
 
 	return root
 }
 
-func (s *Subdivider) subdivideByTwo(sub *Node) {
+func (s *Subdivider) subdivideByTwo(i uint64, sub *Node) {
 	nextSubDir := sub.Dur.Mul(rat.New(1, 2))
 	if nextSubDir.GreaterEqual(s.Smallest) {
 		sub.Subdivide(2, s.subdivideByTwo)

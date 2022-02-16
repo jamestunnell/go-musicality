@@ -14,13 +14,15 @@ type Node struct {
 	Subs []*Node
 }
 
+type SubdivideCallback func(i uint64, sub *Node)
+
 func NewNode(dur rat.Rat) *Node {
 	str := dur.String()
 
 	return &Node{Dur: dur, Str: str, Rest: false, Subs: []*Node{}}
 }
 
-func (e *Node) Subdivide(n uint64, f func(sub *Node)) {
+func (e *Node) Subdivide(n uint64, f SubdivideCallback) {
 	subDur := e.Dur.Div(rat.FromUint64(n))
 	subs := make([]*Node, n)
 
@@ -28,11 +30,13 @@ func (e *Node) Subdivide(n uint64, f func(sub *Node)) {
 		sub := NewNode(subDur)
 		subs[i] = sub
 
-		f(sub)
+		f(i, sub)
 	}
 
 	e.Subs = subs
 }
+
+func SubdivideDoNothing(i uint64, sub *Node) {}
 
 func (e *Node) Visit(f func(*Node)) {
 	f(e)
@@ -40,6 +44,19 @@ func (e *Node) Visit(f func(*Node)) {
 	for _, n := range e.Subs {
 		f(n)
 	}
+}
+
+func (e *Node) TerminalNodes() []*Node {
+	if len(e.Subs) == 0 {
+		return []*Node{e}
+	}
+
+	nodes := []*Node{}
+	for _, n := range e.Subs {
+		nodes = append(nodes, n.TerminalNodes()...)
+	}
+
+	return nodes
 }
 
 func (e *Node) Print() {
