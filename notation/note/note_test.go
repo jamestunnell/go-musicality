@@ -2,7 +2,7 @@ package note_test
 
 import (
 	"encoding/json"
-	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,98 +10,151 @@ import (
 
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
+	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
-func TestNewNonPositiveDuration(t *testing.T) {
-	durs := []*big.Rat{big.NewRat(0, 1), big.NewRat(-1, 16)}
-	for _, dur := range durs {
-		note := note.New(dur)
+func TestEqual(t *testing.T) {
+	n1 := note.Whole(pitch.A0)
+	n2 := note.Half(pitch.A0)
+	n3 := note.Whole(pitch.A0, pitch.A1)
 
-		assert.NotNil(t, note.Validate())
-	}
+	assert.True(t, n1.Equal(n1))
+	assert.False(t, n1.Equal(n2))
+	assert.False(t, n1.Equal(n3))
+
+	n4 := note.Whole(pitch.A0)
+	n5 := note.Whole(pitch.A0)
+	n6 := note.Whole(pitch.A0)
+	l := &note.Link{Source: pitch.A4, Target: pitch.A4, Type: note.LinkTie}
+
+	n4.Attack = 0.33
+	n5.Separation = 0.67
+	n6.Links = append(n6.Links, l)
+
+	assert.False(t, n1.Equal(n4))
+	assert.False(t, n1.Equal(n5))
+	assert.False(t, n1.Equal(n6))
 }
 
-func TestNewPositiveDuration(t *testing.T) {
-	durs := []*big.Rat{big.NewRat(1, 2), big.NewRat(1, 16)}
-	for _, dur := range durs {
-		note := note.New(dur)
-
-		assert.Nil(t, note.Validate())
-	}
+func TestNoteValid(t *testing.T) {
+	testNoteValid(t, "rest", rat.New(1, 2), func(n *note.Note) {})
+	testNoteValid(t, "monophonic", rat.New(1, 2), func(n *note.Note) { n.Pitches.Add(pitch.A0) })
+	testNoteValid(t, "polyphonic", rat.New(1, 2), func(n *note.Note) {
+		n.Pitches.Add(pitch.A0)
+		n.Pitches.Add(pitch.C0)
+	})
+	testNoteValid(t, "min attack", rat.New(1, 2), func(n *note.Note) {
+		n.Attack = note.ControlMin
+	})
+	testNoteValid(t, "max attack", rat.New(1, 2), func(n *note.Note) {
+		n.Attack = note.ControlMax
+	})
+	testNoteValid(t, "min separation", rat.New(1, 2), func(n *note.Note) {
+		n.Separation = note.ControlMin
+	})
+	testNoteValid(t, "max separation", rat.New(1, 2), func(n *note.Note) {
+		n.Separation = note.ControlMax
+	})
 }
 
-func TestNoteArticulation(t *testing.T) {
-	n := note.New(big.NewRat(1, 2), pitch.D6)
-
-	assert.Equal(t, "", n.Articulation)
-
-	n.Articulation = "unknown"
-
-	assert.NotNil(t, n.Validate())
-
-	n.Articulation = note.Accent
-
-	assert.Nil(t, n.Validate())
+func TestNoteInvalid(t *testing.T) {
+	testNoteInvalid(t, "zero dur", rat.Zero(), func(n *note.Note) {})
+	testNoteInvalid(t, "negative dur", rat.Zero(), func(n *note.Note) {})
+	testNoteInvalid(t, "attack too high", rat.New(1, 4), func(n *note.Note) { n.Attack = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "attack too low", rat.New(1, 4), func(n *note.Note) { n.Attack = note.ControlMin - 0.01 })
+	testNoteInvalid(t, "separation too high", rat.New(1, 4), func(n *note.Note) { n.Separation = note.ControlMax + 0.01 })
+	testNoteInvalid(t, "separation too low", rat.New(1, 4), func(n *note.Note) { n.Separation = note.ControlMin - 0.01 })
 }
 
-func TestNoteIsRestIsMonophonic(t *testing.T) {
-	dur := big.NewRat(3, 2)
-	p1 := pitch.New(3, 2, 0)
-	p2 := pitch.New(4, 0, 0)
-	rest := note.New(dur)
-	mono := note.New(dur, p1)
-	poly := note.New(dur, p1, p2)
-
-	require.Nil(t, rest.Validate())
-	assert.True(t, rest.IsRest())
-	assert.False(t, rest.IsMonophonic())
-
-	require.Nil(t, mono.Validate())
-	assert.False(t, mono.IsRest())
-	assert.True(t, mono.IsMonophonic())
-
-	require.Nil(t, poly.Validate())
-	assert.False(t, poly.IsRest())
-	assert.False(t, poly.IsMonophonic())
-}
+type noteModFunc func(n *note.Note)
 
 func TestNoteMarshalUnmarshalJSON(t *testing.T) {
-	dur := big.NewRat(3, 2)
-	p1 := pitch.New(3, 2, 0)
-	p2 := pitch.New(4, 0, 0)
+	dur := rat.New(3, 2)
+	p1 := pitch.New(3, 2)
+	p2 := pitch.New(4, 0)
 
-	testNoteMarshalUnmarshalJSON(t, "rest", note.New(dur))
-	testNoteMarshalUnmarshalJSON(t, "mono", note.New(dur, p1))
-	testNoteMarshalUnmarshalJSON(t, "poly", note.New(dur, p1, p2))
+	cases := map[string]noteModFunc{
+		"rest": func(n *note.Note) {},
+		"monophonic": func(n *note.Note) {
+			n.Pitches.Add(p1)
+		},
+		"polyphonic": func(n *note.Note) {
+			n.Pitches.Add(p1)
+			n.Pitches.Add(p2)
+		},
+		"valid, not normal attack": func(n *note.Note) {
+			n.Attack = note.ControlNormal + 0.01
+		},
+		"valid, not normal separation": func(n *note.Note) {
+			n.Separation = note.ControlNormal + 0.01
+		},
+		"invalid attack": func(n *note.Note) {
+			n.Attack = note.ControlMax + 0.01
+		},
+		"invalid separation": func(n *note.Note) {
+			n.Separation = note.ControlMax + 0.01
+		},
+		"with link": func(n *note.Note) {
+			l := &note.Link{Source: pitch.C0, Target: pitch.C0, Type: note.LinkTie}
+			n.Links = append(n.Links, l)
+		},
+	}
 
-	n := note.New(dur, p1)
+	for name, mod := range cases {
+		n := note.New(dur)
 
-	n.Articulation = note.Accent
+		mod(n)
 
-	testNoteMarshalUnmarshalJSON(t, "accented", n)
+		testNoteMarshalUnmarshalJSON(t, name, n)
+	}
+}
 
-	n.Articulation = ""
-	n.BeginSlur = true
+func TestUnmarshalFail(t *testing.T) {
+	testUnmarshalFail(t, "wrong type", `"not-an-object"`)
 
-	testNoteMarshalUnmarshalJSON(t, "begins slur", n)
+	str := `{
+		"duration": "1",
+		"pitches": ["not-a-pitch"]
+	}`
 
-	n.BeginSlur = false
-	n.EndSlur = true
+	testUnmarshalFail(t, "bad pitch", str)
 
-	testNoteMarshalUnmarshalJSON(t, "ends slur", n)
+	str = `{
+		"duration": "1",
+		"pitches": ["C5"],
+		"links": {
+			"not-a-pitch":{
+				"type":"tie",
+				"target": "C5"
+			}
+		}
+	}`
+	testUnmarshalFail(t, "bad link source pitch", str)
+
+	str = strings.Replace(str, "not-a-pitch", "C5", 1)
+	str = strings.Replace(str, `"target": "C5"`, `"target": "not-a-pitch"`, 1)
+
+	testUnmarshalFail(t, "bad link target pitch", str)
+}
+
+func testUnmarshalFail(t *testing.T, name, jsonStr string) {
+	t.Run(name, func(t *testing.T) {
+		var n note.Note
+
+		d := []byte(jsonStr)
+		err := json.Unmarshal(d, &n)
+
+		assert.Error(t, err)
+	})
 }
 
 func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 	t.Run(name, func(t *testing.T) {
-		t.Log(n.Duration.String())
-
-		require.Nil(t, n.Validate())
-
 		d, err := json.Marshal(n)
 
-		require.Nil(t, err)
-
-		t.Log(string(d))
+		if !assert.Nil(t, err) {
+			t.Fatal(err.Error())
+		}
 
 		assert.Greater(t, len(d), 0)
 
@@ -114,29 +167,30 @@ func testNoteMarshalUnmarshalJSON(t *testing.T, name string, n *note.Note) {
 	})
 }
 
-func TestNoteDot(t *testing.T) {
-	n := note.Quarter(pitch.C4)
+func testNoteValid(t *testing.T, name string, dur rat.Rat, mod func(n *note.Note)) {
+	t.Run(name, func(t *testing.T) {
+		n := note.New(dur)
 
-	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(1, 4)))
+		mod(n)
 
-	n.Dot()
-
-	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(3, 8)))
-
-	n.Dot()
-
-	assert.Equal(t, 0, n.Duration.Cmp(big.NewRat(9, 16)))
+		assert.Nil(t, n.Validate())
+	})
 }
 
-func compareNotes(t *testing.T, n1, n2 *note.Note) bool {
-	ok := assert.Equal(t, len(n1.Pitches), len(n2.Pitches))
-	if ok {
-		for i, p := range n2.Pitches {
-			if !assert.Equal(t, *n1.Pitches[i], *p) {
-				ok = false
-			}
-		}
-	}
+func testNoteInvalid(t *testing.T, name string, dur rat.Rat, mod func(n *note.Note)) {
+	t.Run(name, func(t *testing.T) {
+		n := note.New(dur)
 
-	return assert.Equal(t, n1.Duration, n2.Duration) && ok
+		mod(n)
+
+		assert.NotNil(t, n.Validate())
+	})
+}
+
+func compareNotes(t *testing.T, n1, n2 *note.Note) {
+	intersect := n1.Pitches.Intersect(n2.Pitches)
+	assert.Equal(t, intersect.Len(), n1.Pitches.Len())
+	assert.Equal(t, n1.Duration, n2.Duration)
+	assert.Equal(t, n1.Attack, n2.Attack)
+	assert.Equal(t, n1.Separation, n2.Separation)
 }

@@ -1,0 +1,189 @@
+{
+  "settings": {
+    "midi": {
+      "partChannels": {
+        "piano": 1,
+        "bass": 2
+      },
+      "tempoSamplePeriod": "1/8"
+    }
+  },
+  "program": [
+    "intro"
+  ],
+  "sections": {
+    "intro": {
+      "startTempo": 120,
+      "startDynamic": 1.0,
+      "startMeter": {
+        "beatsPerMeasure": 4,
+        "beatDuration": "1/4"
+      },
+      "measures": [
+        {
+          "dynamicChanges": {
+            "0": {
+              "endValue": 0.0,
+              "duration": "2"
+            }
+          },
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "D4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "E4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "F4"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "tempoChanges": {
+            "0": {
+              "endValue": 180,
+              "duration": "1"
+            }
+          },
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "D4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "E4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "F4"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "dynamicChanges": {
+            "0": {
+              "duration": "0",
+              "endValue": 1.0
+            }
+          },
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "D4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "E4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "F4"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "meterChange": {
+            "beatsPerMeasure": 3,
+            "beatDuration": "1/4"
+          },
+          "partNotes": {
+            "piano": [
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "C4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "D4"
+                ]
+              },
+              {
+                "duration": "1/4",
+                "separation": 0.0,
+                "pitches": [
+                  "E4"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "partNotes": {}
+        },
+        {
+          "partNotes": {}
+        },
+        {
+          "partNotes": {}
+        },
+        {
+          "partNotes": {}
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,176 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://github.com/jamestunnell/go-musicality/note.json",
+    "type": "object",
+    "title": "Note JSON Schema",
+    "description": "JSON schema for a music note.",
+    "default": {},
+    "examples": [
+        {
+            "duration": "1/2",
+            "separation": 0.0,
+            "attack": 0.0,
+            "pitches": [
+                "C4",
+                "E4",
+                "G4"
+            ],
+            "links": {
+                "C4": {
+                    "type": "tie",
+                    "target": "C4"
+                },
+                "E4": {
+                    "type": "glide",
+                    "target": "F4"
+                },
+                "G4": {
+                    "type": "step",
+                    "target": "C5"
+                }
+            }
+        }
+    ],
+    "required": [
+        "duration"
+    ],
+    "properties": {
+        "duration": {
+            "$ref": "#/definitions/duration"
+        },
+        "separation": {
+            "$id": "#/properties/separation",
+            "type": "number",
+            "minimum": -1.0,
+            "maximum": 1.0,
+            "title": "Note separation",
+            "description": "Separation between current and next note.",
+            "default": 0.0,
+            "examples": [
+                0.0
+            ]
+        },
+        "attack": {
+            "$id": "#/properties/attack",
+            "type": "number",
+            "minimum": -1.0,
+            "maximum": 1.0,
+            "title": "Note attack",
+            "description": "Emphasis at note onset.",
+            "default": 0.0,
+            "examples": [
+                0.0
+            ]
+        },
+        "pitches": {
+            "$ref": "#/definitions/pitches"
+        },
+        "links": {
+            "$id": "#/properties/links",
+            "type": "object",
+            "title": "Links",
+            "description": "Links from pitches in the current note to pitches in the next note.",
+            "default": {},
+            "examples": [
+                {
+                    "C4": {
+                        "type": "tie",
+                        "target": "C4"
+                    },
+                    "E4": {
+                        "type": "glide",
+                        "target": "F4"
+                    },
+                    "G4": {
+                        "type": "step",
+                        "target": "C5"
+                    }
+                }
+            ],
+            "patternProperties": {
+                "^[A-G][#b]?-?[0-9]+$": {
+                    "$ref": "#/definitions/link"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": true,
+    "definitions": {
+        "duration": {
+            "type": "string",
+            "title": "Note duration",
+            "description": "Nominal note length.",
+            "pattern": "^[1-9][0-9]*/[1-9][0-9]*$",
+            "examples": [
+                "1/2"
+            ]
+        },
+        "pitches": {
+            "$id": "#/properties/pitches",
+            "type": "array",
+            "title": "Pitches",
+            "description": "Set of note pitches, represented as strings.",
+            "default": [],
+            "minItems": 0,
+            "items": {
+                "type": "string",
+                "pattern": "^[A-G][#b]?-?[0-9]+$"
+            },
+            "examples": [
+                [
+                    "C4",
+                    "E4",
+                    "Bb2"
+                ]
+            ]
+        },
+        "link": {
+            "type": "object",
+            "title": "Link",
+            "description": "Link from pitch in the current note to a pitch in the next note.",
+            "examples": [
+                {
+                    "type": "tie",
+                    "target": "C4"
+                }
+            ],
+            "required": [
+                "type",
+                "target"
+            ],
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/linkType"
+                },
+                "target": {
+                    "$ref": "#/definitions/linkTarget"
+                }
+            },
+            "additionalProperties": true
+        },
+        "linkType": {
+            "$id": "#/properties/links/properties/C4/properties/type",
+            "type": "string",
+            "title": "Link type",
+            "enum": [
+                "tie",
+                "glide",
+                "step"
+            ],
+            "examples": [
+                "tie"
+            ]
+        },
+        "linkTarget": {
+            "type": "string",
+            "title": "Link target",
+            "pattern": "^[A-G][#b]?-?[0-9]+$",
+            "description": "Pitch in the next note that will be linked to.",
+            "default": "",
+            "examples": [
+                "C4"
+            ]
+        }
+    }
+}
