@@ -19,5 +19,5 @@ func TwoTwo() *Meter {
 }
 
 func SixEight() *Meter {
-	return New(6, rat.New(3, 8))
+	return New(2, rat.New(3, 8))
 }
