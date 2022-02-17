@@ -1,6 +1,10 @@
 package rhythm
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import (
+	"fmt"
+
+	"github.com/jamestunnell/go-musicality/notation/rat"
+)
 
 type Element struct {
 	Duration rat.Rat
@@ -12,6 +16,15 @@ func NewElement(dur rat.Rat, rest bool) *Element {
 		Duration: dur,
 		Rest:     rest,
 	}
+}
+
+func (e *Element) String() string {
+	durStr := e.Duration.String()
+	if e.Rest {
+		return fmt.Sprintf("(%s)", durStr)
+	}
+
+	return durStr
 }
 
 func (e *Element) Divide(n uint64) Elements {

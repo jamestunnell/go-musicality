@@ -21,7 +21,7 @@ import (
 func TestRandomMeasure(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 
-	met := meter.SixEight()
+	met := meter.ThreeFour()
 	smallestDur := rat.New(1, 8)
 
 	s := score.New()

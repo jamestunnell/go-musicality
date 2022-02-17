@@ -1,5 +1,7 @@
 package rhythm
 
+import "github.com/jamestunnell/go-musicality/notation/rat"
+
 type Node struct {
 	elem *Element
 	subs []*Node
@@ -12,6 +14,34 @@ func NewNode(elem *Element) *Node {
 		elem: elem,
 		subs: []*Node{},
 	}
+}
+
+func (n *Node) Depth() int {
+	maxLevel := 0
+
+	n.Visit(func(level int, n *Node) bool {
+		if level > maxLevel {
+			maxLevel = level
+		}
+
+		return true
+	})
+
+	return maxLevel
+}
+
+func (n *Node) SmallestDur() rat.Rat {
+	smallest := n.elem.Duration
+
+	n.Visit(func(level int, n *Node) bool {
+		if n.elem.Duration.Less(smallest) {
+			smallest = n.elem.Duration
+		}
+
+		return true
+	})
+
+	return smallest
 }
 
 func (n *Node) Subs() []*Node {
@@ -37,6 +67,16 @@ func (n *Node) SubdivideN(divisor, nTimes uint64) {
 
 		for _, sub := range n.subs {
 			sub.SubdivideN(divisor, nTimes-1)
+		}
+	}
+}
+
+func (n *Node) SubdivideUntil(divisor uint64, check func(*Node) bool) {
+	if check(n) {
+		n.Subdivide(divisor)
+
+		for _, sub := range n.subs {
+			sub.SubdivideUntil(divisor, check)
 		}
 	}
 }

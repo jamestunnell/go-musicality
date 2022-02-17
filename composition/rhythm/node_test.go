@@ -2,6 +2,7 @@ package rhythm_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/jamestunnell/go-musicality/composition/rhythm"
@@ -34,6 +35,30 @@ func TestNodeSubdivideN(t *testing.T) {
 	root.SubdivideN(2, 3)
 
 	testNodeVisitTerminal(t, "subdivided 3 times", root, 3, []string{"1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8"})
+}
+
+func TestNodeSubdivideUntil(t *testing.T) {
+	elem := rhythm.NewElement(rat.New(1, 1), false)
+	root := rhythm.NewNode(elem)
+	smallestDur := rat.New(1, 8)
+
+	root.VisitTerminal(2, func(n *rhythm.Node) {
+		n.SubdivideUntil(2, func(n *rhythm.Node) bool {
+			subdur := n.Element().Duration.Div(rat.FromUint64(2))
+			if subdur.GreaterEqual(smallestDur) {
+				return true
+			}
+
+			return false
+		})
+	})
+
+	terminals := []string{}
+	root.VisitTerminal(math.MaxInt, func(n *rhythm.Node) {
+		terminals = append(terminals, n.Element().String())
+	})
+
+	assert.Equal(t, []string{"1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8"}, terminals)
 }
 
 func TestNodeVisit(t *testing.T) {
