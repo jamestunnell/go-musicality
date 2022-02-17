@@ -1,6 +1,6 @@
 package function
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import "github.com/jamestunnell/go-musicality/common/rat"
 
 type ConstantFunction struct {
 	domain Range

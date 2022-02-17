@@ -1,54 +1,16 @@
 package rhythm
 
 import (
-	"github.com/jamestunnell/go-musicality/notation/meter"
-	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/function"
+	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type Generator struct {
-	met     *meter.Meter
-	measure *Node
+	root *Node
 }
 
-type Selector interface {
-	MaxLevelAt(x rat.Rat) int
-}
-
-func NewGenerator(met *meter.Meter, smallestDur rat.Rat) *Generator {
-	measure := NewNode(met.MeasureDuration())
-
-	measure.Subdivide(met.BeatsPerMeasure)
-
-	for _, beat := range measure.Subs() {
-		beatNumer := met.BeatDuration.Num().Uint64()
-		if beatNumer > 1 {
-			beat.Subdivide(beatNumer)
-		}
-	}
-
-	measure.VisitTerminal(2, func(n *Node) {
-		n.SubdivideUntil(2, func(n *Node) bool {
-			return n.Duration().Div(rat.FromUint64(2)).GreaterEqual(smallestDur)
-		})
-	})
-
-	return &Generator{
-		met:     met,
-		measure: measure,
-	}
-}
-
-func (g *Generator) Depth() int {
-	return g.measure.Depth()
-}
-
-func (g *Generator) SmallestDur() rat.Rat {
-	return g.measure.SmallestDur()
-}
-
-func (g *Generator) MakeMeasure(maxLevelFunction function.Function) rat.Rats {
-	return g.Make(g.met.MeasureDuration(), maxLevelFunction)
+func NewGenerator(root *Node) *Generator {
+	return &Generator{root: root}
 }
 
 func (g *Generator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Rats {
@@ -58,7 +20,7 @@ func (g *Generator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Ra
 	done := false
 
 	for durs.Sum().Less(dur) {
-		g.measure.Visit(func(level int, n *Node) bool {
+		g.root.Visit(func(level int, n *Node) bool {
 			if done {
 				return false
 			}

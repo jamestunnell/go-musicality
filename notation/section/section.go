@@ -3,11 +3,11 @@ package section
 import (
 	"fmt"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 

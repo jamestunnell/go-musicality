@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/jamestunnell/go-musicality/common/function"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
 	"github.com/jamestunnell/go-musicality/performance/computer"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
-	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/jamestunnell/go-musicality/performance/mononote"
 )
 

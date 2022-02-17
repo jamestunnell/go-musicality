@@ -4,25 +4,34 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/composition/rhythm"
-	"github.com/jamestunnell/go-musicality/notation/meter"
-	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
+
+	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
+	"github.com/jamestunnell/go-musicality/composition/rhythm"
 )
 
 func TestGeneratorMakeMeasure(t *testing.T) {
-	met := meter.FourFour()
-	smallestDur := rat.New(1, 16)
-	g := rhythm.NewGenerator(met, smallestDur)
+	root := rhythm.NewNode(rat.New(1, 1))
 
-	assert.True(t, g.SmallestDur().Equal(smallestDur))
+	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+		switch level {
+		case 0:
+			return 4, true
+		case 1, 2, 3:
+			return 2, true
+		default:
+			return 0, false
+		}
+	})
 
-	for i := 0; i <= g.Depth(); i++ {
+	g := rhythm.NewGenerator(root)
+
+	for i := 0; i <= root.Depth(); i++ {
 		t.Run(fmt.Sprintf("const depth %d", i), func(t *testing.T) {
-			mDurs := g.MakeMeasure(function.NewConstantFunction(float64(i)))
+			mDurs := g.Make(root.Duration(), function.NewConstantFunction(float64(i)))
 
 			// t.Log(mDurs.Strings())
 
@@ -37,7 +46,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 				Src: rand.NewSource(1234),
 			}
 
-			mDurs := g.MakeMeasure(function.NewRandomFunction(r))
+			mDurs := g.Make(root.Duration(), function.NewRandomFunction(r))
 
 			// t.Log(mDurs.Strings())
 
@@ -47,22 +56,29 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 	}
 }
 
-func TestGeneratorMakeMoreThanMeasure(t *testing.T) {
+func TestGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
+	root := rhythm.NewNode(rat.New(1, 1))
+
+	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+		if n.Duration().LessEqual(rat.New(1, 16)) {
+			return 0, false
+		}
+
+		return 2, true
+	})
+
 	f := function.NewConstantFunction(float64(2))
 	makeDur := rat.New(7, 4)
 
-	testGeneratorMake(t, meter.ThreeFour(), rat.New(1, 32), f, makeDur)
+	testGeneratorMake(t, root, f, makeDur)
+
+	makeDur = rat.New(48, 50)
+
+	testGeneratorMake(t, root, f, makeDur)
 }
 
-func TestGeneratorMakeLessThanMeasure(t *testing.T) {
-	f := function.NewConstantFunction(float64(2))
-	makeDur := rat.New(48, 50)
-
-	testGeneratorMake(t, meter.SixEight(), rat.New(1, 64), f, makeDur)
-}
-
-func testGeneratorMake(t *testing.T, met *meter.Meter, smallestDur rat.Rat, f function.Function, makeDur rat.Rat) {
-	g := rhythm.NewGenerator(met, smallestDur)
+func testGeneratorMake(t *testing.T, root *rhythm.Node, f function.Function, makeDur rat.Rat) {
+	g := rhythm.NewGenerator(root)
 	mDurs := g.Make(makeDur, f)
 
 	assert.NotEmpty(t, mDurs)

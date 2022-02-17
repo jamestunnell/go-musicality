@@ -3,9 +3,9 @@ package flatscore
 import (
 	"fmt"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/change"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/notation/section"
 	"github.com/jamestunnell/go-musicality/performance/computer"

@@ -1,11 +1,10 @@
 package rhythm_test
 
 import (
-	"math"
 	"testing"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/composition/rhythm"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,41 +16,30 @@ func TestNodeSubdivideByZero(t *testing.T) {
 	assert.Equal(t, 0, root.Depth())
 }
 
-func TestNodeSubdivideN(t *testing.T) {
+func TestNodeSmallestDur(t *testing.T) {
 	root := rhythm.NewNode(rat.New(1, 1))
 
-	root.SubdivideN(2, 3)
+	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+		if n.Duration().Equal(rat.New(1, 32)) {
+			return 0, false
+		}
 
-	testNodeVisitTerminal(t, "subdivided 3 times", root, 3, []string{"1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8"})
-}
-
-func TestNodeSubdivideUntil(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
-	smallestDur := rat.New(1, 8)
-
-	root.VisitTerminal(2, func(n *rhythm.Node) {
-		n.SubdivideUntil(2, func(n *rhythm.Node) bool {
-			subdur := n.Duration().Div(rat.FromUint64(2))
-			if subdur.GreaterEqual(smallestDur) {
-				return true
-			}
-
-			return false
-		})
+		return 2, true
 	})
 
-	terminals := []string{}
-	root.VisitTerminal(math.MaxInt, func(n *rhythm.Node) {
-		terminals = append(terminals, n.Duration().String())
-	})
-
-	assert.Equal(t, []string{"1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8"}, terminals)
+	assert.True(t, root.SmallestDur().Equal(rat.New(1, 32)))
 }
 
 func TestNodeVisit(t *testing.T) {
 	root := rhythm.NewNode(rat.New(1, 1))
 
-	root.SubdivideN(2, 4)
+	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+		if n.Duration().Equal(rat.New(1, 16)) {
+			return 0, false
+		}
+
+		return 2, true
+	})
 
 	count := 0
 	root.Visit(func(level int, n *rhythm.Node) bool {

@@ -7,8 +7,8 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 

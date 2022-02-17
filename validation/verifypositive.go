@@ -1,6 +1,6 @@
 package validation
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import "github.com/jamestunnell/go-musicality/common/rat"
 
 func VerifyPositiveRat(name string, r rat.Rat) error {
 	if !r.Positive() {

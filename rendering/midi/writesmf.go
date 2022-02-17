@@ -9,7 +9,7 @@ import (
 	"gitlab.com/gomidi/midi/smf/smfwriter"
 	"gitlab.com/gomidi/midi/writer"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
 )

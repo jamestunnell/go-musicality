@@ -3,7 +3,7 @@ package function
 import (
 	"fmt"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 func At(f Function, x rat.Rat) (float64, error) {

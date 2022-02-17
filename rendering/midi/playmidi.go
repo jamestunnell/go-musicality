@@ -11,10 +11,10 @@ import (
 	"gitlab.com/gomidi/midi/writer"
 	"gitlab.com/gomidi/rtmididrv"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
-	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 type playStep struct {

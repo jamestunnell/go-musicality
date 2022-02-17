@@ -1,8 +1,8 @@
 package midi
 
 import (
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/note"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func AdjustDuration(dur rat.Rat, separation float64) rat.Rat {

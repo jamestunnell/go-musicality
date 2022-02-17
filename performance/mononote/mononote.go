@@ -1,7 +1,7 @@
 package mononote
 
 import (
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 // MonoNote is a note with only one pitch at a time.

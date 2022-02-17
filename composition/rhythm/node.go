@@ -1,6 +1,6 @@
 package rhythm
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import "github.com/jamestunnell/go-musicality/common/rat"
 
 type Node struct {
 	dur  rat.Rat
@@ -8,6 +8,7 @@ type Node struct {
 }
 
 type VisitFunc func(level int, n *Node) bool
+type SubdivideRecursiveFunc func(level int, n *Node) (uint64, bool)
 
 func NewNode(dur rat.Rat) *Node {
 	return &Node{
@@ -67,23 +68,22 @@ func (n *Node) Subdivide(divisor uint64) {
 	n.subs = subs
 }
 
-func (n *Node) SubdivideN(divisor, nTimes uint64) {
-	if nTimes > 0 {
-		n.Subdivide(divisor)
-
-		for _, sub := range n.subs {
-			sub.SubdivideN(divisor, nTimes-1)
-		}
-	}
+func (n *Node) SubdivideRecursive(s SubdivideRecursiveFunc) {
+	n.subdivideRecursive(0, s)
 }
 
-func (n *Node) SubdivideUntil(divisor uint64, check func(*Node) bool) {
-	if check(n) {
-		n.Subdivide(divisor)
+func (n *Node) subdivideRecursive(level int, s SubdivideRecursiveFunc) {
+	divisor, divide := s(level, n)
+	if !divide {
+		return
+	}
 
-		for _, sub := range n.subs {
-			sub.SubdivideUntil(divisor, check)
-		}
+	n.Subdivide(divisor)
+
+	nextLevel := level + 1
+
+	for _, sub := range n.subs {
+		sub.subdivideRecursive(nextLevel, s)
 	}
 }
 

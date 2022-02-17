@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/change"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func TestNewImmediate(t *testing.T) {
