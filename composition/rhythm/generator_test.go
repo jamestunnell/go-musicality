@@ -7,6 +7,7 @@ import (
 	"github.com/jamestunnell/go-musicality/composition/rhythm"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/function"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -21,7 +22,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 
 	for i := 0; i <= g.Depth(); i++ {
 		t.Run(fmt.Sprintf("const depth %d", i), func(t *testing.T) {
-			mDurs := g.MakeMeasure(rhythm.NewConstantSelector(i))
+			mDurs := g.MakeMeasure(function.NewConstantFunction(float64(i)))
 
 			// t.Log(mDurs.Strings())
 
@@ -36,7 +37,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 				Src: rand.NewSource(1234),
 			}
 
-			mDurs := g.MakeMeasure(rhythm.NewRandomSelector(r))
+			mDurs := g.MakeMeasure(function.NewRandomFunction(r))
 
 			// t.Log(mDurs.Strings())
 
@@ -47,23 +48,23 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 }
 
 func TestGeneratorMakeMoreThanMeasure(t *testing.T) {
-	met := meter.ThreeFour()
-	smallestDur := rat.New(1, 32)
-	g := rhythm.NewGenerator(met, smallestDur)
-	dur := rat.New(7, 4)
-	mDurs := g.Make(dur, rhythm.NewConstantSelector(g.Depth()/2))
+	f := function.NewConstantFunction(float64(2))
+	makeDur := rat.New(7, 4)
 
-	assert.NotEmpty(t, mDurs)
-	assert.True(t, mDurs.Sum().Equal(dur))
+	testGeneratorMake(t, meter.ThreeFour(), rat.New(1, 32), f, makeDur)
 }
 
 func TestGeneratorMakeLessThanMeasure(t *testing.T) {
-	met := meter.SixEight()
-	smallestDur := rat.New(1, 64)
+	f := function.NewConstantFunction(float64(2))
+	makeDur := rat.New(48, 50)
+
+	testGeneratorMake(t, meter.SixEight(), rat.New(1, 64), f, makeDur)
+}
+
+func testGeneratorMake(t *testing.T, met *meter.Meter, smallestDur rat.Rat, f function.Function, makeDur rat.Rat) {
 	g := rhythm.NewGenerator(met, smallestDur)
-	dur := rat.New(48, 50)
-	mDurs := g.Make(dur, rhythm.NewConstantSelector(g.Depth()/2))
+	mDurs := g.Make(makeDur, f)
 
 	assert.NotEmpty(t, mDurs)
-	assert.True(t, mDurs.Sum().Equal(dur))
+	assert.True(t, mDurs.Sum().Equal(makeDur))
 }

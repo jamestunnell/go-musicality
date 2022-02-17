@@ -3,6 +3,7 @@ package rhythm
 import (
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 type Generator struct {
@@ -46,14 +47,14 @@ func (g *Generator) SmallestDur() rat.Rat {
 	return g.measure.SmallestDur()
 }
 
-func (g *Generator) MakeMeasure(selector Selector) rat.Rats {
-	return g.Make(g.met.MeasureDuration(), selector)
+func (g *Generator) MakeMeasure(maxLevelFunction function.Function) rat.Rats {
+	return g.Make(g.met.MeasureDuration(), maxLevelFunction)
 }
 
-func (g *Generator) Make(dur rat.Rat, selector Selector) rat.Rats {
+func (g *Generator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Rats {
 	durs := rat.Rats{}
 	x := rat.Zero()
-	maxLevel := selector.MaxLevelAt(x)
+	maxLevel := int(maxLevelFunction.At(x))
 	done := false
 
 	for durs.Sum().Less(dur) {
@@ -65,7 +66,7 @@ func (g *Generator) Make(dur rat.Rat, selector Selector) rat.Rats {
 			if level >= maxLevel || n.Terminal() {
 				durs = append(durs, n.Duration())
 				x = x.Add(n.Duration())
-				maxLevel = selector.MaxLevelAt(x)
+				maxLevel = int(maxLevelFunction.At(x))
 				done = x.GreaterEqual(dur)
 
 				return false
