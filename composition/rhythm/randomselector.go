@@ -16,11 +16,5 @@ func NewRandomSelector(r distuv.Rander) *RandomSelector {
 }
 
 func (s *RandomSelector) MaxLevelAt(x rat.Rat) int {
-	maxLevel := int(math.Round(s.maxLevel.Rand()))
-
-	if maxLevel < 0 {
-		return 0
-	}
-
-	return maxLevel
+	return int(math.Round(s.maxLevel.Rand()))
 }

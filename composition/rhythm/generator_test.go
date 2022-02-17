@@ -61,7 +61,7 @@ func TestGeneratorMakeLessThanMeasure(t *testing.T) {
 	met := meter.SixEight()
 	smallestDur := rat.New(1, 64)
 	g := rhythm.NewGenerator(met, smallestDur)
-	dur := rat.New(1, 2)
+	dur := rat.New(48, 50)
 	mDurs := g.Make(dur, rhythm.NewConstantSelector(g.Depth()/2))
 
 	assert.NotEmpty(t, mDurs)
