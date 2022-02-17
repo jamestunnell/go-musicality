@@ -3,8 +3,8 @@ package function_test
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
-	"github.com/jamestunnell/go-musicality/performance/function"
+	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 var (

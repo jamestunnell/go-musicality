@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/gomidi/midi/writer"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type Event interface {

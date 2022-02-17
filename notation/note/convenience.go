@@ -1,8 +1,8 @@
 package note
 
 import (
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func Whole(pitches ...*pitch.Pitch) *Note {

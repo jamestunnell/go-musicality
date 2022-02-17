@@ -14,6 +14,16 @@ func (rats Rats) Less(i, j int) bool {
 	return rats[i].Less(rats[j])
 }
 
+func (rats Rats) Sum() Rat {
+	sum := Zero()
+
+	for _, r := range rats {
+		sum = sum.Add(r)
+	}
+
+	return sum
+}
+
 func (rats Rats) Union(other Rats) Rats {
 	union := Rats{}
 

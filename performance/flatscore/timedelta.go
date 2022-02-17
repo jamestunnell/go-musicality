@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/performance/computer"
-	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 // TimeDelta takes two note offsets, and uses the tempo and beat duration computers to

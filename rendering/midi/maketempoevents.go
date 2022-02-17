@@ -1,7 +1,7 @@
 package midi
 
 import (
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/rs/zerolog/log"
 )

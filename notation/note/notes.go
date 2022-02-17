@@ -1,6 +1,6 @@
 package note
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import "github.com/jamestunnell/go-musicality/common/rat"
 
 type Notes []*Note
 

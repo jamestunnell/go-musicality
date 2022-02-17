@@ -3,7 +3,7 @@ package function
 import (
 	"math"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 func DomainMin() rat.Rat {

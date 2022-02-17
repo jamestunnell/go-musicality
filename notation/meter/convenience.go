@@ -1,6 +1,6 @@
 package meter
 
-import "github.com/jamestunnell/go-musicality/notation/rat"
+import "github.com/jamestunnell/go-musicality/common/rat"
 
 func FourFour() *Meter {
 	return New(4, rat.New(1, 4))
@@ -19,5 +19,5 @@ func TwoTwo() *Meter {
 }
 
 func SixEight() *Meter {
-	return New(6, rat.New(3, 8))
+	return New(2, rat.New(3, 8))
 }

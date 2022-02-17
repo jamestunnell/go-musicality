@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 func Sample(f Function, xrange Range, xstep rat.Rat) ([]float64, error) {

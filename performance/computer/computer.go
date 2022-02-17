@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/jamestunnell/go-musicality/common/function"
 	"github.com/jamestunnell/go-musicality/notation/change"
-	"github.com/jamestunnell/go-musicality/performance/function"
 )
 
 // Computer represents an initial value and a set of changes as a

@@ -1,7 +1,7 @@
 package meter
 
 import (
-	"github.com/jamestunnell/go-musicality/notation/rat"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 

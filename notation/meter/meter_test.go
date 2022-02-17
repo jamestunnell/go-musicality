@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/meter"
-	"github.com/jamestunnell/go-musicality/notation/rat"
 )
 
 func TestConvenience(t *testing.T) {
