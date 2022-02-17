@@ -15,13 +15,12 @@ type Selector interface {
 }
 
 func NewGenerator(met *meter.Meter, smallestDur rat.Rat) *Generator {
-	elem := NewElement(met.MeasureDuration(), false)
-	measure := NewNode(elem)
+	measure := NewNode(met.MeasureDuration())
 
 	measure.Subdivide(met.BeatsPerMeasure)
 
 	for _, beat := range measure.Subs() {
-		beatNumer := met.BeatDuration.Rat.Num().Uint64()
+		beatNumer := met.BeatDuration.Num().Uint64()
 		if beatNumer > 1 {
 			beat.Subdivide(beatNumer)
 		}
@@ -29,7 +28,7 @@ func NewGenerator(met *meter.Meter, smallestDur rat.Rat) *Generator {
 
 	measure.VisitTerminal(2, func(n *Node) {
 		n.SubdivideUntil(2, func(n *Node) bool {
-			return n.Element().Duration.Div(rat.FromUint64(2)).GreaterEqual(smallestDur)
+			return n.Duration().Div(rat.FromUint64(2)).GreaterEqual(smallestDur)
 		})
 	})
 
@@ -47,27 +46,25 @@ func (g *Generator) SmallestDur() rat.Rat {
 	return g.measure.SmallestDur()
 }
 
-func (g *Generator) MakeMeasure(selector Selector) Elements {
+func (g *Generator) MakeMeasure(selector Selector) rat.Rats {
 	return g.Make(g.met.MeasureDuration(), selector)
 }
 
-func (g *Generator) Make(dur rat.Rat, selector Selector) Elements {
-	elems := Elements{}
+func (g *Generator) Make(dur rat.Rat, selector Selector) rat.Rats {
+	durs := rat.Rats{}
 	x := rat.Zero()
 	maxLevel := selector.MaxLevelAt(x)
 	done := false
 
-	for elems.Duration().Less(dur) {
+	for durs.Sum().Less(dur) {
 		g.measure.Visit(func(level int, n *Node) bool {
 			if done {
 				return false
 			}
 
 			if level >= maxLevel || n.Terminal() {
-				elem := &Element{Duration: n.Element().Duration, Rest: false}
-
-				elems = append(elems, elem)
-				x = x.Add(elem.Duration)
+				durs = append(durs, n.Duration())
+				x = x.Add(n.Duration())
 				maxLevel = selector.MaxLevelAt(x)
 				done = x.GreaterEqual(dur)
 
@@ -78,12 +75,12 @@ func (g *Generator) Make(dur rat.Rat, selector Selector) Elements {
 		})
 	}
 
-	diff := elems.Duration().Sub(dur)
+	diff := durs.Sum().Sub(dur)
 	if diff.Positive() {
-		last := elems[len(elems)-1]
+		last := durs[len(durs)-1]
 
-		last.Duration = last.Duration.Sub(diff)
+		durs[len(durs)-1] = last.Sub(diff)
 	}
 
-	return elems
+	return durs
 }

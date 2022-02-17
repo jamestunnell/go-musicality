@@ -3,15 +3,15 @@ package rhythm
 import "github.com/jamestunnell/go-musicality/notation/rat"
 
 type Node struct {
-	elem *Element
+	dur  rat.Rat
 	subs []*Node
 }
 
 type VisitFunc func(level int, n *Node) bool
 
-func NewNode(elem *Element) *Node {
+func NewNode(dur rat.Rat) *Node {
 	return &Node{
-		elem: elem,
+		dur:  dur,
 		subs: []*Node{},
 	}
 }
@@ -31,11 +31,11 @@ func (n *Node) Depth() int {
 }
 
 func (n *Node) SmallestDur() rat.Rat {
-	smallest := n.elem.Duration
+	smallest := n.dur
 
 	n.Visit(func(level int, n *Node) bool {
-		if n.elem.Duration.Less(smallest) {
-			smallest = n.elem.Duration
+		if n.dur.Less(smallest) {
+			smallest = n.dur
 		}
 
 		return true
@@ -48,14 +48,20 @@ func (n *Node) Subs() []*Node {
 	return n.subs
 }
 
-func (n *Node) Element() *Element {
-	return n.elem
+func (n *Node) Duration() rat.Rat {
+	return n.dur
 }
 
 func (n *Node) Subdivide(divisor uint64) {
+	if divisor == 0 {
+		return
+	}
+
+	subdur := n.dur.Div(rat.FromUint64(divisor))
 	subs := make([]*Node, divisor)
-	for i, e := range n.elem.Divide(divisor) {
-		subs[i] = NewNode(e)
+
+	for i := uint64(0); i < divisor; i++ {
+		subs[i] = NewNode(subdur)
 	}
 
 	n.subs = subs

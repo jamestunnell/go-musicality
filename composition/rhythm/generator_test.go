@@ -26,7 +26,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 			// t.Log(mDurs.Strings())
 
 			assert.NotEmpty(t, mDurs)
-			assert.True(t, mDurs.Duration().Equal(rat.New(1, 1)))
+			assert.True(t, mDurs.Sum().Equal(rat.New(1, 1)))
 		})
 
 		t.Run(fmt.Sprintf("rand max depth %d", i), func(t *testing.T) {
@@ -41,7 +41,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 			// t.Log(mDurs.Strings())
 
 			assert.NotEmpty(t, mDurs)
-			assert.True(t, mDurs.Duration().Equal(rat.New(1, 1)))
+			assert.True(t, mDurs.Sum().Equal(rat.New(1, 1)))
 		})
 	}
 }
@@ -54,7 +54,7 @@ func TestGeneratorMakeMoreThanMeasure(t *testing.T) {
 	mDurs := g.Make(dur, rhythm.NewConstantSelector(g.Depth()/2))
 
 	assert.NotEmpty(t, mDurs)
-	assert.True(t, mDurs.Duration().Equal(dur))
+	assert.True(t, mDurs.Sum().Equal(dur))
 }
 
 func TestGeneratorMakeLessThanMeasure(t *testing.T) {
@@ -65,5 +65,5 @@ func TestGeneratorMakeLessThanMeasure(t *testing.T) {
 	mDurs := g.Make(dur, rhythm.NewConstantSelector(g.Depth()/2))
 
 	assert.NotEmpty(t, mDurs)
-	assert.True(t, mDurs.Duration().Equal(dur))
+	assert.True(t, mDurs.Sum().Equal(dur))
 }

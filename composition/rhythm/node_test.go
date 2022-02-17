@@ -1,7 +1,6 @@
 package rhythm_test
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -10,27 +9,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewNode(t *testing.T) {
-	testNodeSubdividePreservesRest(t, true)
-	testNodeSubdividePreservesRest(t, false)
-}
+func TestNodeSubdivideByZero(t *testing.T) {
+	root := rhythm.NewNode(rat.New(1, 1))
 
-func testNodeSubdividePreservesRest(t *testing.T, rest bool) {
-	t.Run(fmt.Sprintf("rest %v", rest), func(t *testing.T) {
-		elem := rhythm.NewElement(rat.New(1, 1), rest)
-		root := rhythm.NewNode(elem)
+	root.Subdivide(0)
 
-		root.Subdivide(2)
-
-		root.VisitTerminal(1, func(n *rhythm.Node) {
-			assert.Equal(t, rest, n.Element().Rest)
-		})
-	})
+	assert.Equal(t, 0, root.Depth())
 }
 
 func TestNodeSubdivideN(t *testing.T) {
-	elem := rhythm.NewElement(rat.New(1, 1), false)
-	root := rhythm.NewNode(elem)
+	root := rhythm.NewNode(rat.New(1, 1))
 
 	root.SubdivideN(2, 3)
 
@@ -38,13 +26,12 @@ func TestNodeSubdivideN(t *testing.T) {
 }
 
 func TestNodeSubdivideUntil(t *testing.T) {
-	elem := rhythm.NewElement(rat.New(1, 1), false)
-	root := rhythm.NewNode(elem)
+	root := rhythm.NewNode(rat.New(1, 1))
 	smallestDur := rat.New(1, 8)
 
 	root.VisitTerminal(2, func(n *rhythm.Node) {
 		n.SubdivideUntil(2, func(n *rhythm.Node) bool {
-			subdur := n.Element().Duration.Div(rat.FromUint64(2))
+			subdur := n.Duration().Div(rat.FromUint64(2))
 			if subdur.GreaterEqual(smallestDur) {
 				return true
 			}
@@ -55,15 +42,14 @@ func TestNodeSubdivideUntil(t *testing.T) {
 
 	terminals := []string{}
 	root.VisitTerminal(math.MaxInt, func(n *rhythm.Node) {
-		terminals = append(terminals, n.Element().String())
+		terminals = append(terminals, n.Duration().String())
 	})
 
 	assert.Equal(t, []string{"1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8", "1/8"}, terminals)
 }
 
 func TestNodeVisit(t *testing.T) {
-	elem := rhythm.NewElement(rat.New(1, 1), false)
-	root := rhythm.NewNode(elem)
+	root := rhythm.NewNode(rat.New(1, 1))
 
 	root.SubdivideN(2, 4)
 
@@ -78,8 +64,7 @@ func TestNodeVisit(t *testing.T) {
 }
 
 func TestNodeVisitTerminal(t *testing.T) {
-	elem := rhythm.NewElement(rat.New(1, 1), false)
-	root := rhythm.NewNode(elem)
+	root := rhythm.NewNode(rat.New(1, 1))
 
 	testNodeVisitTerminal(t, "root only - max level 0", root, 0, []string{"1/1"})
 	testNodeVisitTerminal(t, "root only - max level 1", root, 1, []string{"1/1"})
@@ -102,7 +87,7 @@ func testNodeVisitTerminal(t *testing.T, name string, root *rhythm.Node, maxLeve
 		s := []string{}
 
 		root.VisitTerminal(maxLevel, func(n *rhythm.Node) {
-			s = append(s, n.Element().Duration.String())
+			s = append(s, n.Duration().String())
 		})
 
 		assert.Equal(t, expectedDurStrings, s)
