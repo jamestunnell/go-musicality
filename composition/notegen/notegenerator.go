@@ -21,9 +21,9 @@ func NewNoteGenerator(
 	}
 }
 func (ng *NoteGenerator) MakeNotes(dur rat.Rat) note.Notes {
-	durs := ng.rhythmGen.MakeRhythm(dur)
+	durs := rhythmgen.MakeRhythm(dur, ng.rhythmGen)
 	n := len(durs)
-	pitches := ng.pitchGen.MakePitches(n)
+	pitches := pitchgen.MakePitches(n, ng.pitchGen)
 	notes := make(note.Notes, n)
 
 	for i := 0; i < n; i++ {

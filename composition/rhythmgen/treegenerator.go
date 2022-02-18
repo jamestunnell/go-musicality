@@ -6,45 +6,40 @@ import (
 )
 
 type TreeGenerator struct {
-	root     *TreeNode
-	maxLevel function.Function
+	maxLevel     int
+	maxLevelFunc function.Function
+	visitor      *TreeVisitor
+	latestDur    rat.Rat
+	durSoFar     rat.Rat
 }
 
-func NewTreeGenerator(root *TreeNode, maxLevel function.Function) *TreeGenerator {
-	return &TreeGenerator{root: root, maxLevel: maxLevel}
+func NewTreeGenerator(root *TreeNode, maxLevelFunc function.Function) *TreeGenerator {
+	zero := rat.Zero()
+	g := &TreeGenerator{
+		visitor:      NewTreeVisitor(root),
+		maxLevelFunc: maxLevelFunc,
+		maxLevel:     int(maxLevelFunc.At(zero)),
+		latestDur:    zero,
+		durSoFar:     zero,
+	}
+
+	return g
 }
 
-func (g *TreeGenerator) MakeRhythm(dur rat.Rat) rat.Rats {
-	durs := rat.Rats{}
-	x := rat.Zero()
-	maxLevel := int(g.maxLevel.At(x))
-	done := false
+func (g *TreeGenerator) NextDur() rat.Rat {
+	g.visitor.VisitNext(g.onVisit)
 
-	for durs.Sum().Less(dur) {
-		g.root.Visit(func(level int, n *TreeNode) bool {
-			if done {
-				return false
-			}
+	return g.latestDur
+}
 
-			if level >= maxLevel || n.Terminal() {
-				durs = append(durs, n.Duration())
-				x = x.Add(n.Duration())
-				maxLevel = int(g.maxLevel.At(x))
-				done = x.GreaterEqual(dur)
+func (g *TreeGenerator) onVisit(level int, n *TreeNode) bool {
+	if level >= g.maxLevel || n.Terminal() {
+		g.latestDur = n.Duration()
+		g.durSoFar = g.durSoFar.Add(g.latestDur)
+		g.maxLevel = int(g.maxLevelFunc.At(g.durSoFar))
 
-				return false
-			}
-
-			return true
-		})
+		return false
 	}
 
-	diff := durs.Sum().Sub(dur)
-	if diff.Positive() {
-		last := durs[len(durs)-1]
-
-		durs[len(durs)-1] = last.Sub(diff)
-	}
-
-	return durs
+	return true
 }

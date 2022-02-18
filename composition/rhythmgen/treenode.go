@@ -7,7 +7,7 @@ type TreeNode struct {
 	subs []*TreeNode
 }
 
-type VisitFunc func(level int, n *TreeNode) bool
+type OnVisitFunc func(level int, n *TreeNode) bool
 type SubdivideRecursiveFunc func(level int, n *TreeNode) (uint64, bool)
 
 func NewTreeNode(dur rat.Rat) *TreeNode {
@@ -91,7 +91,7 @@ func (n *TreeNode) Terminal() bool {
 	return len(n.subs) == 0
 }
 
-func (n *TreeNode) Visit(v VisitFunc) {
+func (n *TreeNode) Visit(v OnVisitFunc) {
 	n.visit(0, v)
 }
 
@@ -109,7 +109,7 @@ func (n *TreeNode) VisitTerminal(maxLevel int, do func(*TreeNode)) {
 	n.visit(0, v)
 }
 
-func (n *TreeNode) visit(level int, v VisitFunc) {
+func (n *TreeNode) visit(level int, v OnVisitFunc) {
 	if !v(level, n) {
 		return
 	}
