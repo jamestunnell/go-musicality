@@ -13,10 +13,10 @@ import (
 	"github.com/jamestunnell/go-musicality/composition/rhythmgen"
 )
 
-func TestGeneratorMakeMeasure(t *testing.T) {
-	root := rhythmgen.NewNode(rat.New(1, 1))
+func TestTreeGeneratorMakeMeasure(t *testing.T) {
+	root := rhythmgen.NewTreeNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
 		switch level {
 		case 0:
 			return 4, true
@@ -27,7 +27,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 		}
 	})
 
-	g := rhythmgen.NewGenerator(root)
+	g := rhythmgen.NewTreeGenerator(root)
 
 	for i := 0; i <= root.Depth(); i++ {
 		t.Run(fmt.Sprintf("const depth %d", i), func(t *testing.T) {
@@ -56,10 +56,10 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 	}
 }
 
-func TestGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
-	root := rhythmgen.NewNode(rat.New(1, 1))
+func TestTreeGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
+	root := rhythmgen.NewTreeNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
 		if n.Duration().LessEqual(rat.New(1, 16)) {
 			return 0, false
 		}
@@ -70,15 +70,15 @@ func TestGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
 	f := function.NewConstantFunction(float64(2))
 	makeDur := rat.New(7, 4)
 
-	testGeneratorMake(t, root, f, makeDur)
+	testTreeGeneratorMake(t, root, f, makeDur)
 
 	makeDur = rat.New(48, 50)
 
-	testGeneratorMake(t, root, f, makeDur)
+	testTreeGeneratorMake(t, root, f, makeDur)
 }
 
-func testGeneratorMake(t *testing.T, root *rhythmgen.Node, f function.Function, makeDur rat.Rat) {
-	g := rhythmgen.NewGenerator(root)
+func testTreeGeneratorMake(t *testing.T, root *rhythmgen.TreeNode, f function.Function, makeDur rat.Rat) {
+	g := rhythmgen.NewTreeGenerator(root)
 	mDurs := g.Make(makeDur, f)
 
 	assert.NotEmpty(t, mDurs)

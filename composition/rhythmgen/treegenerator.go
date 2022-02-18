@@ -5,22 +5,22 @@ import (
 	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
-type Generator struct {
-	root *Node
+type TreeGenerator struct {
+	root *TreeNode
 }
 
-func NewGenerator(root *Node) *Generator {
-	return &Generator{root: root}
+func NewTreeGenerator(root *TreeNode) *TreeGenerator {
+	return &TreeGenerator{root: root}
 }
 
-func (g *Generator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Rats {
+func (g *TreeGenerator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Rats {
 	durs := rat.Rats{}
 	x := rat.Zero()
 	maxLevel := int(maxLevelFunction.At(x))
 	done := false
 
 	for durs.Sum().Less(dur) {
-		g.root.Visit(func(level int, n *Node) bool {
+		g.root.Visit(func(level int, n *TreeNode) bool {
 			if done {
 				return false
 			}
