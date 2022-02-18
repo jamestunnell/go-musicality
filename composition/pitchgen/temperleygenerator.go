@@ -1,4 +1,4 @@
-package temperley
+package pitchgen
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 
-	"github.com/jamestunnell/go-musicality/generation/stats"
+	"github.com/jamestunnell/go-musicality/composition/pitchgen/stats"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
@@ -25,22 +25,22 @@ var (
 	CMinorBaseKeyProbs = []float64{0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022}
 )
 
-// PitchModel uses RPK profiles to generate random pitches.
-type PitchModel struct {
+// TemperleyGenerator uses RPK profiles to generate random pitches.
+type TemperleyGenerator struct {
 	// KeyProbs contains the probabilities of each total semitone offset (from C0) appearing given the current key
 	KeyProbs     []float64
 	RangeProfile distuv.Normal
 }
 
-func NewMajorPitchModel(keySemitone int, seed uint64) (*PitchModel, error) {
-	return newPitchModel(keySemitone, seed, CMajorBaseKeyProbs)
+func NewMajorTemperleyGenerator(keySemitone int, seed uint64) (*TemperleyGenerator, error) {
+	return newTemperleyGenerator(keySemitone, seed, CMajorBaseKeyProbs)
 }
 
-func NewMinorPitchModel(keySemitone int, seed uint64) (*PitchModel, error) {
-	return newPitchModel(keySemitone, seed, CMinorBaseKeyProbs)
+func NewMinorTemperleyGenerator(keySemitone int, seed uint64) (*TemperleyGenerator, error) {
+	return newTemperleyGenerator(keySemitone, seed, CMinorBaseKeyProbs)
 }
 
-func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*PitchModel, error) {
+func newTemperleyGenerator(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*TemperleyGenerator, error) {
 	cKeyProfile, err := NewCKeyProfile(cKeyBaseProbs)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*Pitc
 
 	rangeProfile.Src = randSrc
 
-	model := &PitchModel{
+	model := &TemperleyGenerator{
 		KeyProbs:     keyProbs,
 		RangeProfile: rangeProfile,
 	}
@@ -79,13 +79,13 @@ func newPitchModel(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*Pitc
 
 // MakeStartingPitch uses the range and key profiles to determine a
 // starting pitch
-func (pm *PitchModel) MakeStartingPitch() *pitch.Pitch {
+func (pm *TemperleyGenerator) MakeStartingPitch() *pitch.Pitch {
 	rangeProbs := stats.GetIntProbs(pm.RangeProfile, 0, NumSemitones)
 
 	return pm.makePitch([][]float64{rangeProbs, pm.KeyProbs})
 }
 
-func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
+func (pm *TemperleyGenerator) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 	proximityProfile := distuv.Normal{
 		Mu:    float64(currentPitch.TotalSemitone()), // semitone offset from C0
 		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
@@ -97,7 +97,7 @@ func (pm *PitchModel) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
 	return pm.makePitch([][]float64{proximityProbs, rangeProbs, pm.KeyProbs})
 }
 
-func (pm *PitchModel) makePitch(probArrays [][]float64) *pitch.Pitch {
+func (pm *TemperleyGenerator) makePitch(probArrays [][]float64) *pitch.Pitch {
 	probs, err := stats.CombineAndNormalizeProbs(probArrays)
 	if err != nil {
 		log.Fatal(err)
@@ -113,11 +113,11 @@ func (pm *PitchModel) makePitch(probArrays [][]float64) *pitch.Pitch {
 	return pitch.New(0, i)
 }
 
-func (pm *PitchModel) MakePitches(n uint) pitch.Pitches {
+func (pm *TemperleyGenerator) MakePitches(n int) pitch.Pitches {
 	return pm.MakePitchesStartingAt(pm.MakeStartingPitch(), n)
 }
 
-func (pm *PitchModel) MakePitchesStartingAt(p *pitch.Pitch, n uint) pitch.Pitches {
+func (pm *TemperleyGenerator) MakePitchesStartingAt(p *pitch.Pitch, n int) pitch.Pitches {
 	switch n {
 	case 0:
 		return pitch.Pitches{}
@@ -129,7 +129,7 @@ func (pm *PitchModel) MakePitchesStartingAt(p *pitch.Pitch, n uint) pitch.Pitche
 
 	pitches[0] = p
 
-	for i := uint(1); i < n; i++ {
+	for i := 1; i < n; i++ {
 		p = pm.MakeNextPitch(p)
 		pitches[i] = p
 	}

@@ -1,4 +1,4 @@
-package temperley_test
+package pitchgen_test
 
 import (
 	"encoding/json"
@@ -6,15 +6,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jamestunnell/go-musicality/generation/temperley"
+	"github.com/jamestunnell/go-musicality/composition/pitchgen"
 )
 
 func TestPitchModel(t *testing.T) {
-	pm, err := temperley.NewMajorPitchModel(0, 0)
+	g, err := pitchgen.NewMajorTemperleyGenerator(0, 0)
 	assert.Nil(t, err)
-	assert.NotNil(t, pm)
+	assert.NotNil(t, g)
 
-	pitches := pm.MakePitches(16)
+	pitches := g.MakePitches(16)
 
 	d, err := json.Marshal(pitches)
 	t.Log(string(d))

@@ -1,4 +1,4 @@
-package temperley
+package pitchgen
 
 import "fmt"
 
