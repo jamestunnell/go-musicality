@@ -6,17 +6,18 @@ import (
 )
 
 type TreeGenerator struct {
-	root *TreeNode
+	root     *TreeNode
+	maxLevel function.Function
 }
 
-func NewTreeGenerator(root *TreeNode) *TreeGenerator {
-	return &TreeGenerator{root: root}
+func NewTreeGenerator(root *TreeNode, maxLevel function.Function) *TreeGenerator {
+	return &TreeGenerator{root: root, maxLevel: maxLevel}
 }
 
-func (g *TreeGenerator) Make(dur rat.Rat, maxLevelFunction function.Function) rat.Rats {
+func (g *TreeGenerator) MakeRhythm(dur rat.Rat) rat.Rats {
 	durs := rat.Rats{}
 	x := rat.Zero()
-	maxLevel := int(maxLevelFunction.At(x))
+	maxLevel := int(g.maxLevel.At(x))
 	done := false
 
 	for durs.Sum().Less(dur) {
@@ -28,7 +29,7 @@ func (g *TreeGenerator) Make(dur rat.Rat, maxLevelFunction function.Function) ra
 			if level >= maxLevel || n.Terminal() {
 				durs = append(durs, n.Duration())
 				x = x.Add(n.Duration())
-				maxLevel = int(maxLevelFunction.At(x))
+				maxLevel = int(g.maxLevel.At(x))
 				done = x.GreaterEqual(dur)
 
 				return false

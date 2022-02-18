@@ -27,11 +27,12 @@ func TestTreeGeneratorMakeMeasure(t *testing.T) {
 		}
 	})
 
-	g := rhythmgen.NewTreeGenerator(root)
-
 	for i := 0; i <= root.Depth(); i++ {
 		t.Run(fmt.Sprintf("const depth %d", i), func(t *testing.T) {
-			mDurs := g.Make(root.Duration(), function.NewConstantFunction(float64(i)))
+			maxLevel := function.NewConstantFunction(float64(i))
+			g := rhythmgen.NewTreeGenerator(root, maxLevel)
+
+			mDurs := g.MakeRhythm(root.Duration())
 
 			// t.Log(mDurs.Strings())
 
@@ -45,8 +46,10 @@ func TestTreeGeneratorMakeMeasure(t *testing.T) {
 				P:   0.5,
 				Src: rand.NewSource(1234),
 			}
+			maxLevel := function.NewRandomFunction(r)
+			g := rhythmgen.NewTreeGenerator(root, maxLevel)
 
-			mDurs := g.Make(root.Duration(), function.NewRandomFunction(r))
+			mDurs := g.MakeRhythm(root.Duration())
 
 			// t.Log(mDurs.Strings())
 
@@ -78,8 +81,8 @@ func TestTreeGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
 }
 
 func testTreeGeneratorMake(t *testing.T, root *rhythmgen.TreeNode, f function.Function, makeDur rat.Rat) {
-	g := rhythmgen.NewTreeGenerator(root)
-	mDurs := g.Make(makeDur, f)
+	g := rhythmgen.NewTreeGenerator(root, f)
+	mDurs := g.MakeRhythm(makeDur)
 
 	assert.NotEmpty(t, mDurs)
 	assert.True(t, mDurs.Sum().Equal(makeDur))
