@@ -1,15 +1,16 @@
-package rhythm_test
+package rhythmgen_test
 
 import (
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/common/rat"
-	"github.com/jamestunnell/go-musicality/composition/rhythm"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jamestunnell/go-musicality/common/rat"
+	"github.com/jamestunnell/go-musicality/composition/rhythmgen"
 )
 
 func TestNodeSubdivideByZero(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
 	root.Subdivide(0)
 
@@ -17,9 +18,9 @@ func TestNodeSubdivideByZero(t *testing.T) {
 }
 
 func TestNodeSmallestDur(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
 		if n.Duration().Equal(rat.New(1, 32)) {
 			return 0, false
 		}
@@ -31,9 +32,9 @@ func TestNodeSmallestDur(t *testing.T) {
 }
 
 func TestNodeVisit(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
 		if n.Duration().Equal(rat.New(1, 16)) {
 			return 0, false
 		}
@@ -42,7 +43,7 @@ func TestNodeVisit(t *testing.T) {
 	})
 
 	count := 0
-	root.Visit(func(level int, n *rhythm.Node) bool {
+	root.Visit(func(level int, n *rhythmgen.Node) bool {
 		count++
 
 		return true
@@ -52,7 +53,7 @@ func TestNodeVisit(t *testing.T) {
 }
 
 func TestNodeVisitTerminal(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
 	testNodeVisitTerminal(t, "root only - max level 0", root, 0, []string{"1/1"})
 	testNodeVisitTerminal(t, "root only - max level 1", root, 1, []string{"1/1"})
@@ -70,11 +71,11 @@ func TestNodeVisitTerminal(t *testing.T) {
 	testNodeVisitTerminal(t, "split twice - max level 2", root, 2, []string{"1/4", "1/4", "1/6", "1/6", "1/6"})
 }
 
-func testNodeVisitTerminal(t *testing.T, name string, root *rhythm.Node, maxLevel int, expectedDurStrings []string) {
+func testNodeVisitTerminal(t *testing.T, name string, root *rhythmgen.Node, maxLevel int, expectedDurStrings []string) {
 	t.Run(name, func(t *testing.T) {
 		s := []string{}
 
-		root.VisitTerminal(maxLevel, func(n *rhythm.Node) {
+		root.VisitTerminal(maxLevel, func(n *rhythmgen.Node) {
 			s = append(s, n.Duration().String())
 		})
 

@@ -1,4 +1,4 @@
-package rhythm_test
+package rhythmgen_test
 
 import (
 	"fmt"
@@ -10,13 +10,13 @@ import (
 
 	"github.com/jamestunnell/go-musicality/common/function"
 	"github.com/jamestunnell/go-musicality/common/rat"
-	"github.com/jamestunnell/go-musicality/composition/rhythm"
+	"github.com/jamestunnell/go-musicality/composition/rhythmgen"
 )
 
 func TestGeneratorMakeMeasure(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
 		switch level {
 		case 0:
 			return 4, true
@@ -27,7 +27,7 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 		}
 	})
 
-	g := rhythm.NewGenerator(root)
+	g := rhythmgen.NewGenerator(root)
 
 	for i := 0; i <= root.Depth(); i++ {
 		t.Run(fmt.Sprintf("const depth %d", i), func(t *testing.T) {
@@ -57,9 +57,9 @@ func TestGeneratorMakeMeasure(t *testing.T) {
 }
 
 func TestGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
-	root := rhythm.NewNode(rat.New(1, 1))
+	root := rhythmgen.NewNode(rat.New(1, 1))
 
-	root.SubdivideRecursive(func(level int, n *rhythm.Node) (uint64, bool) {
+	root.SubdivideRecursive(func(level int, n *rhythmgen.Node) (uint64, bool) {
 		if n.Duration().LessEqual(rat.New(1, 16)) {
 			return 0, false
 		}
@@ -77,8 +77,8 @@ func TestGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
 	testGeneratorMake(t, root, f, makeDur)
 }
 
-func testGeneratorMake(t *testing.T, root *rhythm.Node, f function.Function, makeDur rat.Rat) {
-	g := rhythm.NewGenerator(root)
+func testGeneratorMake(t *testing.T, root *rhythmgen.Node, f function.Function, makeDur rat.Rat) {
+	g := rhythmgen.NewGenerator(root)
 	mDurs := g.Make(makeDur, f)
 
 	assert.NotEmpty(t, mDurs)

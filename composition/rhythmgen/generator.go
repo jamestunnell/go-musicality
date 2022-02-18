@@ -1,4 +1,4 @@
-package rhythm
+package rhythmgen
 
 import (
 	"github.com/jamestunnell/go-musicality/common/function"
