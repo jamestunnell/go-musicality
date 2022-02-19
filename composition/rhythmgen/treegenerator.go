@@ -26,6 +26,13 @@ func NewTreeGenerator(root *TreeNode, maxLevelFunc function.Function) *TreeGener
 	return g
 }
 
+func (g *TreeGenerator) Reset() {
+	g.latestDur = rat.Zero()
+	g.durSoFar = rat.Zero()
+
+	g.visitor.Reset()
+}
+
 func (g *TreeGenerator) NextDur() rat.Rat {
 	g.visitor.VisitNext(g.onVisit)
 

@@ -30,6 +30,7 @@ type TemperleyGenerator struct {
 	// KeyProbs contains the probabilities of each total semitone offset (from C0) appearing given the current key
 	KeyProbs     []float64
 	RangeProfile distuv.Normal
+	last         *pitch.Pitch
 }
 
 func NewMajorTemperleyGenerator(keySemitone int, seed uint64) (*TemperleyGenerator, error) {
@@ -72,9 +73,26 @@ func newTemperleyGenerator(keySemitone int, seed uint64, cKeyBaseProbs []float64
 	model := &TemperleyGenerator{
 		KeyProbs:     keyProbs,
 		RangeProfile: rangeProfile,
+		last:         nil,
 	}
 
 	return model, nil
+}
+
+func (pm *TemperleyGenerator) Reset() {
+	pm.last = nil
+}
+
+func (pm *TemperleyGenerator) NextPitch() *pitch.Pitch {
+	if pm.last == nil {
+		pm.last = pm.MakeStartingPitch()
+
+		return pm.last
+	}
+
+	pm.last = pm.MakeNextPitch(pm.last)
+
+	return pm.last
 }
 
 // MakeStartingPitch uses the range and key profiles to determine a

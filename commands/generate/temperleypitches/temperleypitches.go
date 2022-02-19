@@ -81,7 +81,7 @@ func (cmd *GenerateTemperley) Execute() error {
 	// 	return fmt.Errorf("invalid note duration '%s', must be in the form a/b", cmd.NoteDur)
 	// }
 
-	pitches := g.MakePitches(cmd.NumPitches)
+	pitches := pitchgen.MakePitches(cmd.NumPitches, g)
 
 	fmt.Println(pitches.Strings())
 

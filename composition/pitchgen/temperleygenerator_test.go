@@ -1,7 +1,6 @@
 package pitchgen_test
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,13 +8,14 @@ import (
 	"github.com/jamestunnell/go-musicality/composition/pitchgen"
 )
 
-func TestPitchModel(t *testing.T) {
+func TestTemperleyGenerator(t *testing.T) {
 	g, err := pitchgen.NewMajorTemperleyGenerator(0, 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, g)
 
-	pitches := g.MakePitches(16)
+	pitches := pitchgen.MakePitches(16, g)
 
-	d, err := json.Marshal(pitches)
-	t.Log(string(d))
+	for _, p := range pitches {
+		assert.NotNil(t, p)
+	}
 }
