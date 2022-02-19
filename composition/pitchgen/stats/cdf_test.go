@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jamestunnell/go-musicality/generation/stats"
+	"github.com/jamestunnell/go-musicality/composition/pitchgen/stats"
 )
 
 func TestNewCDFNoValues(t *testing.T) {

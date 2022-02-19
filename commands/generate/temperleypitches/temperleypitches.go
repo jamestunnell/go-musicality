@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jamestunnell/go-musicality/generation/temperley"
+	"github.com/jamestunnell/go-musicality/composition/pitchgen"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
 type GenerateTemperley struct {
 	FileName, OutDir, Key string
-	NumPitches            uint
+	NumPitches            int
 	Seed                  uint64
 }
 
@@ -20,7 +20,7 @@ const Name = "temperley-pitches"
 func NewFromArgs(cliArgs ...string) (*GenerateTemperley, error) {
 	flagSet := flag.NewFlagSet("temperley-pitches", flag.ExitOnError)
 	key := flagSet.String("key", "C major", "Root pitch class and major/minor (e.g. E major)")
-	numPitches := flagSet.Uint("n", 20, "num pitches to generate")
+	numPitches := flagSet.Int("n", 20, "num pitches to generate")
 	// noteDur := flagSet.String("d", "1/4", "note duration")
 	// outDir := flagSet.String("outdir", "", "output directory")
 	// fileName := flagSet.String("fname", "score.json", "score file name")
@@ -59,19 +59,18 @@ func (cmd *GenerateTemperley) Execute() error {
 		return fmt.Errorf("failed to parse key root '%s' as semitone: %w", tonicStr, err)
 	}
 
-	var pitchModel *temperley.PitchModel
+	var g pitchgen.PitchGenerator
+
+	opts := []pitchgen.TemperleyOptSetter{
+		pitchgen.TemperleyOptKey(rootSemitone),
+		pitchgen.TemperleyOptRandSeed(cmd.Seed),
+	}
 
 	switch triadStr {
 	case "major":
-		pitchModel, err = temperley.NewMajorPitchModel(rootSemitone, cmd.Seed)
-		if err != nil {
-			return fmt.Errorf("failed to make major pitch model: %w", err)
-		}
+		g = pitchgen.NewMajorTemperleyGenerator(opts...)
 	case "minor":
-		pitchModel, err = temperley.NewMinorPitchModel(rootSemitone, cmd.Seed)
-		if err != nil {
-			return fmt.Errorf("failed to make minor pitch model: %w", err)
-		}
+		g = pitchgen.NewMinorTemperleyGenerator(opts...)
 	default:
 		return fmt.Errorf("unknown key triad '%s', should be major' or 'minor'", triadStr)
 	}
@@ -81,7 +80,7 @@ func (cmd *GenerateTemperley) Execute() error {
 	// 	return fmt.Errorf("invalid note duration '%s', must be in the form a/b", cmd.NoteDur)
 	// }
 
-	pitches := pitchModel.MakePitches(cmd.NumPitches)
+	pitches := pitchgen.MakePitches(cmd.NumPitches, g)
 
 	fmt.Println(pitches.Strings())
 
