@@ -61,17 +61,16 @@ func (cmd *GenerateTemperley) Execute() error {
 
 	var g pitchgen.PitchGenerator
 
+	opts := []pitchgen.TemperleyOptSetter{
+		pitchgen.TemperleyOptKey(rootSemitone),
+		pitchgen.TemperleyOptRandSeed(cmd.Seed),
+	}
+
 	switch triadStr {
 	case "major":
-		g, err = pitchgen.NewMajorTemperleyGenerator(rootSemitone, cmd.Seed)
-		if err != nil {
-			return fmt.Errorf("failed to make major temperley generator: %w", err)
-		}
+		g = pitchgen.NewMajorTemperleyGenerator(opts...)
 	case "minor":
-		g, err = pitchgen.NewMinorTemperleyGenerator(rootSemitone, cmd.Seed)
-		if err != nil {
-			return fmt.Errorf("failed to make minor temperley generator: %w", err)
-		}
+		g = pitchgen.NewMinorTemperleyGenerator(opts...)
 	default:
 		return fmt.Errorf("unknown key triad '%s', should be major' or 'minor'", triadStr)
 	}

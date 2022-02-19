@@ -2,9 +2,10 @@ package stats
 
 import (
 	"errors"
-	"log"
 	"math"
 	"math/rand"
+
+	"github.com/rs/zerolog/log"
 )
 
 type CDF struct {
@@ -53,7 +54,7 @@ func (cdf *CDF) Rand() int {
 		}
 	}
 
-	log.Fatal("failed to select a pitch semitone")
+	log.Fatal().Float64("rand", x).Msg("failed to select a CDF index, defaulting to last index")
 
-	return -1
+	return len(cdf.values) - 1
 }
