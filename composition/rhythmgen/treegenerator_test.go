@@ -57,6 +57,20 @@ func TestTreeGeneratorMakeMeasure(t *testing.T) {
 			assert.True(t, mDurs.Sum().Equal(rat.New(1, 1)))
 		})
 	}
+
+	t.Run("reset", func(t *testing.T) {
+		maxLevel := function.NewConstantFunction(2)
+		g := rhythmgen.NewTreeGenerator(root, maxLevel)
+
+		mDurs1 := rhythmgen.MakeRhythm(root.Duration(), g)
+
+		g.Reset()
+
+		mDurs2 := rhythmgen.MakeRhythm(root.Duration(), g)
+
+		assert.NotEmpty(t, mDurs1)
+		assert.True(t, mDurs2.Equal(mDurs1))
+	})
 }
 
 func TestTreeGeneratorMakeDurDifferantThanRootDur(t *testing.T) {
