@@ -7,7 +7,6 @@ import (
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 
-	"github.com/jamestunnell/go-musicality/composition/pitchgen/stats"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
@@ -20,16 +19,16 @@ const (
 
 var (
 	// CMajorBaseKeyProbs contains the probabilities of each octave semitone appearing given a key of C major
-	CMajorBaseKeyProbs = NewSemitoneProbs(0.184, 0.001, 0.155, 0.003, 0.191, 0.109, 0.005, 0.214, 0.001, 0.078, 0.004, 0.055)
+	CMajorBaseKeyProbs = KeyProfile{0.184, 0.001, 0.155, 0.003, 0.191, 0.109, 0.005, 0.214, 0.001, 0.078, 0.004, 0.055}
 	// CMajorBaseKeyProbs contains the probabilities of each octave semitone appearing given a key of C minor
-	CMinorBaseKeyProbs = NewSemitoneProbs(0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022)
+	CMinorBaseKeyProbs = KeyProfile{0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022}
 )
 
 // TemperleyGenerator uses RPK profiles to generate random pitches.
 type TemperleyGenerator struct {
 	// KeyProbs contains the probabilities of each total semitone offset (from C0) appearing given the current key
-	KeyProbs   *SemitoneProbs
-	RangeProbs *SemitoneProbs
+	KeyProbs   PitchProbs
+	RangeProbs PitchProbs
 	last       *pitch.Pitch
 	start      *pitch.Pitch
 }
@@ -43,11 +42,11 @@ type TemperleyOpts struct {
 type TemperleyOptSetter func(o *TemperleyOpts)
 
 func NewMajorTemperleyGenerator(optSetters ...TemperleyOptSetter) *TemperleyGenerator {
-	return newTemperleyGenerator(CMajorBaseKeyProbs, optSetters...)
+	return NewTemperleyGenerator(CMajorBaseKeyProbs, optSetters...)
 }
 
 func NewMinorTemperleyGenerator(optSetters ...TemperleyOptSetter) *TemperleyGenerator {
-	return newTemperleyGenerator(CMinorBaseKeyProbs, optSetters...)
+	return NewTemperleyGenerator(CMinorBaseKeyProbs, optSetters...)
 }
 
 func TemperleyOptKey(keySemitone int) TemperleyOptSetter {
@@ -68,7 +67,7 @@ func TemperleyOptRandSeed(randSeed uint64) TemperleyOptSetter {
 	}
 }
 
-func newTemperleyGenerator(baseKeyProbs *SemitoneProbs, optSetters ...TemperleyOptSetter) *TemperleyGenerator {
+func NewTemperleyGenerator(cKeyProfile KeyProfile, optSetters ...TemperleyOptSetter) *TemperleyGenerator {
 	opts := &TemperleyOpts{
 		RandSeed:    0,
 		KeySemitone: 0,
@@ -80,7 +79,12 @@ func newTemperleyGenerator(baseKeyProbs *SemitoneProbs, optSetters ...TemperleyO
 	}
 
 	randSrc := rand.NewSource(opts.RandSeed)
-	keyProbs := baseKeyProbs.Rotate(opts.KeySemitone)
+	keyProfile := cKeyProfile.Transpose(opts.KeySemitone)
+	keyProbs := PitchProbs{}
+
+	for i := 0; i < NumSemitones; i++ {
+		keyProbs[i] = keyProfile[i%12]
+	}
 
 	centralPitchProfile := distuv.Normal{
 		Mu:    float64(56), // semitone offset from C0 - corresponds to Ab4
@@ -97,7 +101,7 @@ func newTemperleyGenerator(baseKeyProbs *SemitoneProbs, optSetters ...TemperleyO
 
 	rangeProfile.Src = randSrc
 
-	rangeProbs := NewSemitoneProbsFromNormal(rangeProfile)
+	rangeProbs := NewPitchProbsFromNormal(rangeProfile)
 
 	model := &TemperleyGenerator{
 		KeyProbs:   keyProbs,
@@ -132,7 +136,7 @@ func (pm *TemperleyGenerator) MakeStartingPitch() *pitch.Pitch {
 		return pm.start
 	}
 
-	probs := CombineAndNormalizeSemitoneProbs(pm.KeyProbs, pm.RangeProbs)
+	probs := CombineAndNormalizePitchProbs(pm.KeyProbs, pm.RangeProbs)
 
 	return pm.makePitch(probs)
 }
@@ -143,22 +147,24 @@ func (pm *TemperleyGenerator) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pi
 		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
 	}
 
-	proximityProbs := NewSemitoneProbsFromNormal(proximityProfile)
-	probs := CombineAndNormalizeSemitoneProbs(pm.KeyProbs, pm.RangeProbs, proximityProbs)
+	proximityProbs := NewPitchProbsFromNormal(proximityProfile)
+	probs := CombineAndNormalizePitchProbs(pm.KeyProbs, pm.RangeProbs, proximityProbs)
 
 	return pm.makePitch(probs)
 }
 
-func (pm *TemperleyGenerator) makePitch(probs *SemitoneProbs) *pitch.Pitch {
-	cdf, err := stats.NewCDF(probs.Floats())
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Interface("probs", probs).
-			Msg("failed to create CDF")
+func (pm *TemperleyGenerator) makePitch(probs PitchProbs) *pitch.Pitch {
+	x := rand.Float64()
+	cumProb := 0.0
+
+	for i := 0; i < NumSemitones; i++ {
+		cumProb += probs[i]
+		if x < cumProb {
+			return pitch.New(0, i)
+		}
 	}
 
-	i := cdf.Rand()
+	log.Warn().Float64("rand", x).Msg("failed to select a CDF index, defaulting to last index")
 
-	return pitch.New(0, i)
+	return pitch.New(0, NumSemitones-1)
 }
