@@ -6,6 +6,16 @@ func (rats Rats) Len() int {
 	return len(rats)
 }
 
+func (rats Rats) Strings() []string {
+	rStrings := make([]string, len(rats))
+
+	for i, r := range rats {
+		rStrings[i] = r.String()
+	}
+
+	return rStrings
+}
+
 func (rats Rats) Swap(i, j int) {
 	rats[i], rats[j] = rats[j], rats[i]
 }

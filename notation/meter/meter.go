@@ -1,6 +1,8 @@
 package meter
 
 import (
+	"fmt"
+
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
@@ -15,6 +17,13 @@ func New(beatsPerMeasure uint64, beatDuration rat.Rat) *Meter {
 		BeatDuration:    beatDuration,
 		BeatsPerMeasure: beatsPerMeasure,
 	}
+}
+
+func (m *Meter) String() string {
+	num := m.BeatDuration.Num().Uint64() * m.BeatsPerMeasure
+	denom := m.BeatDuration.Denom().Uint64()
+
+	return fmt.Sprintf("%d/%d", num, denom)
 }
 
 func (m *Meter) MeasureDuration() rat.Rat {
