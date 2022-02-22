@@ -20,6 +20,7 @@ func NewNoteGenerator(
 		pitchGen:  pg,
 	}
 }
+
 func (ng *NoteGenerator) MakeNotes(dur rat.Rat) note.Notes {
 	durs := rhythmgen.MakeRhythm(dur, ng.rhythmGen)
 	n := len(durs)

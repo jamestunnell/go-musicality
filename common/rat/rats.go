@@ -24,6 +24,20 @@ func (rats Rats) Less(i, j int) bool {
 	return rats[i].Less(rats[j])
 }
 
+func (rats Rats) Equal(other Rats) bool {
+	if len(other) != len(rats) {
+		return false
+	}
+
+	for i, r := range rats {
+		if !r.Equal(other[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (rats Rats) Sum() Rat {
 	sum := Zero()
 
@@ -37,9 +51,7 @@ func (rats Rats) Sum() Rat {
 func (rats Rats) Union(other Rats) Rats {
 	union := Rats{}
 
-	for _, r := range rats {
-		union = append(union, r)
-	}
+	union = append(union, rats...)
 
 	for _, r := range other {
 		if !union.Contains(r) {

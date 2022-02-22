@@ -45,3 +45,34 @@ func TestRatsUnion(t *testing.T) {
 
 	assert.Len(t, rats3, 3)
 }
+
+func TestRatsEqual(t *testing.T) {
+	r1 := rat.New(3, 7)
+	r2 := rat.New(7, 8)
+	r3 := rat.New(7, 8)
+
+	rats1 := rat.Rats{r1, r2, r3}
+
+	assert.True(t, rats1.Equal(rats1))
+	assert.False(t, rats1.Equal(rat.Rats{}))
+	assert.False(t, rat.Rats{}.Equal(rats1))
+
+	rats2 := rat.Rats{r2, r3}
+
+	assert.False(t, rats1.Equal(rats2))
+
+	rats2 = rat.Rats{r2, r3, r1}
+
+	assert.False(t, rats1.Equal(rats2))
+}
+
+func TestRatsSum(t *testing.T) {
+	assert.True(t, rat.Rats{}.Sum().Equal(rat.Zero()))
+
+	r1 := rat.New(3, 4)
+	r2 := rat.New(1, 4)
+
+	rats1 := rat.Rats{r1, r2}
+
+	assert.True(t, rats1.Sum().Equal(rat.New(1, 1)))
+}

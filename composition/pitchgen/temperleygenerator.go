@@ -1,13 +1,12 @@
 package pitchgen
 
 import (
-	"log"
 	"math"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 
-	"github.com/jamestunnell/go-musicality/composition/pitchgen/stats"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
@@ -20,38 +19,71 @@ const (
 
 var (
 	// CMajorBaseKeyProbs contains the probabilities of each octave semitone appearing given a key of C major
-	CMajorBaseKeyProbs = []float64{0.184, 0.001, 0.155, 0.003, 0.191, 0.109, 0.005, 0.214, 0.001, 0.078, 0.004, 0.055}
+	CMajorBaseKeyProbs = KeyProfile{0.184, 0.001, 0.155, 0.003, 0.191, 0.109, 0.005, 0.214, 0.001, 0.078, 0.004, 0.055}
 	// CMajorBaseKeyProbs contains the probabilities of each octave semitone appearing given a key of C minor
-	CMinorBaseKeyProbs = []float64{0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022}
+	CMinorBaseKeyProbs = KeyProfile{0.192, 0.005, 0.149, 0.179, 0.002, 0.144, 0.002, 0.201, 0.038, 0.012, 0.053, 0.022}
 )
 
 // TemperleyGenerator uses RPK profiles to generate random pitches.
 type TemperleyGenerator struct {
 	// KeyProbs contains the probabilities of each total semitone offset (from C0) appearing given the current key
-	KeyProbs     []float64
-	RangeProfile distuv.Normal
+	KeyProbs   PitchProbs
+	RangeProbs PitchProbs
+	last       *pitch.Pitch
+	start      *pitch.Pitch
 }
 
-func NewMajorTemperleyGenerator(keySemitone int, seed uint64) (*TemperleyGenerator, error) {
-	return newTemperleyGenerator(keySemitone, seed, CMajorBaseKeyProbs)
+type TemperleyOpts struct {
+	StartPitch  *pitch.Pitch
+	KeySemitone int
+	RandSeed    uint64
 }
 
-func NewMinorTemperleyGenerator(keySemitone int, seed uint64) (*TemperleyGenerator, error) {
-	return newTemperleyGenerator(keySemitone, seed, CMinorBaseKeyProbs)
+type TemperleyOptSetter func(o *TemperleyOpts)
+
+func NewMajorTemperleyGenerator(optSetters ...TemperleyOptSetter) *TemperleyGenerator {
+	return NewTemperleyGenerator(CMajorBaseKeyProbs, optSetters...)
 }
 
-func newTemperleyGenerator(keySemitone int, seed uint64, cKeyBaseProbs []float64) (*TemperleyGenerator, error) {
-	cKeyProfile, err := NewCKeyProfile(cKeyBaseProbs)
-	if err != nil {
-		return nil, err
+func NewMinorTemperleyGenerator(optSetters ...TemperleyOptSetter) *TemperleyGenerator {
+	return NewTemperleyGenerator(CMinorBaseKeyProbs, optSetters...)
+}
+
+func TemperleyOptKey(keySemitone int) TemperleyOptSetter {
+	return func(o *TemperleyOpts) {
+		o.KeySemitone = keySemitone
+	}
+}
+
+func TemperleyOptStartPitch(p *pitch.Pitch) TemperleyOptSetter {
+	return func(o *TemperleyOpts) {
+		o.StartPitch = p
+	}
+}
+
+func TemperleyOptRandSeed(randSeed uint64) TemperleyOptSetter {
+	return func(o *TemperleyOpts) {
+		o.RandSeed = randSeed
+	}
+}
+
+func NewTemperleyGenerator(cKeyProfile KeyProfile, optSetters ...TemperleyOptSetter) *TemperleyGenerator {
+	opts := &TemperleyOpts{
+		RandSeed:    0,
+		KeySemitone: 0,
+		StartPitch:  nil,
 	}
 
-	randSrc := rand.NewSource(seed)
+	for _, optSetter := range optSetters {
+		optSetter(opts)
+	}
 
-	keyBaseProbs := cKeyProfile.RotateProbs(keySemitone)
-	keyProbs := make([]float64, NumSemitones)
-	for i := 0; i < len(keyProbs); i++ {
-		keyProbs[i] = keyBaseProbs[i%12]
+	randSrc := rand.NewSource(opts.RandSeed)
+	keyProfile := cKeyProfile.Transpose(opts.KeySemitone)
+	keyProbs := PitchProbs{}
+
+	for i := 0; i < NumSemitones; i++ {
+		keyProbs[i] = keyProfile[i%12]
 	}
 
 	centralPitchProfile := distuv.Normal{
@@ -69,20 +101,44 @@ func newTemperleyGenerator(keySemitone int, seed uint64, cKeyBaseProbs []float64
 
 	rangeProfile.Src = randSrc
 
+	rangeProbs := NewPitchProbsFromNormal(rangeProfile)
+
 	model := &TemperleyGenerator{
-		KeyProbs:     keyProbs,
-		RangeProfile: rangeProfile,
+		KeyProbs:   keyProbs,
+		RangeProbs: rangeProbs,
+		last:       nil,
+		start:      opts.StartPitch,
 	}
 
-	return model, nil
+	return model
 }
 
-// MakeStartingPitch uses the range and key profiles to determine a
-// starting pitch
-func (pm *TemperleyGenerator) MakeStartingPitch() *pitch.Pitch {
-	rangeProbs := stats.GetIntProbs(pm.RangeProfile, 0, NumSemitones)
+func (pm *TemperleyGenerator) Reset() {
+	pm.last = nil
+}
 
-	return pm.makePitch([][]float64{rangeProbs, pm.KeyProbs})
+func (pm *TemperleyGenerator) NextPitch() *pitch.Pitch {
+	if pm.last == nil {
+		pm.last = pm.MakeStartingPitch()
+
+		return pm.last
+	}
+
+	pm.last = pm.MakeNextPitch(pm.last)
+
+	return pm.last
+}
+
+// MakeStartingPitch either uses the given starting pitch in not nil, or uses the
+// range and key profiles to determine a random starting pitch.
+func (pm *TemperleyGenerator) MakeStartingPitch() *pitch.Pitch {
+	if pm.start != nil {
+		return pm.start
+	}
+
+	probs := CombineAndNormalizePitchProbs(pm.KeyProbs, pm.RangeProbs)
+
+	return pm.makePitch(probs)
 }
 
 func (pm *TemperleyGenerator) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pitch {
@@ -91,48 +147,24 @@ func (pm *TemperleyGenerator) MakeNextPitch(currentPitch *pitch.Pitch) *pitch.Pi
 		Sigma: 2.68,                                  // stddev - corresponds to variance of about 7.2 semitones
 	}
 
-	proximityProbs := stats.GetIntProbs(proximityProfile, 0, NumSemitones)
-	rangeProbs := stats.GetIntProbs(pm.RangeProfile, 0, NumSemitones)
+	proximityProbs := NewPitchProbsFromNormal(proximityProfile)
+	probs := CombineAndNormalizePitchProbs(pm.KeyProbs, pm.RangeProbs, proximityProbs)
 
-	return pm.makePitch([][]float64{proximityProbs, rangeProbs, pm.KeyProbs})
+	return pm.makePitch(probs)
 }
 
-func (pm *TemperleyGenerator) makePitch(probArrays [][]float64) *pitch.Pitch {
-	probs, err := stats.CombineAndNormalizeProbs(probArrays)
-	if err != nil {
-		log.Fatal(err)
+func (pm *TemperleyGenerator) makePitch(probs PitchProbs) *pitch.Pitch {
+	x := rand.Float64()
+	cumProb := 0.0
+
+	for i := 0; i < NumSemitones; i++ {
+		cumProb += probs[i]
+		if x < cumProb {
+			return pitch.New(0, i)
+		}
 	}
 
-	cdf, err := stats.NewCDF(probs)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Warn().Float64("rand", x).Msg("failed to select a CDF index, defaulting to last index")
 
-	i := cdf.Rand()
-
-	return pitch.New(0, i)
-}
-
-func (pm *TemperleyGenerator) MakePitches(n int) pitch.Pitches {
-	return pm.MakePitchesStartingAt(pm.MakeStartingPitch(), n)
-}
-
-func (pm *TemperleyGenerator) MakePitchesStartingAt(p *pitch.Pitch, n int) pitch.Pitches {
-	switch n {
-	case 0:
-		return pitch.Pitches{}
-	case 1:
-		return pitch.Pitches{p}
-	}
-
-	pitches := make(pitch.Pitches, n)
-
-	pitches[0] = p
-
-	for i := 1; i < n; i++ {
-		p = pm.MakeNextPitch(p)
-		pitches[i] = p
-	}
-
-	return pitches
+	return pitch.New(0, NumSemitones-1)
 }
