@@ -92,6 +92,18 @@ func (pm *ItemManager) monitor() {
 
 		pm.items = append(pm.items, item)
 
-		pm.itemsBox.Add(item.MakeUIObject())
+		itemUI := container.NewVBox(item.MakeUIObject())
+
+		// editButton := widget.NewButton("Edit", func() {
+
+		// })
+		deleteButton := widget.NewButton("Delete", func() {
+			pm.itemsBox.Remove(itemUI)
+		})
+		buttons := container.NewHBox(deleteButton)
+
+		itemUI.Add(buttons)
+
+		pm.itemsBox.Add(itemUI)
 	}
 }
