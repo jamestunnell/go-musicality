@@ -7,16 +7,14 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rs/zerolog/log"
-
-	"github.com/jamestunnell/go-musicality/application"
 )
 
-type PartInfoFormComponents struct {
+type PartInfoFormHelper struct {
 	NameEntry, MIDIChanEntry, MIDIInstrEntry *widget.Entry
-	FormItems                                []*widget.FormItem
+	formItems                                []*widget.FormItem
 }
 
-func NewPartInfoFormItems(pm *PartManager) *PartInfoFormComponents {
+func NewPartInfoFormHelper(m *ItemManager) ItemFormHelper {
 	nameEntry := widget.NewEntry()
 	midiChanEntry := widget.NewEntry()
 	midiInstrEntry := widget.NewEntry()
@@ -26,7 +24,7 @@ func NewPartInfoFormItems(pm *PartManager) *PartInfoFormComponents {
 			return fmt.Errorf("name is empty")
 		}
 
-		if pm.HasPart(s) {
+		if m.HasItem(s) {
 			return fmt.Errorf("part '%s' already exists", s)
 		}
 
@@ -40,27 +38,31 @@ func NewPartInfoFormItems(pm *PartManager) *PartInfoFormComponents {
 	midiChanItem := widget.NewFormItem("MIDI Channel", midiChanEntry)
 	midiInstrItem := widget.NewFormItem("MIDI Instrument", midiInstrEntry)
 
-	return &PartInfoFormComponents{
+	return &PartInfoFormHelper{
 		NameEntry:      nameEntry,
 		MIDIChanEntry:  midiChanEntry,
 		MIDIInstrEntry: midiInstrEntry,
-		FormItems:      []*widget.FormItem{nameItem, midiChanItem, midiInstrItem},
+		formItems:      []*widget.FormItem{nameItem, midiChanItem, midiInstrItem},
 	}
 }
 
-func (pifc *PartInfoFormComponents) GetPartInfo() *application.PartInfo {
-	c, err := strconv.Atoi(pifc.MIDIChanEntry.Text)
+func (h *PartInfoFormHelper) FormItems() []*widget.FormItem {
+	return h.formItems
+}
+
+func (h *PartInfoFormHelper) MakeItem() Item {
+	c, err := strconv.Atoi(h.MIDIChanEntry.Text)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("failed to convert MIDI channel text '%s' to int", pifc.MIDIChanEntry.Text)
+		log.Fatal().Err(err).Msgf("failed to convert MIDI channel text '%s' to int", h.MIDIChanEntry.Text)
 	}
 
-	i, err := strconv.Atoi(pifc.MIDIInstrEntry.Text)
+	i, err := strconv.Atoi(h.MIDIInstrEntry.Text)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("failed to convert MIDI instrument text '%s' to int", pifc.MIDIInstrEntry.Text)
+		log.Fatal().Err(err).Msgf("failed to convert MIDI instrument text '%s' to int", h.MIDIInstrEntry.Text)
 	}
 
-	return &application.PartInfo{
-		Name:           pifc.NameEntry.Text,
+	return &PartInfo{
+		name:           h.NameEntry.Text,
 		MIDIChannel:    c,
 		MIDIInstrument: i,
 	}

@@ -14,7 +14,7 @@ func main() {
 	myApp := app.New()
 	mainWindow := myApp.NewWindow("Musicality")
 
-	partManager := ui.NewPartManager(mainWindow)
+	partManager := ui.NewItemManager(mainWindow, "Part", ui.NewPartInfoFormHelper)
 
 	partManager.Monitor()
 
@@ -31,7 +31,7 @@ func main() {
 	musicOuter.SetOffset(0.0)
 
 	appTabs := container.NewAppTabs(
-		partManager.BuildPartsTab(),
+		partManager.BuildTab(),
 		container.NewTabItem("Music", musicOuter),
 	)
 
