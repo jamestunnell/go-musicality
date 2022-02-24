@@ -3,7 +3,7 @@ module github.com/jamestunnell/go-musicality
 go 1.14
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	fyne.io/fyne/v2 v2.1.2
 	github.com/golang/mock v1.6.0
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.6.1
