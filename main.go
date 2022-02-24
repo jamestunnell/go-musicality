@@ -24,7 +24,7 @@ func main() {
 	)
 
 	mainWindow.SetContent(appTabs)
-	mainWindow.Resize(fyne.NewSize(320, 240))
+	mainWindow.Resize(fyne.NewSize(480, 360))
 	mainWindow.ShowAndRun()
 }
 

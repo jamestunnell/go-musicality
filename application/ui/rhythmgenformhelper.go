@@ -40,24 +40,21 @@ func NewRhythmGenFormHelper(m *ItemManager) ItemFormHelper {
 		for i := 0; i < len(meterStrings); i++ {
 			if s == meterStrings[i] {
 				h.selectedMeter = meters[i]
+
+				break
 			}
 		}
+
+		// force a re-validation of dependent entry
+		h.smallestDurEntry.SetValidationError(h.smallestDurEntry.Validate())
 	})
 	h.smallestDurEntry = widget.NewEntry()
 
 	h.nameEntry.Validator = MakeNameValidator(m)
 	h.smallestDurEntry.Validator = func(s string) error {
-		r, ok := rat.FromString(s)
-		if !ok {
-			return fmt.Errorf("'%s' is not a valid rational number (a/b)", s)
-		}
-
-		if !r.Positive() {
-			return fmt.Errorf("'%s' is not positive", s)
-		}
-
-		if h.selectedMeter == nil {
-			return fmt.Errorf("no meter selected", s)
+		r, err := validatePositiveRat(s)
+		if err != nil {
+			return err
 		}
 
 		if r.Greater(h.selectedMeter.BeatDuration) {
@@ -69,6 +66,8 @@ func NewRhythmGenFormHelper(m *ItemManager) ItemFormHelper {
 
 		return nil
 	}
+
+	h.meterSelect.SetSelectedIndex(0)
 
 	nameItem := widget.NewFormItem("Name", h.nameEntry)
 	meterItem := widget.NewFormItem("Meter", h.meterSelect)
@@ -98,4 +97,17 @@ func (h *RhythmGenFormHelper) MakeItem() Item {
 		Meter:       h.selectedMeter,
 		SmallestDur: r,
 	}
+}
+
+func validatePositiveRat(s string) (rat.Rat, error) {
+	r, ok := rat.FromString(s)
+	if !ok {
+		return rat.Zero(), fmt.Errorf("'%s' is not a valid rational number (a/b)", s)
+	}
+
+	if !r.Positive() {
+		return rat.Zero(), fmt.Errorf("'%s' is not positive", s)
+	}
+
+	return r, nil
 }
