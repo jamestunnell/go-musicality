@@ -1,16 +1,12 @@
 package main
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"github.com/rs/zerolog/log"
 
-	"github.com/jamestunnell/go-musicality/application"
 	"github.com/jamestunnell/go-musicality/application/ui"
 )
 
@@ -18,18 +14,9 @@ func main() {
 	myApp := app.New()
 	mainWindow := myApp.NewWindow("Musicality")
 
-	partsBox := container.NewVBox()
-	partManager := ui.NewPartManager(partsBox)
+	partManager := ui.NewPartManager(mainWindow)
 
 	partManager.Monitor()
-
-	partsScroll := container.NewVScroll(partsBox)
-	partsButtons := container.NewHBox(
-		widget.NewButton("Add Part", func() {
-			showAddPartDialog(mainWindow, partManager)
-		}),
-	)
-	partsOuter := container.NewVSplit(partsButtons, partsScroll)
 
 	music := container.NewVBox()
 	musicScroll := container.NewVScroll(music)
@@ -40,54 +27,17 @@ func main() {
 	)
 	musicOuter := container.NewVSplit(musicButtons, musicScroll)
 
+	// Give all available space to the bottom split element
+	musicOuter.SetOffset(0.0)
+
 	appTabs := container.NewAppTabs(
-		container.NewTabItem("Parts", partsOuter),
+		partManager.BuildPartsTab(),
 		container.NewTabItem("Music", musicOuter),
 	)
 
 	mainWindow.SetContent(appTabs)
 	mainWindow.Resize(fyne.NewSize(320, 240))
 	mainWindow.ShowAndRun()
-}
-
-func showAddPartDialog(parent fyne.Window, pm *ui.PartManager) {
-	nameEntry := widget.NewEntry()
-	nameEntry.Validator = func(s string) error {
-		if len(s) == 0 {
-			return fmt.Errorf("name is empty")
-		}
-
-		if pm.HasPart(s) {
-			return fmt.Errorf("part '%s' already exists", s)
-		}
-
-		return nil
-	}
-	nameItem := widget.NewFormItem("Name", nameEntry)
-	formItems := []*widget.FormItem{
-		nameItem,
-		widget.NewFormItem("MIDI Channel", widget.NewEntry()),
-		widget.NewFormItem("MIDI Instrument", widget.NewEntry()),
-	}
-	cb := func(added bool) {
-		if !added {
-			log.Info().Msg("canceled add part")
-
-			return
-		}
-
-		partInfo := &application.PartInfo{
-			Name: nameEntry.Text,
-		}
-
-		log.Info().Msg("adding part")
-
-		pm.AddParts() <- partInfo
-
-		log.Info().Msg("added part")
-	}
-
-	dialog.ShowForm("Add Part", "Create", "Cancel", formItems, cb, parent)
 }
 
 // func main() {

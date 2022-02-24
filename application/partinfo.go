@@ -1,5 +1,7 @@
 package application
 
 type PartInfo struct {
-	Name string
+	Name           string
+	MIDIChannel    int
+	MIDIInstrument int
 }
