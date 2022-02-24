@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -19,9 +21,10 @@ type PartManager struct {
 
 func NewPartManager(mainWindow fyne.Window) *PartManager {
 	return &PartManager{
-		parts:    []*application.PartInfo{},
-		partsBox: container.NewVBox(),
-		addParts: make(chan *application.PartInfo),
+		parts:      []*application.PartInfo{},
+		partsBox:   container.NewVBox(),
+		addParts:   make(chan *application.PartInfo),
+		mainWindow: mainWindow,
 	}
 }
 
@@ -33,7 +36,7 @@ func (pm *PartManager) BuildPartsTab() *container.TabItem {
 	partsScroll := container.NewVScroll(pm.partsBox)
 	partsButtons := container.NewHBox(
 		widget.NewButton("Add Part", func() {
-			pm.ShowAddPartDialog(pm.mainWindow)
+			pm.ShowAddPartDialog()
 		}),
 	)
 	partsOuter := container.NewVSplit(partsButtons, partsScroll)
@@ -58,7 +61,7 @@ func (pm *PartManager) HasPart(name string) bool {
 	return false
 }
 
-func (pm *PartManager) ShowAddPartDialog(parent fyne.Window) {
+func (pm *PartManager) ShowAddPartDialog() {
 	x := NewPartInfoFormItems(pm)
 	cb := func(ok bool) {
 		if ok {
@@ -70,7 +73,7 @@ func (pm *PartManager) ShowAddPartDialog(parent fyne.Window) {
 		}
 	}
 
-	dialog.ShowForm("Add Part", "Create", "Cancel", x.FormItems, cb, parent)
+	dialog.ShowForm("Add Part", "Create", "Cancel", x.FormItems, cb, pm.mainWindow)
 }
 
 func (pm *PartManager) monitor() {
@@ -79,6 +82,8 @@ func (pm *PartManager) monitor() {
 
 		partForm := widget.NewForm(
 			widget.NewFormItem("Name", widget.NewLabel(partInfo.Name)),
+			widget.NewFormItem("MIDI Channel", widget.NewLabel(strconv.Itoa(partInfo.MIDIChannel))),
+			widget.NewFormItem("MIDI Instrument", widget.NewLabel(strconv.Itoa(partInfo.MIDIInstrument))),
 		)
 
 		pm.parts = append(pm.parts, partInfo)

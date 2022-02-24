@@ -39,6 +39,7 @@ func NewPartInfoFormItems(pm *PartManager) *PartInfoFormComponents {
 	nameItem := widget.NewFormItem("Name", nameEntry)
 	midiChanItem := widget.NewFormItem("MIDI Channel", midiChanEntry)
 	midiInstrItem := widget.NewFormItem("MIDI Instrument", midiInstrEntry)
+
 	return &PartInfoFormComponents{
 		NameEntry:      nameEntry,
 		MIDIChanEntry:  midiChanEntry,
