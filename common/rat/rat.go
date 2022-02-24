@@ -17,6 +17,15 @@ func New(a, b int64) Rat {
 	}
 }
 
+func FromString(s string) (Rat, bool) {
+	r, ok := new(big.Rat).SetString(s)
+	if !ok {
+		return Zero(), false
+	}
+
+	return Rat{Rat: r}, true
+}
+
 func FromFloat64(x float64) Rat {
 	return Rat{Rat: new(big.Rat).SetFloat64(x)}
 }

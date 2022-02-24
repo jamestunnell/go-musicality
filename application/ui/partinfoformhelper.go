@@ -1,10 +1,8 @@
 package ui
 
 import (
-	"fmt"
 	"strconv"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rs/zerolog/log"
 )
@@ -19,20 +17,9 @@ func NewPartInfoFormHelper(m *ItemManager) ItemFormHelper {
 	midiChanEntry := widget.NewEntry()
 	midiInstrEntry := widget.NewEntry()
 
-	nameEntry.Validator = func(s string) error {
-		if len(s) == 0 {
-			return fmt.Errorf("name is empty")
-		}
-
-		if m.HasItem(s) {
-			return fmt.Errorf("part '%s' already exists", s)
-		}
-
-		return nil
-	}
-
-	midiChanEntry.Validator = makeIntValidator(1, 16)
-	midiInstrEntry.Validator = makeIntValidator(1, 128)
+	nameEntry.Validator = MakeNameValidator(m)
+	midiChanEntry.Validator = MakeIntValidator(1, 16)
+	midiInstrEntry.Validator = MakeIntValidator(1, 128)
 
 	nameItem := widget.NewFormItem("Name", nameEntry)
 	midiChanItem := widget.NewFormItem("MIDI Channel", midiChanEntry)
@@ -65,20 +52,5 @@ func (h *PartInfoFormHelper) MakeItem() Item {
 		name:           h.NameEntry.Text,
 		MIDIChannel:    c,
 		MIDIInstrument: i,
-	}
-}
-
-func makeIntValidator(min, max int) fyne.StringValidator {
-	return func(s string) error {
-		i, err := strconv.Atoi(s)
-		if err != nil {
-			return err
-		}
-
-		if i < min || i > max {
-			return fmt.Errorf("%d is not in range %d-%d", i, min, max)
-		}
-
-		return nil
 	}
 }

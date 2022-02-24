@@ -4,8 +4,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/jamestunnell/go-musicality/application/ui"
 )
@@ -15,24 +13,14 @@ func main() {
 	mainWindow := myApp.NewWindow("Musicality")
 
 	partManager := ui.NewItemManager(mainWindow, "Part", ui.NewPartInfoFormHelper)
+	rhythmGenManager := ui.NewItemManager(mainWindow, "Rhythm Generator", ui.NewRhythmGenFormHelper)
 
 	partManager.Monitor()
-
-	music := container.NewVBox()
-	musicScroll := container.NewVScroll(music)
-	musicButtons := container.NewHBox(
-		widget.NewButton("Play Parts", func() {
-			dialog.ShowInformation("Play Parts", "This is a placeholder", mainWindow)
-		}),
-	)
-	musicOuter := container.NewVSplit(musicButtons, musicScroll)
-
-	// Give all available space to the bottom split element
-	musicOuter.SetOffset(0.0)
+	rhythmGenManager.Monitor()
 
 	appTabs := container.NewAppTabs(
 		partManager.BuildTab(),
-		container.NewTabItem("Music", musicOuter),
+		rhythmGenManager.BuildTab(),
 	)
 
 	mainWindow.SetContent(appTabs)
