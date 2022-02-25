@@ -27,7 +27,7 @@ type RhythmGenFormHelper struct {
 	formItems                   []*widget.FormItem
 }
 
-func NewRhythmGenFormHelper(m *ItemManager) ItemFormHelper {
+func NewRhythmGenFormHelper(m *ItemManager, existing Item) ItemFormHelper {
 	meterStrings := make([]string, len(meters))
 	for i := 0; i < len(meters); i++ {
 		meterStrings[i] = meters[i].String()
@@ -50,7 +50,7 @@ func NewRhythmGenFormHelper(m *ItemManager) ItemFormHelper {
 	})
 	h.smallestDurEntry = widget.NewEntry()
 
-	h.nameEntry.Validator = MakeNameValidator(m)
+	h.nameEntry.Validator = MakeNameValidator(m, existing)
 	h.smallestDurEntry.Validator = func(s string) error {
 		r, err := validatePositiveRat(s)
 		if err != nil {
@@ -74,6 +74,17 @@ func NewRhythmGenFormHelper(m *ItemManager) ItemFormHelper {
 	smallestDurItem := widget.NewFormItem("Smallest Duration", h.smallestDurEntry)
 
 	h.formItems = []*widget.FormItem{nameItem, meterItem, smallestDurItem}
+
+	if existing != nil {
+		rg, ok := existing.(*RhythmGen)
+		if !ok {
+			log.Fatal().Interface("item", existing).Msg("existing item is not a *RhythmGen")
+		}
+
+		h.nameEntry.Text = rg.Name()
+		h.meterSelect.SetSelected(rg.Meter.String())
+		h.smallestDurEntry.Text = rg.SmallestDur.String()
+	}
 
 	return h
 }

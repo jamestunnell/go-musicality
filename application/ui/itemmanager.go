@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/rs/zerolog/log"
 )
 
 type Item interface {
@@ -19,7 +20,12 @@ type ItemFormHelper interface {
 	FormItems() []*widget.FormItem
 }
 
-type MakeItemFormHelperFunc func(m *ItemManager) ItemFormHelper
+type ItemUpdate struct {
+	Index int
+	Item  Item
+}
+
+type MakeItemFormHelperFunc func(im *ItemManager, item Item) ItemFormHelper
 
 type ItemManager struct {
 	mainWindow         fyne.Window
@@ -27,6 +33,8 @@ type ItemManager struct {
 	items              []Item
 	itemsBox           *fyne.Container
 	addItem            chan Item
+	removeItem         chan string
+	updateItem         chan *ItemUpdate
 	makeItemFormHelper MakeItemFormHelperFunc
 }
 
@@ -36,20 +44,22 @@ func NewItemManager(mainWindow fyne.Window, itemName string, makeItemFormHelper 
 		items:              []Item{},
 		itemsBox:           container.NewVBox(),
 		addItem:            make(chan Item),
+		removeItem:         make(chan string),
+		updateItem:         make(chan *ItemUpdate),
 		mainWindow:         mainWindow,
 		makeItemFormHelper: makeItemFormHelper,
 	}
 }
 
-func (pm *ItemManager) Monitor() {
-	go pm.monitor()
+func (im *ItemManager) Monitor() {
+	go im.monitor()
 }
 
-func (pm *ItemManager) BuildTab() *container.TabItem {
-	scroll := container.NewVScroll(pm.itemsBox)
+func (im *ItemManager) BuildTab() *container.TabItem {
+	scroll := container.NewVScroll(im.itemsBox)
 	buttons := container.NewHBox(
-		widget.NewButton(fmt.Sprintf("Add %s", pm.itemName), func() {
-			pm.ShowAddItemDialog()
+		widget.NewButton(fmt.Sprintf("Add %s", im.itemName), func() {
+			im.ShowAddItemDialog()
 		}),
 	)
 	outer := container.NewVSplit(buttons, scroll)
@@ -57,53 +67,106 @@ func (pm *ItemManager) BuildTab() *container.TabItem {
 	// Give all available space to the bottom split element
 	outer.SetOffset(0.0)
 
-	return container.NewTabItem(fmt.Sprintf("%ss", pm.itemName), outer)
+	return container.NewTabItem(fmt.Sprintf("%ss", im.itemName), outer)
 }
 
-func (pm *ItemManager) HasItem(name string) bool {
-	for _, item := range pm.items {
+func (im *ItemManager) HasItem(name string) bool {
+	return im.ItemIndex(name) != -1
+}
+
+func (im *ItemManager) RemoveItem(idx int) {
+	im.items = append(im.items[:idx], im.items[idx+1:]...)
+}
+
+func (im *ItemManager) ItemIndex(name string) int {
+	for i, item := range im.items {
 		if item.Name() == name {
-			return true
+			return i
 		}
 	}
 
-	return false
+	return -1
 }
 
-func (m *ItemManager) ShowAddItemDialog() {
-	h := m.makeItemFormHelper(m)
+func (im *ItemManager) ShowAddItemDialog() {
+	h := im.makeItemFormHelper(im, nil)
 	cb := func(ok bool) {
 		if ok {
 			item := h.MakeItem()
 
 			// log.Info().Interface("item", item).Msg("adding item")
 
-			m.addItem <- item
+			im.addItem <- item
 		}
 	}
-	title := fmt.Sprintf("Add %s", m.itemName)
+	title := fmt.Sprintf("Add %s", im.itemName)
 
-	dialog.ShowForm(title, "Create", "Cancel", h.FormItems(), cb, m.mainWindow)
+	dialog.ShowForm(title, "Create", "Cancel", h.FormItems(), cb, im.mainWindow)
 }
 
-func (pm *ItemManager) monitor() {
-	for {
-		item := <-pm.addItem
+func (im *ItemManager) ShowEditItemDialog(item Item) {
+	h := im.makeItemFormHelper(im, item)
+	cb := func(ok bool) {
+		if ok {
+			updatedItem := h.MakeItem()
 
-		pm.items = append(pm.items, item)
+			// log.Info().Interface("item", item).Msg("adding item")
 
-		itemUI := container.NewVBox(item.MakeUIObject())
-
-		// editButton := widget.NewButton("Edit", func() {
-
-		// })
-		deleteButton := widget.NewButton("Delete", func() {
-			pm.itemsBox.Remove(itemUI)
-		})
-		buttons := container.NewHBox(deleteButton)
-
-		itemUI.Add(buttons)
-
-		pm.itemsBox.Add(itemUI)
+			update := &ItemUpdate{
+				Index: im.ItemIndex(item.Name()),
+				Item:  updatedItem,
+			}
+			im.updateItem <- update
+		}
 	}
+	title := fmt.Sprintf("Edit %s", im.itemName)
+
+	dialog.ShowForm(title, "Modify", "Cancel", h.FormItems(), cb, im.mainWindow)
+}
+
+func (im *ItemManager) monitor() {
+	for {
+		select {
+		case item := <-im.addItem:
+			im.items = append(im.items, item)
+
+			itemUI := im.createItemUI(item)
+
+			im.itemsBox.Add(itemUI)
+		case update := <-im.updateItem:
+			im.items[update.Index] = update.Item
+
+			itemUI := im.createItemUI(update.Item)
+
+			im.itemsBox.Objects[update.Index] = itemUI
+
+			im.itemsBox.Refresh()
+		case name := <-im.removeItem:
+			if idx := im.ItemIndex(name); idx != -1 {
+				im.RemoveItem(idx)
+				im.itemsBox.Remove(im.itemsBox.Objects[idx])
+			}
+
+		}
+	}
+}
+
+func (im *ItemManager) createItemUI(item Item) fyne.CanvasObject {
+	itemUI := container.NewVBox(item.MakeUIObject())
+
+	editButton := widget.NewButton("Edit", func() {
+		log.Debug().Str("name", item.Name()).Msg("editing item")
+
+		im.ShowEditItemDialog(item)
+	})
+	deleteButton := widget.NewButton("Delete", func() {
+		log.Debug().Str("name", item.Name()).Msg("removing item")
+
+		im.removeItem <- item.Name()
+	})
+	buttons := container.NewHBox(editButton, deleteButton)
+
+	itemUI.Add(buttons)
+
+	return itemUI
 }

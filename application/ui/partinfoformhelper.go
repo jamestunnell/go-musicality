@@ -12,18 +12,29 @@ type PartInfoFormHelper struct {
 	formItems                                []*widget.FormItem
 }
 
-func NewPartInfoFormHelper(m *ItemManager) ItemFormHelper {
+func NewPartInfoFormHelper(m *ItemManager, existing Item) ItemFormHelper {
 	nameEntry := widget.NewEntry()
 	midiChanEntry := widget.NewEntry()
 	midiInstrEntry := widget.NewEntry()
 
-	nameEntry.Validator = MakeNameValidator(m)
+	nameEntry.Validator = MakeNameValidator(m, existing)
 	midiChanEntry.Validator = MakeIntValidator(1, 16)
 	midiInstrEntry.Validator = MakeIntValidator(1, 128)
 
 	nameItem := widget.NewFormItem("Name", nameEntry)
 	midiChanItem := widget.NewFormItem("MIDI Channel", midiChanEntry)
 	midiInstrItem := widget.NewFormItem("MIDI Instrument", midiInstrEntry)
+
+	if existing != nil {
+		pi, ok := existing.(*PartInfo)
+		if !ok {
+			log.Fatal().Interface("item", existing).Msg("existing item is not a *PartInfo")
+		}
+
+		nameEntry.Text = pi.Name()
+		midiChanEntry.Text = strconv.Itoa(pi.MIDIChannel)
+		midiInstrEntry.Text = strconv.Itoa(pi.MIDIInstrument)
+	}
 
 	return &PartInfoFormHelper{
 		NameEntry:      nameEntry,
