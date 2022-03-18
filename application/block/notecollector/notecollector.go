@@ -2,7 +2,6 @@ package notecollector
 
 import (
 	"github.com/jamestunnell/go-musicality/application/block"
-	"github.com/jamestunnell/go-musicality/common/value"
 	"github.com/jamestunnell/go-musicality/notation/note"
 )
 
@@ -32,13 +31,13 @@ func (b *NoteCollector) Ports() map[string]*block.Port {
 	}
 }
 
-func (b *NoteCollector) Initialize(paramVals value.Map) error {
+func (b *NoteCollector) Initialize() error {
 	b.Collected = []*note.Note{}
 
 	return nil
 }
 
-func (b *NoteCollector) Configure(controlVals value.Map) {
+func (b *NoteCollector) Configure() {
 }
 
 func (b *NoteCollector) Process() {
