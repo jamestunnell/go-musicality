@@ -1,4 +1,4 @@
-package blocks
+package treegenerator
 
 import (
 	"fmt"
@@ -14,12 +14,6 @@ import (
 	"github.com/jamestunnell/go-setting/value"
 )
 
-var (
-	fourFour           = meter.FourFour()
-	defaultSmallestDur = rat.New(1, 32)
-	defaultMaxLevel    = int(2)
-)
-
 type TreeGenerator struct {
 	SmallestDur              *block.Param
 	Meter, MaxLevel, NextDur *block.Port
@@ -29,7 +23,20 @@ type TreeGenerator struct {
 	visitor     *rhythmgen.TreeVisitor
 }
 
-func NewTreeGenerator() *TreeGenerator {
+const (
+	SmallestDurName = "SmallestDur"
+	MaxLevelName    = "MaxLevel"
+	MeterName       = "Meter"
+	NextDurName     = "NextDur"
+)
+
+var (
+	fourFour           = meter.FourFour()
+	defaultSmallestDur = rat.New(1, 32)
+	defaultMaxLevel    = int(2)
+)
+
+func New() *TreeGenerator {
 	sv := value.NewString(defaultSmallestDur.String())
 
 	return &TreeGenerator{
@@ -80,7 +87,7 @@ func (b *TreeGenerator) Configure() {
 	b.visitor = rhythmgen.NewTreeVisitor(b.root)
 }
 
-func (b *TreeGenerator) Process(offset rat.Rat) {
+func (b *TreeGenerator) Process() {
 	maxLevel := b.getMaxLevel()
 
 	reachedTerminal := false

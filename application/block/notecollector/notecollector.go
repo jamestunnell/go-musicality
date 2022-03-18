@@ -1,8 +1,7 @@
-package blocks
+package notecollector
 
 import (
 	"github.com/jamestunnell/go-musicality/application/block"
-	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/common/value"
 	"github.com/jamestunnell/go-musicality/notation/note"
 )
@@ -12,7 +11,9 @@ type NoteCollector struct {
 	Notes     *block.Port
 }
 
-func NewNoteCollector() *NoteCollector {
+const NotesName = "Notes"
+
+func New() *NoteCollector {
 	var n *note.Note
 
 	return &NoteCollector{
@@ -40,7 +41,7 @@ func (b *NoteCollector) Initialize(paramVals value.Map) error {
 func (b *NoteCollector) Configure(controlVals value.Map) {
 }
 
-func (b *NoteCollector) Process(offset rat.Rat) {
+func (b *NoteCollector) Process() {
 	n := b.Notes.CurrentValue.(*note.Note)
 
 	if n != nil {
