@@ -13,7 +13,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gitlab.com/gomidi/midi v1.23.7
 	gitlab.com/gomidi/rtmididrv v0.14.0
-	golang.org/x/exp v0.0.0-20190125153040-c74c464bbbf2
+	golang.org/x/exp v0.0.0-20220317015231-48e79f11773a
 	gonum.org/v1/gonum v0.7.0
 )
 
@@ -35,7 +35,7 @@ require (
 	github.com/yuin/goldmark v1.4.0 // indirect
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8 // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
-	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
