@@ -16,7 +16,7 @@ func (conns *Connections) Len() int {
 	return len(conns.outputInput)
 }
 
-func (conns *Connections) Connect(output, input *PortAddr) bool {
+func (conns *Connections) Connect(output, input *Addr) bool {
 	out := output.String()
 	in := input.String()
 
@@ -30,21 +30,21 @@ func (conns *Connections) Connect(output, input *PortAddr) bool {
 	return true
 }
 
-func (conns *Connections) ConnectedInput(output *PortAddr) (*PortAddr, bool) {
+func (conns *Connections) ConnectedInput(output *Addr) (*Addr, bool) {
 	return connected(conns.outputInput, output)
 }
 
-func (conns *Connections) ConnectedOutput(input *PortAddr) (*PortAddr, bool) {
+func (conns *Connections) ConnectedOutput(input *Addr) (*Addr, bool) {
 	return connected(conns.inputOutput, input)
 }
 
-func connected(m map[string]string, addr *PortAddr) (*PortAddr, bool) {
+func connected(m map[string]string, addr *Addr) (*Addr, bool) {
 	str, found := m[addr.String()]
 	if !found {
 		return nil, false
 	}
 
-	addr2 := &PortAddr{}
+	addr2 := &Addr{}
 
 	if !addr2.Parse(str) {
 		return nil, false

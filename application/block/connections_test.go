@@ -8,18 +8,31 @@ import (
 )
 
 func TestConnections(t *testing.T) {
-	a1 := block.NewPortAddr("A", "1")
-	a2 := block.NewPortAddr("A", "2")
-	b1 := block.NewPortAddr("B", "1")
-	b2 := block.NewPortAddr("B", "2")
-	c1 := block.NewPortAddr("C", "1")
-	c2 := block.NewPortAddr("C", "2")
+	a1 := block.NewAddr("A", "1")
+	a2 := block.NewAddr("A", "2")
+	b1 := block.NewAddr("B", "1")
+	b2 := block.NewAddr("B", "2")
+	c1 := block.NewAddr("C", "1")
+	c2 := block.NewAddr("C", "2")
 
 	conns := block.NewConnections()
 
 	assert.Equal(t, 0, conns.Len())
 
+	addr, found := conns.ConnectedInput(a2)
+
+	assert.Nil(t, addr)
+	assert.False(t, found)
+
+	addr, found = conns.ConnectedOutput(a1)
+
+	assert.Nil(t, addr)
+	assert.False(t, found)
+
 	assert.True(t, conns.Connect(a2, b1))
+
+	assert.False(t, conns.Connect(a2, c1))
+
 	assert.True(t, conns.Connect(b2, c1))
 	assert.True(t, conns.Connect(c2, a1))
 
@@ -30,7 +43,7 @@ func TestConnections(t *testing.T) {
 	verifyConnected(t, conns, c2, a1)
 }
 
-func verifyConnected(t *testing.T, conns *block.Connections, out, in *block.PortAddr) {
+func verifyConnected(t *testing.T, conns *block.Connections, out, in *block.Addr) {
 	inActual, ok := conns.ConnectedInput(out)
 
 	assert.True(t, ok)

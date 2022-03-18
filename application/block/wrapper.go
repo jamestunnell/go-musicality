@@ -1,11 +1,15 @@
 package block
 
 type Wrapper struct {
-	Block Block
+	Block   Block
+	Name    string
+	Ordinal int
 }
 
-func NewWrapper(b Block) *Wrapper {
+func NewWrapper(name string, block Block) *Wrapper {
 	return &Wrapper{
-		Block: b,
+		Block:   block,
+		Name:    name,
+		Ordinal: 0,
 	}
 }
