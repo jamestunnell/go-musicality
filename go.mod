@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	fyne.io/fyne/v2 v2.1.2
+	github.com/dcadenas/pagerank v0.0.0-20171013173705-af922e3ceea8
 	github.com/golang/mock v1.6.0
 	github.com/jamestunnell/go-setting v0.5.0
 	github.com/rs/zerolog v1.26.1

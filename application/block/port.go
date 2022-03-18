@@ -38,3 +38,15 @@ func newPort(typ PortType, startVal interface{}) *Port {
 		ValueType:    reflect.TypeOf(startVal),
 	}
 }
+
+func FilterPorts(ports map[string]*Port, typ PortType) map[string]*Port {
+	filtered := map[string]*Port{}
+
+	for name, port := range ports {
+		if port.Type == typ {
+			filtered[name] = port
+		}
+	}
+
+	return filtered
+}

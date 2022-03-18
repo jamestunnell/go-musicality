@@ -1,54 +1,109 @@
 package block
 
+import (
+	"hash/fnv"
+	"math/rand"
+	"time"
+
+	"github.com/dcadenas/pagerank"
+)
+
 type Connections struct {
-	outputInput map[string]string
-	inputOutput map[string]string
+	pairs []*AddrPair
+}
+
+type AddrPair struct {
+	From *Addr
+	To   *Addr
+}
+
+func HashString(s string) uint32 {
+	h := fnv.New32()
+
+	h.Write([]byte(s))
+
+	return h.Sum32()
 }
 
 func NewConnections() *Connections {
 	return &Connections{
-		outputInput: map[string]string{},
-		inputOutput: map[string]string{},
+		pairs: []*AddrPair{},
 	}
 }
 
 func (conns *Connections) Len() int {
-	return len(conns.outputInput)
+	return len(conns.pairs)
 }
 
 func (conns *Connections) Connect(output, input *Addr) bool {
-	out := output.String()
-	in := input.String()
-
-	if _, found := conns.outputInput[out]; found {
-		return false
+	for _, pair := range conns.pairs {
+		if pair.From.Equal(output) || pair.To.Equal(input) {
+			return false
+		}
 	}
 
-	conns.outputInput[out] = in
-	conns.inputOutput[in] = out
+	pair := &AddrPair{From: output, To: input}
+
+	conns.pairs = append(conns.pairs, pair)
 
 	return true
 }
 
+func (conns *Connections) EachConnection(f func(output, input *Addr)) {
+	for _, pair := range conns.pairs {
+		f(pair.From, pair.To)
+	}
+}
+
 func (conns *Connections) ConnectedInput(output *Addr) (*Addr, bool) {
-	return connected(conns.outputInput, output)
+	for _, pair := range conns.pairs {
+		if pair.From.Equal(output) {
+			return pair.To, true
+		}
+	}
+
+	return nil, false
 }
 
 func (conns *Connections) ConnectedOutput(input *Addr) (*Addr, bool) {
-	return connected(conns.inputOutput, input)
+	for _, pair := range conns.pairs {
+		if pair.To.Equal(input) {
+			return pair.From, true
+		}
+	}
+
+	return nil, false
 }
 
-func connected(m map[string]string, addr *Addr) (*Addr, bool) {
-	str, found := m[addr.String()]
-	if !found {
-		return nil, false
+func (conns *Connections) RankBlocks() map[string]float64 {
+	const (
+		followProb = 0.95
+		tolerance  = 0.01
+	)
+
+	// use PageRank algorithm to determine Ordinals
+	graph := pagerank.New()
+	blockLabels := map[int]string{}
+
+	// hook up the graph
+	for _, pair := range conns.pairs {
+		outLabel := int(HashString(pair.From.Block))
+		inLabel := int(HashString(pair.To.Block))
+
+		blockLabels[outLabel] = pair.From.Block
+		blockLabels[inLabel] = pair.To.Block
+
+		graph.Link(outLabel, inLabel)
 	}
 
-	addr2 := &Addr{}
+	ranks := map[string]float64{}
 
-	if !addr2.Parse(str) {
-		return nil, false
-	}
+	rand.Seed(time.Now().Unix())
 
-	return addr2, true
+	// run the PageRank algorithm
+	graph.Rank(followProb, tolerance, func(label int, rank float64) {
+		ranks[blockLabels[label]] = rank
+	})
+
+	return ranks
 }

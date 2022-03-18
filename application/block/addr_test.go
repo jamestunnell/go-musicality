@@ -9,12 +9,11 @@ import (
 )
 
 func TestAddr(t *testing.T) {
-	a := &block.Addr{}
+	a5 := block.NewAddr("a", "5")
+	a3 := block.NewAddr("a", "3")
+	b5 := block.NewAddr("b", "5")
 
-	assert.False(t, a.Parse("invalid addr"))
-
-	valid := "valid.addr"
-
-	assert.True(t, a.Parse(valid))
-	assert.Equal(t, valid, a.String())
+	assert.True(t, a5.Equal(b5))
+	assert.False(t, a5.Equal(a3))
+	assert.False(t, a5.Equal(b5))
 }
