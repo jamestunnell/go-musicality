@@ -13,7 +13,7 @@ func TestAddr(t *testing.T) {
 	a3 := block.NewAddr("a", "3")
 	b5 := block.NewAddr("b", "5")
 
-	assert.True(t, a5.Equal(b5))
+	assert.True(t, a5.Equal(a5))
 	assert.False(t, a5.Equal(a3))
 	assert.False(t, a5.Equal(b5))
 }
