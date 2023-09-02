@@ -1,12 +1,12 @@
 package rat
 
-type Rats []Rat
+type Rationals []*Rat
 
-func (rats Rats) Len() int {
+func (rats Rationals) Len() int {
 	return len(rats)
 }
 
-func (rats Rats) Strings() []string {
+func (rats Rationals) Strings() []string {
 	rStrings := make([]string, len(rats))
 
 	for i, r := range rats {
@@ -16,15 +16,15 @@ func (rats Rats) Strings() []string {
 	return rStrings
 }
 
-func (rats Rats) Swap(i, j int) {
+func (rats Rationals) Swap(i, j int) {
 	rats[i], rats[j] = rats[j], rats[i]
 }
 
-func (rats Rats) Less(i, j int) bool {
+func (rats Rationals) Less(i, j int) bool {
 	return rats[i].Less(rats[j])
 }
 
-func (rats Rats) Equal(other Rats) bool {
+func (rats Rationals) Equal(other Rationals) bool {
 	if len(other) != len(rats) {
 		return false
 	}
@@ -38,7 +38,7 @@ func (rats Rats) Equal(other Rats) bool {
 	return true
 }
 
-func (rats Rats) Sum() Rat {
+func (rats Rationals) Sum() *Rat {
 	sum := Zero()
 
 	for _, r := range rats {
@@ -48,8 +48,8 @@ func (rats Rats) Sum() Rat {
 	return sum
 }
 
-func (rats Rats) Union(other Rats) Rats {
-	union := Rats{}
+func (rats Rationals) Union(other Rationals) Rationals {
+	union := Rationals{}
 
 	union = append(union, rats...)
 
@@ -62,7 +62,7 @@ func (rats Rats) Union(other Rats) Rats {
 	return union
 }
 
-func (rats Rats) Contains(other Rat) bool {
+func (rats Rationals) Contains(other *Rat) bool {
 	for _, r := range rats {
 		if r.Equal(other) {
 			return true

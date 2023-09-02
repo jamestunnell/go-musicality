@@ -44,7 +44,7 @@ func TestUnmarshalWrongType(t *testing.T) {
 	assert.Error(t, json.Unmarshal([]byte(str), &r))
 }
 
-func testMarshalUnmarshal(t *testing.T, r rat.Rat, expected string) {
+func testMarshalUnmarshal(t *testing.T, r *rat.Rat, expected string) {
 	t.Run(r.String(), func(t *testing.T) {
 		d, err := json.Marshal(r)
 
@@ -56,7 +56,7 @@ func testMarshalUnmarshal(t *testing.T, r rat.Rat, expected string) {
 
 		require.NoError(t, json.Unmarshal(d, &r2))
 
-		assert.True(t, r2.Equal(r))
+		assert.True(t, r.Equal(&r2))
 	})
 }
 
@@ -102,7 +102,10 @@ func TestMaths(t *testing.T) {
 	assert.InDelta(t, 0.25, r1.MulFloat64(0.5).Float64(), 1e-10)
 }
 
-func testPositiveZeroNegative(t *testing.T, r rat.Rat, pos, zero, neg bool) {
+func testPositiveZeroNegative(
+	t *testing.T,
+	r *rat.Rat,
+	pos, zero, neg bool) {
 	assert.Equal(t, pos, r.Positive())
 	assert.Equal(t, zero, r.Zero())
 	assert.Equal(t, neg, r.Negative())
