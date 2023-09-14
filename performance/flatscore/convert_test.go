@@ -1,6 +1,7 @@
 package flatscore_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func TestConverterEmpty(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Empty(t, fs.Parts)
-	assert.True(t, fs.Duration().Equal(rat.Zero()))
+	assert.True(t, rat.IsZero(fs.Duration()))
 }
 
 func TestConvertInvalidScore(t *testing.T) {
@@ -69,5 +70,5 @@ func TestConvert(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, fs.Parts, 2)
-	assert.True(t, fs.Duration().Equal(rat.New(4, 1)))
+	assert.True(t, rat.IsEqual(fs.Duration(), big.NewRat(4, 1)))
 }

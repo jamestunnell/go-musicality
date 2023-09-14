@@ -1,6 +1,7 @@
 package note_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,9 +11,9 @@ import (
 )
 
 func TestConvenience(t *testing.T) {
-	assert.True(t, note.Whole().Duration.Equal(rat.New(1, 1)))
-	assert.True(t, note.Half().Duration.Equal(rat.New(1, 2)))
-	assert.True(t, note.Quarter().Duration.Equal(rat.New(1, 4)))
-	assert.True(t, note.Eighth().Duration.Equal(rat.New(1, 8)))
-	assert.True(t, note.Sixteenth().Duration.Equal(rat.New(1, 16)))
+	assert.True(t, rat.IsEqual(note.Whole().Duration, big.NewRat(1, 1)))
+	assert.True(t, rat.IsEqual(note.Half().Duration, big.NewRat(1, 2)))
+	assert.True(t, rat.IsEqual(note.Quarter().Duration, big.NewRat(1, 4)))
+	assert.True(t, rat.IsEqual(note.Eighth().Duration, big.NewRat(1, 8)))
+	assert.True(t, rat.IsEqual(note.Sixteenth().Duration, big.NewRat(1, 16)))
 }

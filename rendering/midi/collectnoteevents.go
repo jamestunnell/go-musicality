@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
 	"github.com/jamestunnell/go-musicality/performance/computer"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
@@ -46,7 +47,7 @@ func CollectNoteEvents(fs *flatscore.FlatScore, dc *computer.Computer, part stri
 
 		vel := Velocity(n.Attack * dynamic)
 		newDur := AdjustDuration(pd.Duration, n.Separation)
-		endOffset := n.Start.Add(newDur)
+		endOffset := rat.Add(n.Start, newDur)
 
 		events = append(events, NewNoteOnEvent(n.Start, key, vel))
 		events = append(events, NewNoteOffEvent(endOffset, key))

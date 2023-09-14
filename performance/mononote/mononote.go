@@ -1,20 +1,22 @@
 package mononote
 
 import (
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 // MonoNote is a note with only one pitch at a time.
 // Pitch changes are meant to be immediate, with no separation.
 type MonoNote struct {
-	Start      rat.Rat
+	Start      *big.Rat
 	PitchDurs  []*PitchDur
 	Attack     float64
 	Separation float64
 }
 
 // New makes a new MonoNote.
-func New(start rat.Rat, pitchDurs ...*PitchDur) *MonoNote {
+func New(start *big.Rat, pitchDurs ...*PitchDur) *MonoNote {
 	return &MonoNote{
 		Start:      start,
 		Attack:     0.0,
@@ -25,19 +27,19 @@ func New(start rat.Rat, pitchDurs ...*PitchDur) *MonoNote {
 
 // Duration is the sum of the durations from PitchDurs.
 // Not modified to account for Note separation.
-func (n *MonoNote) Duration() rat.Rat {
+func (n *MonoNote) Duration() *big.Rat {
 	dur := rat.Zero()
 
 	for _, pd := range n.PitchDurs {
-		dur = dur.Add(pd.Duration)
+		dur = rat.Add(dur, pd.Duration)
 	}
 
 	return dur
 }
 
 // End is not modified to account for separation
-func (n *MonoNote) End() rat.Rat {
-	return n.Start.Add(n.Duration())
+func (n *MonoNote) End() *big.Rat {
+	return rat.Add(n.Start, n.Duration())
 }
 
 func (n *MonoNote) Simplify() {
@@ -49,7 +51,7 @@ func (n *MonoNote) Simplify() {
 
 		if cur.Pitch.Equal(prev.Pitch) {
 			// combine current with previous element
-			prev.Duration = prev.Duration.Add(cur.Duration)
+			prev.Duration = rat.Add(prev.Duration, cur.Duration)
 
 			n.PitchDurs = append(n.PitchDurs[:i], n.PitchDurs[i+1:]...)
 		} else {

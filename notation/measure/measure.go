@@ -3,6 +3,7 @@ package measure
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/jamestunnell/go-musicality/common/rat"
@@ -29,8 +30,8 @@ type measureJSON struct {
 type changeLiteMap map[string]*changeLite
 
 type changeLite struct {
-	EndValue float64 `json:"endValue"`
-	Duration rat.Rat `json:"duration"`
+	EndValue float64  `json:"endValue"`
+	Duration *big.Rat `json:"duration"`
 }
 
 const notesDurErrFmt = "total note duration %s does not equal measure duration %s"
@@ -54,7 +55,7 @@ var (
 	}
 )
 
-func (m *Measure) Validate(measureDur rat.Rat) *validation.Result {
+func (m *Measure) Validate(measureDur *big.Rat) *validation.Result {
 	results := []*validation.Result{}
 	errs := []error{}
 
@@ -80,7 +81,7 @@ func (m *Measure) Validate(measureDur rat.Rat) *validation.Result {
 
 		notesDur := notes.TotalDuration()
 
-		if !notesDur.Equal(measureDur) {
+		if !rat.IsEqual(notesDur, measureDur) {
 			err := fmt.Errorf(notesDurErrFmt, notesDur.String(), measureDur.String())
 
 			partErrs = append(partErrs, err)
@@ -183,7 +184,7 @@ func toChangeLiteMap(changes change.Changes) (changeLiteMap, error) {
 	clm := map[string]*changeLite{}
 
 	for _, c := range changes {
-		d, err := c.Offset.MarshalJSON()
+		d, err := json.Marshal(c.Offset)
 		if err != nil {
 			err = fmt.Errorf("failed to marshal offset: %w", err)
 
@@ -206,7 +207,7 @@ func fromChangeLiteMap(clm changeLiteMap) (change.Changes, error) {
 	for offsetStr, cl := range clm {
 		offsetJSONStr := fmt.Sprintf(`"%s"`, offsetStr)
 
-		var offset rat.Rat
+		var offset *big.Rat
 
 		err := json.Unmarshal([]byte(offsetJSONStr), &offset)
 		if err != nil {

@@ -1,6 +1,7 @@
 package section_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,16 +17,7 @@ import (
 )
 
 func TestNewWithOpt(t *testing.T) {
-	s := section.New(section.OptStartDynamic(0.75))
-
-	assert.Nil(t, s.Validate())
-	assert.Equal(t, 0.75, s.StartDynamic)
-
-	s = section.New(section.OptStartDynamic(1.75))
-
-	assert.NotNil(t, s.Validate())
-
-	s = section.New(section.OptStartTempo(200))
+	s := section.New(section.OptStartTempo(200))
 
 	assert.Nil(t, s.Validate())
 	assert.Equal(t, float64(200), s.StartTempo)
@@ -39,7 +31,7 @@ func TestNewWithOpt(t *testing.T) {
 	assert.Nil(t, s.Validate())
 	assert.True(t, s.StartMeter.Equal(meter.FourFour()))
 
-	s = section.New(section.OptStartMeter(meter.New(0, rat.New(1, 4))))
+	s = section.New(section.OptStartMeter(meter.New(0, big.NewRat(1, 4))))
 
 	assert.NotNil(t, s.Validate())
 }
@@ -63,7 +55,7 @@ func TestSectionInvalid(t *testing.T) {
 	s := section.New()
 	m := measure.New()
 
-	m.MeterChange = meter.New(0, rat.New(1, 4))
+	m.MeterChange = meter.New(0, big.NewRat(1, 4))
 
 	s.Measures = append(s.Measures, m)
 
@@ -73,7 +65,7 @@ func TestSectionInvalid(t *testing.T) {
 func TestSectionDuration(t *testing.T) {
 	s := section.New()
 
-	assert.True(t, s.Duration().Zero())
+	assert.True(t, rat.IsZero(s.Duration()))
 
 	s.StartMeter = meter.ThreeFour()
 
@@ -81,7 +73,7 @@ func TestSectionDuration(t *testing.T) {
 
 	s.Measures = append(s.Measures, m)
 
-	assert.True(t, s.Duration().Equal(rat.New(3, 4)))
+	assert.True(t, rat.IsEqual(s.Duration(), big.NewRat(3, 4)))
 
 	m2 := measure.New()
 
@@ -89,7 +81,7 @@ func TestSectionDuration(t *testing.T) {
 
 	s.Measures = append(s.Measures, m2)
 
-	assert.True(t, s.Duration().Equal(rat.New(5, 4)))
+	assert.True(t, rat.IsEqual(s.Duration(), big.NewRat(5, 4)))
 }
 
 func TestSectionParts(t *testing.T) {
@@ -121,39 +113,9 @@ func TestSectionParts(t *testing.T) {
 	assert.True(t, pianoNotes[1].Equal(n1))
 	assert.True(t, pianoNotes[2].Equal(note.Whole()))
 
-	assert.True(t, bassNotes[0].Equal(note.New(rat.New(3, 4))))
+	assert.True(t, bassNotes[0].Equal(note.New(big.NewRat(3, 4))))
 	assert.True(t, bassNotes[1].Equal(note.Half()))
 	assert.True(t, bassNotes[2].Equal(n2))
-}
-
-func TestDynamicChanges(t *testing.T) {
-	s := section.New(
-		section.OptStartDynamic(1.0),
-		section.OptStartMeter(meter.FourFour()),
-	)
-	m1 := measure.New()
-	m2 := measure.New()
-	m3 := measure.New()
-
-	s.Measures = append(s.Measures, m1, m2, m3)
-
-	dc := s.DynamicChanges(rat.Zero())
-
-	assert.Empty(t, dc)
-
-	m2.DynamicChanges = append(m2.DynamicChanges, change.NewImmediate(rat.Zero(), 0.8))
-
-	dc = s.DynamicChanges(rat.Zero())
-
-	require.Len(t, dc, 1)
-
-	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
-
-	dc = s.DynamicChanges(rat.New(4, 1))
-
-	require.Len(t, dc, 1)
-
-	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
 }
 
 func TestTempoChanges(t *testing.T) {
@@ -177,13 +139,13 @@ func TestTempoChanges(t *testing.T) {
 
 	require.Len(t, dc, 1)
 
-	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
+	assert.True(t, rat.IsEqual(dc[0].Offset, big.NewRat(1, 1)))
 
-	dc = s.TempoChanges(rat.New(4, 1))
+	dc = s.TempoChanges(big.NewRat(4, 1))
 
 	require.Len(t, dc, 1)
 
-	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
+	assert.True(t, rat.IsEqual(dc[0].Offset, big.NewRat(5, 1)))
 }
 
 func TestBeatDurChanges(t *testing.T) {
@@ -206,11 +168,11 @@ func TestBeatDurChanges(t *testing.T) {
 
 	require.Len(t, dc, 1)
 
-	assert.True(t, dc[0].Offset.Equal(rat.New(1, 1)))
+	assert.True(t, rat.IsEqual(dc[0].Offset, big.NewRat(1, 1)))
 
-	dc = s.BeatDurChanges(rat.New(4, 1))
+	dc = s.BeatDurChanges(big.NewRat(4, 1))
 
 	require.Len(t, dc, 1)
 
-	assert.True(t, dc[0].Offset.Equal(rat.New(5, 1)))
+	assert.True(t, rat.IsEqual(dc[0].Offset, big.NewRat(5, 1)))
 }

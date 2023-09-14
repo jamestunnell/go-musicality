@@ -1,7 +1,8 @@
 package notegen
 
 import (
-	"github.com/jamestunnell/go-musicality/common/rat"
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/composition/pitchgen"
 	"github.com/jamestunnell/go-musicality/composition/rhythmgen"
 	"github.com/jamestunnell/go-musicality/notation/note"
@@ -21,7 +22,7 @@ func NewNoteGenerator(
 	}
 }
 
-func (ng *NoteGenerator) MakeNotes(dur rat.Rat) note.Notes {
+func (ng *NoteGenerator) MakeNotes(dur *big.Rat) note.Notes {
 	durs := rhythmgen.MakeRhythm(dur, ng.rhythmGen)
 	n := len(durs)
 	pitches := pitchgen.MakePitches(n, ng.pitchGen)

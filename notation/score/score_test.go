@@ -15,7 +15,6 @@ func TestScoreValidSection(t *testing.T) {
 	s.Program = append(s.Program, "notempty")
 	s.Sections["notempty"] = section.New(
 		section.OptStartTempo(120),
-		section.OptStartDynamic(0.0),
 	)
 
 	assert.Nil(t, s.Validate())

@@ -2,17 +2,16 @@ package midi
 
 import (
 	"fmt"
+	"math/big"
 
 	"gitlab.com/gomidi/midi/writer"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type TempoWriter struct {
 	bpm float64
 }
 
-func NewTempoEvent(offset rat.Rat, bpm float64) *SMFEvent {
+func NewTempoEvent(offset *big.Rat, bpm float64) *SMFEvent {
 	return NewSMFEvent(offset, &TempoWriter{bpm: bpm})
 }
 

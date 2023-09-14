@@ -3,6 +3,7 @@ package midi
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"sort"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 )
 
 type playStep struct {
-	Offset      rat.Rat
+	Offset      *big.Rat
 	TrackEvents map[int]NoteEvents
 }
 
@@ -80,8 +81,8 @@ func playMIDI(settings *MIDISettings, out midi.Out, tracks []*Track, fs *flatsco
 	for _, step := range steps {
 		log.Debug().Str("offset", step.Offset.String()).Msg("play step")
 
-		diff := step.Offset.Sub(offset)
-		if diff.Positive() {
+		diff := rat.Sub(step.Offset, offset)
+		if rat.IsPositive(diff) {
 			xRange := function.NewRange(offset, step.Offset)
 
 			timeDelta, err := fs.TimeDelta(xRange, settings.TempoSamplePeriod)

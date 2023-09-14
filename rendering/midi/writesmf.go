@@ -66,8 +66,8 @@ func WriteSMF(s *score.Score, fpath string) error {
 			for _, event := range track.Events {
 				current := event.Offset()
 
-				if current.Greater(prev) {
-					diff := current.Sub(prev).Float64()
+				if rat.IsGreater(current, prev) {
+					diff, _ := rat.Sub(current, prev).Float64()
 					num := uint32(math.Round(math.MaxUint32 * diff))
 
 					writer.Forward(wr, 0, num, math.MaxUint32)
@@ -79,8 +79,10 @@ func WriteSMF(s *score.Score, fpath string) error {
 				if err != nil {
 					return fmt.Errorf("failed to write event at %s: %w", current.String(), err)
 				} else {
+					offset, _ := current.Float64()
+
 					log.Debug().
-						Float64("offset", current.Float64()).
+						Float64("offset", offset).
 						Str("summary", event.Summary()).
 						Msg("wrote event")
 				}

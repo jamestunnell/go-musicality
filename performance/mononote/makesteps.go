@@ -1,19 +1,21 @@
 package mononote
 
 import (
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/performance/centpitch"
 )
 
-func MakeSteps(dur rat.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
-	if dur.LessEqual(rat.Zero()) {
+func MakeSteps(dur *big.Rat, start, end *pitch.Pitch, centsPerStep int) []*PitchDur {
+	if !rat.IsPositive(dur) {
 		return []*PitchDur{}
 	}
 
 	ps := MakeStepPitches(start, end, centsPerStep)
 	nSteps := rat.FromInt64(int64(len(ps)))
-	subDur := dur.Div(nSteps)
+	subDur := rat.Div(dur, nSteps)
 
 	return MakePitchDurs(subDur, ps)
 }
@@ -40,7 +42,7 @@ func MakeStepPitches(startPitch, endPitch *pitch.Pitch, centsPerStep int) []*cen
 	return pitches
 }
 
-func MakePitchDurs(dur rat.Rat, pitches []*centpitch.CentPitch) []*PitchDur {
+func MakePitchDurs(dur *big.Rat, pitches []*centpitch.CentPitch) []*PitchDur {
 	n := len(pitches)
 	pds := make([]*PitchDur, n)
 

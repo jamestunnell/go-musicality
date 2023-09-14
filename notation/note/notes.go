@@ -1,14 +1,18 @@
 package note
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
+
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
 
 type Notes []*Note
 
-func (notes Notes) TotalDuration() rat.Rat {
+func (notes Notes) TotalDuration() *big.Rat {
 	sum := rat.Zero()
 
 	for _, n := range notes {
-		sum = sum.Add(n.Duration)
+		sum = rat.Add(sum, n.Duration)
 	}
 
 	return sum

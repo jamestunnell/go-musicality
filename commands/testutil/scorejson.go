@@ -3,9 +3,9 @@ package testutil
 import (
 	"bytes"
 	"encoding/json"
+	"math/big"
 	"testing"
 
-	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/measure"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
@@ -36,7 +36,7 @@ func ValidScore() *score.Score {
 	m := measure.New()
 
 	m.PartNotes[TestPartName] = []*note.Note{
-		note.New(rat.New(1, 1), pitch.C4),
+		note.New(big.NewRat(1, 1), pitch.C4),
 	}
 
 	sec.Measures = append(sec.Measures, m)

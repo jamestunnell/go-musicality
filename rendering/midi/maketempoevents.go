@@ -1,6 +1,8 @@
 package midi
 
 import (
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/performance/flatscore"
 	"github.com/rs/zerolog/log"
@@ -8,8 +10,8 @@ import (
 
 func MakeTempoEvents(
 	fs *flatscore.FlatScore,
-	samplingDur rat.Rat,
-	samplePeriod rat.Rat) ([]Event, error) {
+	samplingDur *big.Rat,
+	samplePeriod *big.Rat) ([]Event, error) {
 	log.Debug().
 		Str("sampling dur", samplingDur.String()).
 		Str("sample period", samplePeriod.String()).
@@ -21,16 +23,16 @@ func MakeTempoEvents(
 		NewTempoEvent(offset, bpm),
 	}
 
-	offset = offset.Add(samplePeriod)
+	offset = rat.Add(offset, samplePeriod)
 
-	for offset.Less(samplingDur) {
+	for rat.IsLess(offset, samplingDur) {
 		newBPM := fs.TempoComputer.At(offset)
 		if newBPM != bpm {
 			events = append(events, NewTempoEvent(offset, newBPM))
 			bpm = newBPM
 		}
 
-		offset = offset.Add(samplePeriod)
+		offset = rat.Add(offset, samplePeriod)
 	}
 
 	return events, nil

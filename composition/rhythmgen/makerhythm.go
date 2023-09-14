@@ -1,21 +1,25 @@
 package rhythmgen
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
 
-func MakeRhythm(totalDur rat.Rat, g RhythmGenerator) rat.Rats {
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
+
+func MakeRhythm(totalDur *big.Rat, g RhythmGenerator) rat.Rats {
 	durs := rat.Rats{}
 
-	for durs.Sum().Less(totalDur) {
+	for rat.IsLess(durs.Sum(), totalDur) {
 		dur := g.NextDur()
 
 		durs = append(durs, dur)
 	}
 
-	diff := durs.Sum().Sub(totalDur)
-	if diff.Positive() {
+	diff := rat.Sub(durs.Sum(), totalDur)
+	if rat.IsPositive(diff) {
 		last := durs[len(durs)-1]
 
-		durs[len(durs)-1] = last.Sub(diff)
+		durs[len(durs)-1] = rat.Sub(last, diff)
 	}
 
 	return durs

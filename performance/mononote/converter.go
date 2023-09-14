@@ -2,6 +2,7 @@ package mononote
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/note"
@@ -12,7 +13,7 @@ import (
 type Converter struct {
 	replaceSlursAndGlides bool
 	centsPerStep          int
-	offset                rat.Rat
+	offset                *big.Rat
 	completed             []*MonoNote
 	continuing            map[*pitch.Pitch]*MonoNote
 }
@@ -83,7 +84,7 @@ func (nc *Converter) Process(notes []*note.Note) ([]*MonoNote, error) {
 			return []*MonoNote{}, err
 		}
 
-		nc.offset = nc.offset.Add(current.Duration)
+		nc.offset = rat.Add(nc.offset, current.Duration)
 	}
 
 	if len(nc.continuing) > 0 {

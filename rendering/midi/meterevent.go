@@ -2,17 +2,16 @@ package midi
 
 import (
 	"fmt"
+	"math/big"
 
 	"gitlab.com/gomidi/midi/writer"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type MeterWriter struct {
 	num, denom uint8
 }
 
-func NewMeterEvent(offset rat.Rat, num, denom uint8) *SMFEvent {
+func NewMeterEvent(offset *big.Rat, num, denom uint8) *SMFEvent {
 	return NewSMFEvent(offset, &MeterWriter{num: num, denom: denom})
 }
 

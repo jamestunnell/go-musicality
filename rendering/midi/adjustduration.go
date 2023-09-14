@@ -1,24 +1,26 @@
 package midi
 
 import (
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/note"
 )
 
-func AdjustDuration(dur rat.Rat, separation float64) rat.Rat {
-	var adjust rat.Rat
+func AdjustDuration(dur *big.Rat, separation float64) *big.Rat {
+	var adjust *big.Rat
 	switch separation {
 	case note.ControlMin:
-		adjust = rat.New(1, 1)
+		adjust = big.NewRat(1, 1)
 	case note.ControlMax:
-		adjust = rat.New(1, 8)
+		adjust = big.NewRat(1, 8)
 	case note.ControlNormal:
-		adjust = rat.New(9, 16)
+		adjust = big.NewRat(9, 16)
 	default:
-		remove := rat.New(7, 8).MulFloat64(separation)
-		adjust = rat.New(1, 1).Sub(remove)
+		remove := rat.Mul(big.NewRat(7, 8), rat.FromFloat64(separation))
+		adjust = rat.Sub(big.NewRat(1, 1), remove)
 	}
 
-	return dur.Mul(adjust)
+	return rat.Mul(dur, adjust)
 
 }

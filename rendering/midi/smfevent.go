@@ -2,14 +2,13 @@ package midi
 
 import (
 	"errors"
+	"math/big"
 
 	"gitlab.com/gomidi/midi/writer"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type SMFEvent struct {
-	offset      rat.Rat
+	offset      *big.Rat
 	eventWriter SMFEventWriter
 }
 
@@ -20,14 +19,14 @@ type SMFEventWriter interface {
 
 var errNotSMFWriter = errors.New("not an SMF writer")
 
-func NewSMFEvent(offset rat.Rat, ew SMFEventWriter) *SMFEvent {
+func NewSMFEvent(offset *big.Rat, ew SMFEventWriter) *SMFEvent {
 	return &SMFEvent{
 		offset:      offset,
 		eventWriter: ew,
 	}
 }
 
-func (e *SMFEvent) Offset() rat.Rat {
+func (e *SMFEvent) Offset() *big.Rat {
 	return e.offset
 }
 

@@ -3,6 +3,7 @@ package note
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -14,14 +15,14 @@ import (
 
 type Note struct {
 	Pitches            *pitch.Set
-	Duration           rat.Rat
+	Duration           *big.Rat
 	Attack, Separation float64
 	Links              Links
 }
 
 type noteJSON struct {
 	Pitches  []string    `json:"pitches,omitempty"`
-	Duration rat.Rat     `json:"duration"`
+	Duration *big.Rat    `json:"duration"`
 	LinkMap  linkLiteMap `json:"links,omitempty"`
 	// Attack     float64          `json:"attack"`
 	// Separation float64          `json:"separation"`
@@ -33,7 +34,7 @@ const (
 	ControlMax    = 1.0
 )
 
-func New(dur rat.Rat, pitches ...*pitch.Pitch) *Note {
+func New(dur *big.Rat, pitches ...*pitch.Pitch) *Note {
 	return &Note{
 		Pitches:    pitch.NewSet(pitches...),
 		Duration:   dur,
@@ -44,7 +45,7 @@ func New(dur rat.Rat, pitches ...*pitch.Pitch) *Note {
 }
 
 func (n *Note) Equal(other *Note) bool {
-	if !n.Duration.Equal(other.Duration) {
+	if !rat.IsEqual(n.Duration, other.Duration) {
 		return false
 	}
 

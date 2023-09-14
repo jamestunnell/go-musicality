@@ -2,14 +2,13 @@ package midi
 
 import (
 	"fmt"
+	"math/big"
 
 	"gitlab.com/gomidi/midi/writer"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
 type NoteEvent struct {
-	offset      rat.Rat
+	offset      *big.Rat
 	eventWriter NoteEventWriter
 }
 
@@ -26,14 +25,14 @@ type NoteOffWriter struct {
 	key uint8
 }
 
-func NewNoteEvent(offset rat.Rat, ew NoteEventWriter) *NoteEvent {
+func NewNoteEvent(offset *big.Rat, ew NoteEventWriter) *NoteEvent {
 	return &NoteEvent{
 		offset:      offset,
 		eventWriter: ew,
 	}
 }
 
-func (e *NoteEvent) Offset() rat.Rat {
+func (e *NoteEvent) Offset() *big.Rat {
 	return e.offset
 }
 
@@ -47,13 +46,13 @@ func (e *NoteEvent) Write(wr writer.ChannelWriter) error {
 
 // NewNoteOnEvent makes a new note on event.
 // Returns a non-nil error if the pitch is not in range for MIDI.
-func NewNoteOnEvent(offset rat.Rat, key uint8, velocity uint8) *NoteEvent {
+func NewNoteOnEvent(offset *big.Rat, key uint8, velocity uint8) *NoteEvent {
 	return NewNoteEvent(offset, &NoteOnWriter{key: key, velocity: velocity})
 }
 
 // NewNoteOffEvent makes a new note off event.
 // Returns a non-nil error if the pitch is not in range for MIDI.
-func NewNoteOffEvent(offset rat.Rat, key uint8) *NoteEvent {
+func NewNoteOffEvent(offset *big.Rat, key uint8) *NoteEvent {
 	return NewNoteEvent(offset, &NoteOffWriter{key: key})
 }
 

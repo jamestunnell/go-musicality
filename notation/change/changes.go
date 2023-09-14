@@ -3,6 +3,7 @@ package change
 import (
 	"fmt"
 
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
@@ -17,7 +18,7 @@ func (changes Changes) Swap(i, j int) {
 }
 
 func (changes Changes) Less(i, j int) bool {
-	return changes[i].Offset.Less(changes[j].Offset)
+	return rat.IsLess(changes[i].Offset, changes[j].Offset)
 }
 
 func (changes Changes) Validate(r ValueRange) *validation.Result {

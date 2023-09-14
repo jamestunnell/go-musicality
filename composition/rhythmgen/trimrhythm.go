@@ -1,12 +1,16 @@
 package rhythmgen
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
 
-func TrimRhythm(totalDur rat.Rat, rhythmDurs rat.Rats) {
-	diff := rhythmDurs.Sum().Sub(totalDur)
-	if diff.Positive() {
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
+
+func TrimRhythm(totalDur *big.Rat, rhythmDurs rat.Rats) {
+	diff := rat.Sub(rhythmDurs.Sum(), totalDur)
+	if rat.IsPositive(diff) {
 		last := rhythmDurs[len(rhythmDurs)-1]
 
-		rhythmDurs[len(rhythmDurs)-1] = last.Sub(diff)
+		rhythmDurs[len(rhythmDurs)-1] = rat.Sub(last, diff)
 	}
 }

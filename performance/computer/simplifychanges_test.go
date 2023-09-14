@@ -1,6 +1,7 @@
 package computer_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,9 +18,9 @@ func TestSimplifyChangesEmpty(t *testing.T) {
 
 func TestSimplifyChangesAllSame(t *testing.T) {
 	startVal := 2.6
-	c1 := change.NewImmediate(rat.New(1, 1), startVal)
-	c2 := change.NewImmediate(rat.New(1, 1), startVal)
-	c3 := change.NewImmediate(rat.New(1, 1), startVal)
+	c1 := change.NewImmediate(big.NewRat(1, 1), startVal)
+	c2 := change.NewImmediate(big.NewRat(1, 1), startVal)
+	c3 := change.NewImmediate(big.NewRat(1, 1), startVal)
 	changes := change.Changes{c1, c2, c3}
 
 	simplified := computer.SimplifyChanges(startVal, changes)
@@ -29,9 +30,9 @@ func TestSimplifyChangesAllSame(t *testing.T) {
 
 func TestSimplifyChangesNoneSame(t *testing.T) {
 	startVal := 2.6
-	c1 := change.NewImmediate(rat.New(1, 1), startVal+0.1)
-	c2 := change.NewImmediate(rat.New(2, 1), startVal-0.1)
-	c3 := change.NewImmediate(rat.New(3, 1), startVal)
+	c1 := change.NewImmediate(big.NewRat(1, 1), startVal+0.1)
+	c2 := change.NewImmediate(big.NewRat(2, 1), startVal-0.1)
+	c3 := change.NewImmediate(big.NewRat(3, 1), startVal)
 	changes := change.Changes{c1, c2, c3}
 
 	simplified := computer.SimplifyChanges(startVal, changes)
@@ -41,15 +42,15 @@ func TestSimplifyChangesNoneSame(t *testing.T) {
 
 func TestSimplifyChangesSomeSame(t *testing.T) {
 	startVal := 2.6
-	c1 := change.NewImmediate(rat.New(1, 1), startVal)
-	c2 := change.NewImmediate(rat.New(2, 1), startVal-0.1)
-	c3 := change.NewImmediate(rat.New(3, 1), startVal)
+	c1 := change.NewImmediate(big.NewRat(1, 1), startVal)
+	c2 := change.NewImmediate(big.NewRat(2, 1), startVal-0.1)
+	c3 := change.NewImmediate(big.NewRat(3, 1), startVal)
 	changes := change.Changes{c1, c2, c3}
 
 	simplified := computer.SimplifyChanges(startVal, changes)
 
 	require.Len(t, simplified, 2)
 
-	assert.True(t, simplified[0].Offset.Equal(c2.Offset))
-	assert.True(t, simplified[1].Offset.Equal(c3.Offset))
+	assert.True(t, rat.IsEqual(simplified[0].Offset, c2.Offset))
+	assert.True(t, rat.IsEqual(simplified[1].Offset, c3.Offset))
 }

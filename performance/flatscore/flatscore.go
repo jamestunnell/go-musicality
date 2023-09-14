@@ -21,7 +21,7 @@ const DefaultStartBeatDur = 0.25
 var zero = big.NewRat(0, 1)
 
 // Duration returns the duration of the longest part.
-func (s *FlatScore) Duration() rat.Rat {
+func (s *FlatScore) Duration() *big.Rat {
 	if len(s.Parts) == 0 {
 		return rat.Zero()
 	}

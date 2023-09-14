@@ -1,6 +1,7 @@
 package change_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,16 +13,16 @@ import (
 func TestNewImmediate(t *testing.T) {
 	c := change.NewImmediate(rat.Zero(), 2.5)
 
-	assert.True(t, c.Duration.Zero())
-	assert.True(t, c.Offset.Zero())
+	assert.True(t, rat.IsZero(c.Duration))
+	assert.True(t, rat.IsZero(c.Offset))
 }
 
 func TestChangeEqual(t *testing.T) {
 	const testValue = 2.2
 	c1 := change.NewImmediate(rat.Zero(), testValue)
 	c2 := change.NewImmediate(rat.Zero(), testValue+0.1)
-	c3 := change.NewImmediate(rat.New(1, 100), testValue)
-	c4 := change.New(rat.Zero(), testValue, rat.New(1, 2))
+	c3 := change.NewImmediate(big.NewRat(1, 100), testValue)
+	c4 := change.New(rat.Zero(), testValue, big.NewRat(1, 2))
 
 	assert.True(t, c1.Equal(c1))
 	assert.False(t, c1.Equal(c2))

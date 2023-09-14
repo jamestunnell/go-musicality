@@ -71,10 +71,10 @@ func TestPiecewiseFunctionUnlimitedDomain(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	beforeXBoundary1 := xBoundary.Sub(two)
-	beforeXBoundary2 := xBoundary.Sub(hundredth)
-	afterXBoundary1 := xBoundary.Add(hundredth)
-	afterXBoundary2 := xBoundary.Add(two)
+	beforeXBoundary1 := rat.Sub(xBoundary, two)
+	beforeXBoundary2 := rat.Sub(xBoundary, hundredth)
+	afterXBoundary1 := rat.Add(xBoundary, hundredth)
+	afterXBoundary2 := rat.Add(xBoundary, two)
 
 	testFunctionAt(t, f, beforeXBoundary1, fA.At(beforeXBoundary1))
 	testFunctionAt(t, f, beforeXBoundary2, fA.At(beforeXBoundary2))

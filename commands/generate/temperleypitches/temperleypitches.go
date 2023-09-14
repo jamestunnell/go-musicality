@@ -84,7 +84,7 @@ func (cmd *GenerateTemperley) Execute() error {
 
 	fmt.Println(pitches.Strings())
 
-	// noteDur := rat.New(1, 4)
+	// noteDur := big.NewRat(1, 4)
 	// sec := section.New()
 
 	// i := 0

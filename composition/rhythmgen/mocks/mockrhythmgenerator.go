@@ -5,10 +5,10 @@
 package mocks
 
 import (
+	big "math/big"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	rat "github.com/jamestunnell/go-musicality/common/rat"
 )
 
 // MockRhythmGenerator is a mock of RhythmGenerator interface.
@@ -35,10 +35,10 @@ func (m *MockRhythmGenerator) EXPECT() *MockRhythmGeneratorMockRecorder {
 }
 
 // NextDur mocks base method.
-func (m *MockRhythmGenerator) NextDur() rat.Rat {
+func (m *MockRhythmGenerator) NextDur() *big.Rat {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NextDur")
-	ret0, _ := ret[0].(rat.Rat)
+	ret0, _ := ret[0].(*big.Rat)
 	return ret0
 }
 

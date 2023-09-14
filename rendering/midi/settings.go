@@ -3,18 +3,18 @@ package midi
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 
-	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/score"
 )
 
 type MIDISettings struct {
 	PartChannels      map[string]uint8 `json:"partChannels"`
-	TempoSamplePeriod rat.Rat          `json:"tempoSamplePeriod"`
+	TempoSamplePeriod *big.Rat         `json:"tempoSamplePeriod"`
 }
 
-func DefaultTempoSamplePeriod() rat.Rat {
-	return rat.New(1, 4)
+func DefaultTempoSamplePeriod() *big.Rat {
+	return big.NewRat(1, 4)
 }
 
 func Settings(s *score.Score) (*MIDISettings, error) {

@@ -3,7 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -25,7 +25,7 @@ func LoadScores(validateJSON bool, scorePaths ...string) (map[string]*score.Scor
 			return Scores{}, err
 		}
 
-		d, err := ioutil.ReadAll(f)
+		d, err := io.ReadAll(f)
 		if err != nil {
 			err = fmt.Errorf("failed to read score file '%s': %w", fpath, err)
 

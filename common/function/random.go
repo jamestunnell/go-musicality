@@ -1,7 +1,8 @@
 package function
 
 import (
-	"github.com/jamestunnell/go-musicality/common/rat"
+	"math/big"
+
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -17,6 +18,6 @@ func (s *RandomFunction) Domain() Range {
 	return DomainAll()
 }
 
-func (s *RandomFunction) At(x rat.Rat) float64 {
+func (s *RandomFunction) At(x *big.Rat) float64 {
 	return s.r.Rand()
 }

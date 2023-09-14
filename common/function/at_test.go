@@ -1,6 +1,7 @@
 package function_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,10 @@ type echo struct {
 	domain function.Range
 }
 
-func (f *echo) At(x rat.Rat) float64 {
-	return x.Float64()
+func (f *echo) At(x *big.Rat) float64 {
+	flt, _ := x.Float64()
+
+	return flt
 }
 
 func (f *echo) Domain() function.Range {
@@ -25,8 +28,8 @@ func TestAtUnlimitedDomain(t *testing.T) {
 	f := &echo{domain: function.DomainAll()}
 
 	testFunctionAt(t, f, zero, 0.0)
-	testFunctionAt(t, f, rat.New(-1, 5), -0.2)
-	testFunctionAt(t, f, rat.New(75, 1000), 0.075)
+	testFunctionAt(t, f, big.NewRat(-1, 5), -0.2)
+	testFunctionAt(t, f, big.NewRat(75, 1000), 0.075)
 }
 
 func TestAtLimitedDomain(t *testing.T) {
@@ -47,7 +50,7 @@ func TestAtLimitedDomain(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func testFunctionAt(t *testing.T, f function.Function, x rat.Rat, yExpected float64) {
+func testFunctionAt(t *testing.T, f function.Function, x *big.Rat, yExpected float64) {
 	y, err := function.At(f, x)
 
 	assert.Nil(t, err)

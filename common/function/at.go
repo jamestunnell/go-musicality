@@ -2,11 +2,10 @@ package function
 
 import (
 	"fmt"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
+	"math/big"
 )
 
-func At(f Function, x rat.Rat) (float64, error) {
+func At(f Function, x *big.Rat) (float64, error) {
 	d := f.Domain()
 
 	if !d.IncludesValue(x) {

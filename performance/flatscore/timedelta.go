@@ -2,23 +2,23 @@ package flatscore
 
 import (
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/jamestunnell/go-musicality/common/function"
-	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/performance/computer"
 )
 
 // TimeDelta takes two note offsets, and uses the tempo and beat duration computers to
 // determine how much time passes between them.
-func (fs *FlatScore) TimeDelta(xrange function.Range, samplePeriod rat.Rat) (time.Duration, error) {
+func (fs *FlatScore) TimeDelta(xrange function.Range, samplePeriod *big.Rat) (time.Duration, error) {
 	return TimeDelta(fs.TempoComputer, fs.BeatDurComputer, xrange, samplePeriod)
 }
 
 func TimeDelta(
 	tempoComp, beatDurComp *computer.Computer,
 	xrange function.Range,
-	samplePeriod rat.Rat) (time.Duration, error) {
+	samplePeriod *big.Rat) (time.Duration, error) {
 	bpms, err := function.Sample(tempoComp, xrange, samplePeriod)
 	if err != nil {
 		return 0, fmt.Errorf("failed to sample tempos: %w", err)
@@ -30,7 +30,7 @@ func TimeDelta(
 	}
 
 	deltaSec := 0.0
-	samplePeriodFlt := samplePeriod.Float64()
+	samplePeriodFlt, _ := samplePeriod.Float64()
 
 	for i := 0; i < (len(bpms) - 1); i++ {
 		deltaSec += (60 * samplePeriodFlt) / (bdurs[i] * bpms[i])

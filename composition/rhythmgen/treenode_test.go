@@ -1,6 +1,7 @@
 package rhythmgen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestTreeNodeSubdivideByZero(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.Subdivide(0)
 
@@ -18,24 +19,24 @@ func TestTreeNodeSubdivideByZero(t *testing.T) {
 }
 
 func TestTreeNodeSmallestDur(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
-		if n.Duration().Equal(rat.New(1, 32)) {
+		if rat.IsEqual(n.Duration(), big.NewRat(1, 32)) {
 			return 0, false
 		}
 
 		return 2, true
 	})
 
-	assert.True(t, root.SmallestDur().Equal(rat.New(1, 32)))
+	assert.True(t, rat.IsEqual(root.SmallestDur(), big.NewRat(1, 32)))
 }
 
 func TestTreeNodeVisit(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
-		if n.Duration().Equal(rat.New(1, 16)) {
+		if rat.IsEqual(n.Duration(), big.NewRat(1, 16)) {
 			return 0, false
 		}
 
@@ -53,7 +54,7 @@ func TestTreeNodeVisit(t *testing.T) {
 }
 
 func TestTreeNodeVisitTerminal(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	testTreeNodeVisitTerminal(t, "root only - max level 0", root, 0, []string{"1/1"})
 	testTreeNodeVisitTerminal(t, "root only - max level 1", root, 1, []string{"1/1"})

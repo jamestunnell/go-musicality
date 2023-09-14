@@ -1,12 +1,14 @@
 package rat
 
-type Rationals []*Rat
+import "math/big"
 
-func (rats Rationals) Len() int {
+type Rats []*big.Rat
+
+func (rats Rats) Len() int {
 	return len(rats)
 }
 
-func (rats Rationals) Strings() []string {
+func (rats Rats) Strings() []string {
 	rStrings := make([]string, len(rats))
 
 	for i, r := range rats {
@@ -16,21 +18,21 @@ func (rats Rationals) Strings() []string {
 	return rStrings
 }
 
-func (rats Rationals) Swap(i, j int) {
+func (rats Rats) Swap(i, j int) {
 	rats[i], rats[j] = rats[j], rats[i]
 }
 
-func (rats Rationals) Less(i, j int) bool {
-	return rats[i].Less(rats[j])
+func (rats Rats) Less(i, j int) bool {
+	return IsLess(rats[i], rats[j])
 }
 
-func (rats Rationals) Equal(other Rationals) bool {
+func (rats Rats) Equal(other Rats) bool {
 	if len(other) != len(rats) {
 		return false
 	}
 
 	for i, r := range rats {
-		if !r.Equal(other[i]) {
+		if !IsEqual(r, other[i]) {
 			return false
 		}
 	}
@@ -38,18 +40,18 @@ func (rats Rationals) Equal(other Rationals) bool {
 	return true
 }
 
-func (rats Rationals) Sum() *Rat {
-	sum := Zero()
+func (rats Rats) Sum() *big.Rat {
+	sum := new(big.Rat)
 
 	for _, r := range rats {
-		sum = sum.Add(r)
+		sum = Add(sum, r)
 	}
 
 	return sum
 }
 
-func (rats Rationals) Union(other Rationals) Rationals {
-	union := Rationals{}
+func (rats Rats) Union(other Rats) Rats {
+	union := Rats{}
 
 	union = append(union, rats...)
 
@@ -62,9 +64,9 @@ func (rats Rationals) Union(other Rationals) Rationals {
 	return union
 }
 
-func (rats Rationals) Contains(other *Rat) bool {
+func (rats Rats) Contains(other *big.Rat) bool {
 	for _, r := range rats {
-		if r.Equal(other) {
+		if IsEqual(r, other) {
 			return true
 		}
 	}

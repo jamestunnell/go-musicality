@@ -1,16 +1,20 @@
 package midi
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
+
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
 
 type NoteEvents []Event
 
 func (events NoteEvents) Offsets() rat.Rats {
-	offsets := []rat.Rat{}
+	offsets := rat.Rats{}
 
 	for _, event := range events {
 		found := false
 		for _, offset := range offsets {
-			if offset.Equal(event.Offset()) {
+			if rat.IsEqual(offset, event.Offset()) {
 				found = true
 
 				break
@@ -25,11 +29,11 @@ func (events NoteEvents) Offsets() rat.Rats {
 	return offsets
 }
 
-func (events NoteEvents) WithOffset(offset rat.Rat) NoteEvents {
+func (events NoteEvents) WithOffset(offset *big.Rat) NoteEvents {
 	withOffset := NoteEvents{}
 
 	for _, event := range events {
-		if event.Offset().Equal(offset) {
+		if rat.IsEqual(event.Offset(), offset) {
 			withOffset = append(withOffset, event)
 		}
 	}

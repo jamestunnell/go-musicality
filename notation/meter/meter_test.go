@@ -2,12 +2,12 @@ package meter_test
 
 import (
 	"encoding/json"
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 )
 
@@ -20,19 +20,19 @@ func TestConvenience(t *testing.T) {
 }
 
 func TestInvalid(t *testing.T) {
-	m := meter.New(0, rat.New(1, 4))
+	m := meter.New(0, big.NewRat(1, 4))
 	results := m.Validate()
 
 	require.NotNil(t, results)
 	assert.Len(t, results.Errors, 1)
 
-	m = meter.New(4, rat.Zero())
+	m = meter.New(4, new(big.Rat))
 	results = m.Validate()
 
 	require.NotNil(t, results)
 	assert.Len(t, results.Errors, 1)
 
-	m = meter.New(0, rat.Zero())
+	m = meter.New(0, new(big.Rat))
 	results = m.Validate()
 
 	require.NotNil(t, results)
@@ -40,7 +40,7 @@ func TestInvalid(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
-	m := meter.New(4, rat.New(1, 4))
+	m := meter.New(4, big.NewRat(1, 4))
 
 	d, err := json.Marshal(m)
 

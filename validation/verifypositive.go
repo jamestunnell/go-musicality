@@ -1,9 +1,13 @@
 package validation
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
 
-func VerifyPositiveRat(name string, r rat.Rat) error {
-	if !r.Positive() {
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
+
+func VerifyPositiveRat(name string, r *big.Rat) error {
+	if !rat.IsPositive(r) {
 		return NewErrNonPositive(name, r.String())
 	}
 

@@ -2,6 +2,7 @@ package change_test
 
 import (
 	"encoding/json"
+	"math/big"
 	"sort"
 	"testing"
 
@@ -13,9 +14,9 @@ import (
 )
 
 func TestSortChanges(t *testing.T) {
-	o1 := rat.New(1, 3)
-	o2 := rat.New(2, 3)
-	o3 := rat.New(3, 3)
+	o1 := big.NewRat(1, 3)
+	o2 := big.NewRat(2, 3)
+	o3 := big.NewRat(3, 3)
 	changes := change.Changes{
 		change.NewImmediate(o1, 1.1),
 		change.NewImmediate(o3, 3.3),
@@ -31,9 +32,9 @@ func TestSortChanges(t *testing.T) {
 
 	sort.Sort(changes)
 
-	assert.True(t, changes[0].Offset.Equal(o1))
-	assert.True(t, changes[1].Offset.Equal(o2))
-	assert.True(t, changes[2].Offset.Equal(o3))
+	assert.True(t, rat.IsEqual(changes[0].Offset, o1))
+	assert.True(t, rat.IsEqual(changes[1].Offset, o2))
+	assert.True(t, rat.IsEqual(changes[2].Offset, o3))
 }
 
 func TestChangeMapUnmarshalJSON(t *testing.T) {

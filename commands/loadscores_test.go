@@ -2,7 +2,6 @@ package commands_test
 
 import (
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -36,7 +35,7 @@ func TestLoadScoresNotScoreJSON(t *testing.T) {
 
 	defer os.Remove(notJSON.Name())
 
-	err := ioutil.WriteFile(notJSON.Name(), []byte("not-json-data"), fs.ModeExclusive)
+	err := os.WriteFile(notJSON.Name(), []byte("not-json-data"), fs.ModeExclusive)
 
 	require.NoError(t, err)
 

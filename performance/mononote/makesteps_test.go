@@ -1,6 +1,7 @@
 package mononote_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,20 +18,20 @@ func TestMakeStepsZeroDur(t *testing.T) {
 
 	assert.Empty(t, steps)
 
-	steps = mononote.MakeSteps(rat.New(-1, 2), pitch.C2, pitch.F2, 25)
+	steps = mononote.MakeSteps(big.NewRat(-1, 2), pitch.C2, pitch.F2, 25)
 
 	assert.Empty(t, steps)
 }
 
 func TestMakeStepsUp(t *testing.T) {
-	steps := mononote.MakeSteps(rat.New(1, 1), pitch.C2, pitch.D2, 25)
+	steps := mononote.MakeSteps(big.NewRat(1, 1), pitch.C2, pitch.D2, 25)
 
 	require.Len(t, steps, 8)
 
 	assert.True(t, steps[0].Pitch.Equal(centpitch.New(pitch.C2, 0)))
 
 	for i, pd := range steps {
-		assert.True(t, pd.Duration.Equal(rat.New(1, 8)))
+		assert.True(t, rat.IsEqual(pd.Duration, big.NewRat(1, 8)))
 
 		if i > 0 {
 			assert.Equal(t, 25, pd.Pitch.Diff(steps[i-1].Pitch))
@@ -39,14 +40,14 @@ func TestMakeStepsUp(t *testing.T) {
 }
 
 func TestMakeStepsDown(t *testing.T) {
-	steps := mononote.MakeSteps(rat.New(1, 1), pitch.D2, pitch.C2, 25)
+	steps := mononote.MakeSteps(big.NewRat(1, 1), pitch.D2, pitch.C2, 25)
 
 	require.Len(t, steps, 8)
 
 	assert.True(t, steps[0].Pitch.Equal(centpitch.New(pitch.D2, 0)))
 
 	for i, pd := range steps {
-		assert.True(t, pd.Duration.Equal(rat.New(1, 8)))
+		assert.True(t, rat.IsEqual(pd.Duration, big.NewRat(1, 8)))
 
 		if i > 0 {
 			assert.Equal(t, -25, pd.Pitch.Diff(steps[i-1].Pitch))
@@ -67,7 +68,7 @@ func TestMakeStepPitches(t *testing.T) {
 }
 
 func TestMakePitchDurs(t *testing.T) {
-	d := rat.New(1, 4)
+	d := big.NewRat(1, 4)
 	pitches := []*centpitch.CentPitch{
 		centpitch.New(pitch.D3, 0),
 		centpitch.New(pitch.D3, 10),
@@ -79,7 +80,7 @@ func TestMakePitchDurs(t *testing.T) {
 	assert.Len(t, pds, len(pitches))
 
 	for i, pd := range pds {
-		assert.True(t, pd.Duration.Equal(d))
+		assert.True(t, rat.IsEqual(pd.Duration, d))
 		assert.True(t, pd.Pitch.Equal(pitches[i]))
 	}
 }

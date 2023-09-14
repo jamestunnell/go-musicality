@@ -2,6 +2,7 @@ package rhythmgen_test
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 )
 
 func TestTreeGeneratorMakeMeasure(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
 		switch level {
@@ -48,8 +49,8 @@ func testTreeGeneratorConst(
 		for _, expectedDurStr := range expectedDurStrings {
 			dur := g.NextDur()
 
-			assert.True(t, dur.Positive())
-			assert.True(t, dur.GreaterEqual(smallest))
+			assert.True(t, rat.IsPositive(dur))
+			assert.True(t, rat.IsGreaterEqual(dur, smallest))
 			assert.Equal(t, expectedDurStr, dur.String())
 		}
 	})
@@ -69,8 +70,8 @@ func testTreeGeneratorRand(t *testing.T, root *rhythmgen.TreeNode, maxLevel int)
 		for i := 0; i < 10; i++ {
 			dur := g.NextDur()
 
-			assert.True(t, dur.Positive())
-			assert.True(t, dur.GreaterEqual(smallest))
+			assert.True(t, rat.IsPositive(dur))
+			assert.True(t, rat.IsGreaterEqual(dur, smallest))
 		}
 	})
 }

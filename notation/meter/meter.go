@@ -2,17 +2,18 @@ package meter
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Meter struct {
-	BeatDuration    rat.Rat `json:"beatDuration"`
-	BeatsPerMeasure uint64  `json:"beatsPerMeasure"`
+	BeatDuration    *big.Rat `json:"beatDuration"`
+	BeatsPerMeasure uint64   `json:"beatsPerMeasure"`
 }
 
-func New(beatsPerMeasure uint64, beatDuration rat.Rat) *Meter {
+func New(beatsPerMeasure uint64, beatDuration *big.Rat) *Meter {
 	return &Meter{
 		BeatDuration:    beatDuration,
 		BeatsPerMeasure: beatsPerMeasure,
@@ -26,12 +27,15 @@ func (m *Meter) String() string {
 	return fmt.Sprintf("%d/%d", num, denom)
 }
 
-func (m *Meter) MeasureDuration() rat.Rat {
-	return m.BeatDuration.MulUint64(uint64(m.BeatsPerMeasure))
+func (m *Meter) MeasureDuration() *big.Rat {
+	bpm := new(big.Rat).SetUint64(m.BeatsPerMeasure)
+
+	return rat.Mul(m.BeatDuration, bpm)
 }
 
 func (m *Meter) Equal(other *Meter) bool {
-	return m.BeatDuration.Equal(other.BeatDuration) && m.BeatsPerMeasure == other.BeatsPerMeasure
+	return rat.IsEqual(m.BeatDuration, other.BeatDuration) &&
+		m.BeatsPerMeasure == other.BeatsPerMeasure
 }
 
 func (m *Meter) Validate() *validation.Result {

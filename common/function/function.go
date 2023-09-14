@@ -2,16 +2,15 @@ package function
 
 import (
 	"math"
-
-	"github.com/jamestunnell/go-musicality/common/rat"
+	"math/big"
 )
 
-func DomainMin() rat.Rat {
-	return rat.New(-math.MaxInt64, 1)
+func DomainMin() *big.Rat {
+	return big.NewRat(-math.MaxInt64, 1)
 }
 
-func DomainMax() rat.Rat {
-	return rat.New(math.MaxInt64, 1)
+func DomainMax() *big.Rat {
+	return big.NewRat(math.MaxInt64, 1)
 }
 
 func DomainAll() Range {
@@ -19,6 +18,6 @@ func DomainAll() Range {
 }
 
 type Function interface {
-	At(x rat.Rat) float64
+	At(x *big.Rat) float64
 	Domain() Range
 }

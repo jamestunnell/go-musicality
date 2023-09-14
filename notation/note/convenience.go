@@ -1,28 +1,29 @@
 package note
 
 import (
-	"github.com/jamestunnell/go-musicality/common/rat"
+	"math/big"
+
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 )
 
 func Whole(pitches ...*pitch.Pitch) *Note {
-	return New(rat.New(1, 1), pitches...)
+	return New(big.NewRat(1, 1), pitches...)
 }
 
 func Half(pitches ...*pitch.Pitch) *Note {
-	return New(rat.New(1, 2), pitches...)
+	return New(big.NewRat(1, 2), pitches...)
 }
 
 func Quarter(pitches ...*pitch.Pitch) *Note {
-	return New(rat.New(1, 4), pitches...)
+	return New(big.NewRat(1, 4), pitches...)
 }
 
 func Eighth(pitches ...*pitch.Pitch) *Note {
-	return New(rat.New(1, 8), pitches...)
+	return New(big.NewRat(1, 8), pitches...)
 }
 
 func Sixteenth(pitches ...*pitch.Pitch) *Note {
-	return New(rat.New(1, 16), pitches...)
+	return New(big.NewRat(1, 16), pitches...)
 }
 
 func (n *Note) Tie(p *pitch.Pitch) *Note {

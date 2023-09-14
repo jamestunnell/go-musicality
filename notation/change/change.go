@@ -2,18 +2,19 @@ package change
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/validation"
 )
 
 type Change struct {
-	Offset   rat.Rat `json:"offset"`
-	EndValue float64 `json:"endValue"`
-	Duration rat.Rat `json:"duration"`
+	Offset   *big.Rat `json:"offset"`
+	EndValue float64  `json:"endValue"`
+	Duration *big.Rat `json:"duration"`
 }
 
-func New(offset rat.Rat, endVal float64, dur rat.Rat) *Change {
+func New(offset *big.Rat, endVal float64, dur *big.Rat) *Change {
 	return &Change{
 		Offset:   offset,
 		EndValue: endVal,
@@ -21,18 +22,20 @@ func New(offset rat.Rat, endVal float64, dur rat.Rat) *Change {
 	}
 }
 
-func NewImmediate(offset rat.Rat, endVal float64) *Change {
-	return New(offset, endVal, rat.Zero())
+func NewImmediate(offset *big.Rat, endVal float64) *Change {
+	return New(offset, endVal, new(big.Rat))
 }
 
-func (c *Change) Equal(other *Change) bool {
-	return c.Offset.Equal(other.Offset) && c.EndValue == other.EndValue && c.Duration.Equal(other.Duration)
+func (c *Change) Equal(c2 *Change) bool {
+	return rat.IsEqual(c.Offset, c2.Offset) &&
+		(c.EndValue == c2.EndValue) &&
+		rat.IsEqual(c.Duration, c2.Duration)
 }
 
 func (c *Change) Validate(r ValueRange) *validation.Result {
 	errs := []error{}
 
-	if c.Duration.Negative() {
+	if rat.IsNegative(c.Duration) {
 		errs = append(errs, fmt.Errorf("duration %v is negative", c.Duration))
 	}
 

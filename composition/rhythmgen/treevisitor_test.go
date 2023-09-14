@@ -1,6 +1,7 @@
 package rhythmgen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestTreeVisitorVisitNext(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
 		switch level {
@@ -24,7 +25,7 @@ func TestTreeVisitorVisitNext(t *testing.T) {
 		}
 	})
 
-	require.True(t, root.SmallestDur().Equal(rat.New(1, 16)))
+	require.True(t, rat.IsEqual(root.SmallestDur(), big.NewRat(1, 16)))
 
 	onVisit := func(level int, n *rhythmgen.TreeNode) bool {
 		return false
@@ -54,7 +55,7 @@ func TestTreeVisitorVisitNext(t *testing.T) {
 }
 
 func TestTreeVisitorReset(t *testing.T) {
-	root := rhythmgen.NewTreeNode(rat.New(1, 1))
+	root := rhythmgen.NewTreeNode(big.NewRat(1, 1))
 
 	root.SubdivideRecursive(func(level int, n *rhythmgen.TreeNode) (uint64, bool) {
 		if level == 2 {
@@ -64,7 +65,7 @@ func TestTreeVisitorReset(t *testing.T) {
 		return 2, true
 	})
 
-	require.True(t, root.SmallestDur().Equal(rat.New(1, 4)))
+	require.True(t, rat.IsEqual(root.SmallestDur(), big.NewRat(1, 4)))
 
 	v := rhythmgen.NewTreeVisitor(root)
 

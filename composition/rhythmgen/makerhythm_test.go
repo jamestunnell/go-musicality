@@ -1,6 +1,7 @@
 package rhythmgen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -11,9 +12,9 @@ import (
 )
 
 func TestMakeRhythm(t *testing.T) {
-	totalDur := rat.New(1, 1)
+	totalDur := big.NewRat(1, 1)
 	g := mocks.NewMockRhythmGenerator(gomock.NewController(t))
-	quarter := rat.New(1, 4)
+	quarter := big.NewRat(1, 4)
 
 	g.EXPECT().NextDur().Times(4).Return(quarter)
 
@@ -22,6 +23,6 @@ func TestMakeRhythm(t *testing.T) {
 	assert.Len(t, rhythmDurs, 4)
 
 	for _, dur := range rhythmDurs {
-		assert.True(t, dur.Equal(quarter))
+		assert.True(t, rat.IsEqual(dur, quarter))
 	}
 }

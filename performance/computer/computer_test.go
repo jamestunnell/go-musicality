@@ -1,6 +1,7 @@
 package computer_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,14 +60,14 @@ func TestComputerOneGradualChange(t *testing.T) {
 	testComputerAt(t, c, function.DomainMax(), newVal)
 }
 
-func testComputerAt(t *testing.T, c *computer.Computer, x rat.Rat, expected float64) {
+func testComputerAt(t *testing.T, c *computer.Computer, x *big.Rat, expected float64) {
 	y, err := function.At(c, x)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, y)
 }
 
-func testComputerAtNear(t *testing.T, c *computer.Computer, x rat.Rat, expected float64) {
+func testComputerAtNear(t *testing.T, c *computer.Computer, x *big.Rat, expected float64) {
 	y, err := function.At(c, x)
 
 	assert.Nil(t, err)

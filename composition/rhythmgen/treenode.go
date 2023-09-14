@@ -1,16 +1,20 @@
 package rhythmgen
 
-import "github.com/jamestunnell/go-musicality/common/rat"
+import (
+	"math/big"
+
+	"github.com/jamestunnell/go-musicality/common/rat"
+)
 
 type TreeNode struct {
-	dur  rat.Rat
+	dur  *big.Rat
 	subs []*TreeNode
 }
 
 type OnVisitFunc func(level int, n *TreeNode) bool
 type SubdivideRecursiveFunc func(level int, n *TreeNode) (uint64, bool)
 
-func NewTreeNode(dur rat.Rat) *TreeNode {
+func NewTreeNode(dur *big.Rat) *TreeNode {
 	return &TreeNode{
 		dur:  dur,
 		subs: []*TreeNode{},
@@ -31,11 +35,11 @@ func (n *TreeNode) Depth() int {
 	return maxLevel
 }
 
-func (n *TreeNode) SmallestDur() rat.Rat {
+func (n *TreeNode) SmallestDur() *big.Rat {
 	smallest := n.dur
 
 	n.Visit(func(level int, n *TreeNode) bool {
-		if n.dur.Less(smallest) {
+		if rat.IsLess(n.dur, smallest) {
 			smallest = n.dur
 		}
 
@@ -49,7 +53,7 @@ func (n *TreeNode) Subs() []*TreeNode {
 	return n.subs
 }
 
-func (n *TreeNode) Duration() rat.Rat {
+func (n *TreeNode) Duration() *big.Rat {
 	return n.dur
 }
 
@@ -58,7 +62,7 @@ func (n *TreeNode) Subdivide(divisor uint64) {
 		return
 	}
 
-	subdur := n.dur.Div(rat.FromUint64(divisor))
+	subdur := rat.Div(n.dur, rat.FromUint64(divisor))
 	subs := make([]*TreeNode, divisor)
 
 	for i := uint64(0); i < divisor; i++ {

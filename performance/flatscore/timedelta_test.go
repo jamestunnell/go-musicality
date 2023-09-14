@@ -1,6 +1,7 @@
 package flatscore_test
 
 import (
+	"math/big"
 	"testing"
 	"time"
 
@@ -23,8 +24,8 @@ func TestTimeDelta(t *testing.T) {
 
 	require.NoError(t, err)
 
-	xrange := function.NewRange(rat.Zero(), rat.New(1, 1))
-	samplePeriod := rat.New(1, 16)
+	xrange := function.NewRange(rat.Zero(), big.NewRat(1, 1))
+	samplePeriod := big.NewRat(1, 16)
 
 	dt, err := flatscore.TimeDelta(tc, bdc, xrange, samplePeriod)
 
@@ -35,7 +36,7 @@ func TestTimeDelta(t *testing.T) {
 
 func TestTimeDeltaOneTempoChange(t *testing.T) {
 	tc, err := computer.New(120.0, change.Changes{
-		change.NewImmediate(rat.New(1, 2), 150.0),
+		change.NewImmediate(big.NewRat(1, 2), 150.0),
 	})
 
 	require.NoError(t, err)
@@ -44,8 +45,8 @@ func TestTimeDeltaOneTempoChange(t *testing.T) {
 
 	require.NoError(t, err)
 
-	xrange := function.NewRange(rat.Zero(), rat.New(1, 1))
-	samplePeriod := rat.New(1, 16)
+	xrange := function.NewRange(rat.Zero(), big.NewRat(1, 1))
+	samplePeriod := big.NewRat(1, 16)
 
 	dt, err := flatscore.TimeDelta(tc, bdc, xrange, samplePeriod)
 

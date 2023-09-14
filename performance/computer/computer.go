@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/jamestunnell/go-musicality/common/function"
+	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/change"
 )
 
@@ -51,20 +52,20 @@ func New(startVal float64, changes change.Changes) (*Computer, error) {
 		offset := change.Offset
 
 		// if there is a gap, fill in with a constant function
-		if offset.Greater(prevChangeEnd) {
+		if rat.IsGreater(offset, prevChangeEnd) {
 			pairs = append(pairs, function.SubdomainFunctionPair{
 				Subdomain: function.NewRange(prevChangeEnd, offset),
 				Function:  function.NewConstantFunction(prevEndVal),
 			})
 		}
 
-		if change.Duration.Zero() {
+		if rat.IsZero(change.Duration) {
 			// Don't do anything here. A constant function will be added at the
 			// beginning of next loop, or just after the loop ends if it's the last change.
 
 			prevChangeEnd = offset
 		} else {
-			end := offset.Add(change.Duration)
+			end := rat.Add(offset, change.Duration)
 
 			p1 := function.NewPoint(offset, prevEndVal)
 			p2 := function.NewPoint(end, change.EndValue)
@@ -96,9 +97,9 @@ func checkChangeOverlap(changes change.Changes) error {
 	// check for change overlap
 	for i := 0; i < (n - 1); i++ {
 		curr := changes[i]
-		end := changes[i].Offset.Add(curr.Duration)
+		end := rat.Add(changes[i].Offset, curr.Duration)
 
-		if end.Greater(changes[i+1].Offset) {
+		if rat.IsGreater(end, changes[i+1].Offset) {
 			return fmt.Errorf("change at offset %s overlaps next", curr.Offset.String())
 		}
 	}

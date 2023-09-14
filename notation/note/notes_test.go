@@ -1,6 +1,7 @@
 package note_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,9 +13,9 @@ import (
 func TestNotesTotalDuration(t *testing.T) {
 	notes := note.Notes{}
 
-	assert.True(t, notes.TotalDuration().Zero())
+	assert.True(t, rat.IsZero(notes.TotalDuration()))
 
 	notes = append(notes, note.Eighth())
 
-	assert.True(t, notes.TotalDuration().Equal(rat.New(1, 8)))
+	assert.True(t, rat.IsEqual(notes.TotalDuration(), big.NewRat(1, 8)))
 }

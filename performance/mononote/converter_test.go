@@ -1,6 +1,7 @@
 package mononote_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,8 +62,8 @@ func TestNoteConverterMonophonicNote(t *testing.T) {
 
 	assert.Equal(t, note.ControlNormal, notes2[0].Attack)
 	assert.Equal(t, note.ControlNormal, notes2[0].Separation)
-	assert.True(t, notes2[0].Start.Equal(rat.Zero()))
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.D4, 0), rat.New(1, 16))
+	assert.True(t, rat.IsZero(notes2[0].Start))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.D4, 0), big.NewRat(1, 16))
 }
 
 func TestNoteConverterSingleChord(t *testing.T) {
@@ -75,12 +76,12 @@ func TestNoteConverterSingleChord(t *testing.T) {
 	require.Len(t, notes2, 2)
 
 	assert.Len(t, notes2[0].PitchDurs, 1)
-	assert.True(t, notes2[0].Duration().Equal(rat.New(1, 2)))
-	assert.True(t, notes2[0].Start.Equal(rat.Zero()))
+	assert.True(t, rat.IsEqual(notes2[0].Duration(), big.NewRat(1, 2)))
+	assert.True(t, rat.IsZero(notes2[0].Start))
 
 	assert.Len(t, notes2[1].PitchDurs, 1)
-	assert.True(t, notes2[1].Duration().Equal(rat.New(1, 2)))
-	assert.True(t, notes2[1].Start.Equal(rat.Zero()))
+	assert.True(t, rat.IsEqual(notes2[1].Duration(), big.NewRat(1, 2)))
+	assert.True(t, rat.IsZero(notes2[1].Start))
 }
 
 func TestNoteConverterNoteSimplifies(t *testing.T) {
@@ -99,8 +100,8 @@ func TestNoteConverterNoteSimplifies(t *testing.T) {
 	require.Len(t, notes2, 1)
 	require.Len(t, notes2[0].PitchDurs, 1)
 
-	assert.True(t, notes2[0].Start.Equal(rat.New(1, 4)))
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(3, 4))
+	assert.True(t, rat.IsEqual(notes2[0].Start, big.NewRat(1, 4)))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(3, 4))
 }
 
 func TestNoteConverterUnknownLinkType(t *testing.T) {
@@ -134,15 +135,15 @@ func TestNoteConverterIgnoresMissingLinks(t *testing.T) {
 	require.Len(t, notes2[2].PitchDurs, 1)
 	require.Len(t, notes2[3].PitchDurs, 1)
 
-	assert.True(t, notes2[0].Start.Equal(rat.Zero()))
-	assert.True(t, notes2[1].Start.Equal(rat.New(1, 4)))
-	assert.True(t, notes2[2].Start.Equal(rat.New(1, 2)))
-	assert.True(t, notes2[3].Start.Equal(rat.New(3, 4)))
+	assert.True(t, rat.IsZero(notes2[0].Start))
+	assert.True(t, rat.IsEqual(notes2[1].Start, big.NewRat(1, 4)))
+	assert.True(t, rat.IsEqual(notes2[2].Start, big.NewRat(1, 2)))
+	assert.True(t, rat.IsEqual(notes2[3].Start, big.NewRat(3, 4)))
 
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(1, 4))
-	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(1, 4))
-	verifyPD(t, notes2[2].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(1, 4))
-	verifyPD(t, notes2[3].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(1, 4))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(1, 4))
+	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(1, 4))
+	verifyPD(t, notes2[2].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(1, 4))
+	verifyPD(t, notes2[3].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(1, 4))
 }
 
 func TestNoteConverterSlursAllowedByDefault(t *testing.T) {
@@ -158,8 +159,8 @@ func TestNoteConverterSlursAllowedByDefault(t *testing.T) {
 	require.Len(t, notes2, 1)
 	require.Len(t, notes2[0].PitchDurs, 2)
 
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), rat.New(1, 8))
-	verifyPD(t, notes2[0].PitchDurs[1], centpitch.New(pitch.A3, 0), rat.New(1, 8))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.G3, 0), big.NewRat(1, 8))
+	verifyPD(t, notes2[0].PitchDurs[1], centpitch.New(pitch.A3, 0), big.NewRat(1, 8))
 }
 
 func TestNoteConverterGlidesAllowedByDefault(t *testing.T) {
@@ -175,11 +176,11 @@ func TestNoteConverterGlidesAllowedByDefault(t *testing.T) {
 	require.Len(t, notes2, 1)
 	require.Len(t, notes2[0].PitchDurs, 5)
 
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), rat.New(1, 4))
-	verifyPD(t, notes2[0].PitchDurs[1], centpitch.New(pitch.C5, 25), rat.New(1, 4))
-	verifyPD(t, notes2[0].PitchDurs[2], centpitch.New(pitch.C5, 50), rat.New(1, 4))
-	verifyPD(t, notes2[0].PitchDurs[3], centpitch.New(pitch.C5, 75), rat.New(1, 4))
-	verifyPD(t, notes2[0].PitchDurs[4], centpitch.New(pitch.C5, 100), rat.New(1, 2))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), big.NewRat(1, 4))
+	verifyPD(t, notes2[0].PitchDurs[1], centpitch.New(pitch.C5, 25), big.NewRat(1, 4))
+	verifyPD(t, notes2[0].PitchDurs[2], centpitch.New(pitch.C5, 50), big.NewRat(1, 4))
+	verifyPD(t, notes2[0].PitchDurs[3], centpitch.New(pitch.C5, 75), big.NewRat(1, 4))
+	verifyPD(t, notes2[0].PitchDurs[4], centpitch.New(pitch.C5, 100), big.NewRat(1, 2))
 }
 
 func TestNoteConverterReplaceGlides(t *testing.T) {
@@ -197,9 +198,9 @@ func TestNoteConverterReplaceGlides(t *testing.T) {
 	require.Len(t, notes2[1].PitchDurs, 1)
 	require.Len(t, notes2[2].PitchDurs, 1)
 
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), rat.New(1, 2))
-	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.Db5, 0), rat.New(1, 2))
-	verifyPD(t, notes2[2].PitchDurs[0], centpitch.New(pitch.D5, 0), rat.New(1, 2))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), big.NewRat(1, 2))
+	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.Db5, 0), big.NewRat(1, 2))
+	verifyPD(t, notes2[2].PitchDurs[0], centpitch.New(pitch.D5, 0), big.NewRat(1, 2))
 }
 
 func TestNoteConverterReplaceSlur(t *testing.T) {
@@ -216,11 +217,11 @@ func TestNoteConverterReplaceSlur(t *testing.T) {
 	require.Len(t, notes2[0].PitchDurs, 1)
 	require.Len(t, notes2[1].PitchDurs, 1)
 
-	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), rat.New(1, 4))
-	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.G5, 0), rat.New(1, 8))
+	verifyPD(t, notes2[0].PitchDurs[0], centpitch.New(pitch.C5, 0), big.NewRat(1, 4))
+	verifyPD(t, notes2[1].PitchDurs[0], centpitch.New(pitch.G5, 0), big.NewRat(1, 8))
 }
 
-func verifyPD(t *testing.T, pd *mononote.PitchDur, expectedPitch *centpitch.CentPitch, expectedDur rat.Rat) {
-	assert.True(t, pd.Duration.Equal(expectedDur))
+func verifyPD(t *testing.T, pd *mononote.PitchDur, expectedPitch *centpitch.CentPitch, expectedDur *big.Rat) {
+	assert.True(t, rat.IsEqual(pd.Duration, expectedDur))
 	assert.True(t, pd.Pitch.Equal(expectedPitch))
 }

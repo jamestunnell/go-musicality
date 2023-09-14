@@ -50,16 +50,12 @@ const schemaStr = `
 			"description": "Contains a logical piece of the score",
 			"required": [
 				"startTempo",
-				"startDynamic",
 				"startMeter",
 				"measures"
 			],
 			"properties": {
 				"startTempo": {
 					"$ref": "#/definitions/tempo"
-				},
-				"startDynamic": {
-					"$ref": "#/definitions/dynamic"
 				},
 				"startMeter": {
 					"$ref": "#/definitions/meter"

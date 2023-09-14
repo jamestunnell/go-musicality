@@ -2,17 +2,17 @@ package function
 
 import (
 	"fmt"
-	"math"
+	"math/big"
 
 	"github.com/jamestunnell/go-musicality/common/rat"
 )
 
-func Sample(f Function, xrange Range, xstep rat.Rat) ([]float64, error) {
+func Sample(f Function, xrange Range, xstep *big.Rat) ([]float64, error) {
 	if !xrange.IsValid() {
 		return []float64{}, fmt.Errorf("x-range %v is not valid", xrange)
 	}
 
-	if !xstep.Positive() {
+	if !rat.IsPositive(xstep) {
 		return []float64{}, fmt.Errorf("x-step %v is not positive", xstep)
 	}
 
@@ -23,14 +23,13 @@ func Sample(f Function, xrange Range, xstep rat.Rat) ([]float64, error) {
 		return []float64{}, err
 	}
 
-	n := 1 + int(math.Floor(xrange.Span().Div(xstep).Float64()))
-	samples := make([]float64, n)
+	samples := []float64{}
 
 	x := xrange.Start
-	for i := 0; i < n; i++ {
-		samples[i] = f.At(x)
+	for rat.IsLessEqual(x, xrange.End) {
+		samples = append(samples, f.At(x))
 
-		x = x.Add(xstep)
+		x = rat.Add(x, xstep)
 	}
 
 	return samples, nil

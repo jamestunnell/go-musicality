@@ -1,6 +1,7 @@
 package mononote_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,32 +19,32 @@ func TestNewEmpty(t *testing.T) {
 
 	s := mononote.New(zero)
 
-	assert.Equal(t, zero, s.Duration())
-	assert.Equal(t, zero, s.End())
+	assert.True(t, rat.IsZero(s.Duration()))
+	assert.True(t, rat.IsZero(s.End()))
 }
 
 func TestNoteInvalid(t *testing.T) {
-	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 4))
+	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), big.NewRat(1, 4))
 	e2 := mononote.NewPitchDur(centpitch.New(pitch.C4, 0), zero)
-	e3 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), rat.New(1, 2))
-	start := rat.New(1, 2)
+	e3 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), big.NewRat(1, 2))
+	start := big.NewRat(1, 2)
 	s := mononote.New(start, e1, e2, e3)
-	expectedDur := rat.New(3, 4)
-	expectedEnd := start.Add(expectedDur)
+	expectedDur := big.NewRat(3, 4)
+	expectedEnd := rat.Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
 }
 
 func TestValidNoteValid(t *testing.T) {
-	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 8))
-	e2 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 8))
-	e3 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), rat.New(1, 2))
-	e4 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), rat.New(1, 1))
-	start := rat.New(1, 1)
+	e1 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), big.NewRat(1, 8))
+	e2 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), big.NewRat(1, 8))
+	e3 := mononote.NewPitchDur(centpitch.New(pitch.D4, 0), big.NewRat(1, 2))
+	e4 := mononote.NewPitchDur(centpitch.New(pitch.E4, 0), big.NewRat(1, 1))
+	start := big.NewRat(1, 1)
 	s := mononote.New(start, e1, e2, e3, e4)
-	expectedDur := rat.New(7, 4)
-	expectedEnd := start.Add(expectedDur)
+	expectedDur := big.NewRat(7, 4)
+	expectedEnd := rat.Add(start, expectedDur)
 
 	assert.Equal(t, expectedDur, s.Duration())
 	assert.Equal(t, expectedEnd, s.End())
@@ -54,8 +55,8 @@ func TestValidNoteValid(t *testing.T) {
 	assert.Equal(t, expectedEnd, s.End())
 
 	require.Len(t, s.PitchDurs, 2)
-	assert.Equal(t, rat.New(3, 4), s.PitchDurs[0].Duration)
-	assert.Equal(t, rat.New(1, 1), s.PitchDurs[1].Duration)
+	assert.Equal(t, big.NewRat(3, 4), s.PitchDurs[0].Duration)
+	assert.Equal(t, big.NewRat(1, 1), s.PitchDurs[1].Duration)
 }
 
 // 	// Should fail without a 0.0 duration PitchDur

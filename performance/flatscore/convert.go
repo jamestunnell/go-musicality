@@ -11,20 +11,23 @@ import (
 	"github.com/jamestunnell/go-musicality/performance/computer"
 )
 
+const (
+	DefaultStartDynamic = note.ControlNormal
+)
+
 func Convert(s *score.Score) (*FlatScore, error) {
 	if result := s.Validate(); result != nil {
 		return nil, fmt.Errorf("score is invalid: %w", result)
 	}
 
 	sections := s.ProgramSections()
-	startDynamic := section.DefaultStartDynamic
+	startDynamic := DefaultStartDynamic
 	startTempo := section.DefaultStartTempo
 	startBeatDur := DefaultStartBeatDur
 
 	if len(sections) > 0 {
-		startDynamic = sections[0].StartDynamic
 		startTempo = sections[0].StartTempo
-		startBeatDur = sections[0].StartMeter.BeatDuration.Float64()
+		startBeatDur, _ = sections[0].StartMeter.BeatDuration.Float64()
 	}
 
 	dynamicChanges := change.Changes{}
@@ -34,17 +37,17 @@ func Convert(s *score.Score) (*FlatScore, error) {
 	secOffset := rat.Zero()
 
 	for _, sec := range sections {
-		dynamicChanges = append(dynamicChanges, change.NewImmediate(secOffset, sec.StartDynamic))
-		tempoChanges = append(tempoChanges, change.NewImmediate(secOffset, sec.StartTempo))
-		beatDurChanges = append(beatDurChanges, change.NewImmediate(secOffset, sec.StartMeter.BeatDuration.Float64()))
+		beatDur, _ := sec.StartMeter.BeatDuration.Float64()
 
-		dynamicChanges = append(dynamicChanges, sec.DynamicChanges(secOffset)...)
+		tempoChanges = append(tempoChanges, change.NewImmediate(secOffset, sec.StartTempo))
+		beatDurChanges = append(beatDurChanges, change.NewImmediate(secOffset, beatDur))
+
 		tempoChanges = append(tempoChanges, sec.TempoChanges(secOffset)...)
 		beatDurChanges = append(beatDurChanges, sec.BeatDurChanges(secOffset)...)
 
 		for _, partName := range sec.PartNames() {
 			part, partFound := parts[partName]
-			if !partFound && secOffset.Positive() {
+			if !partFound && rat.IsPositive(secOffset) {
 				// insert a rest for previous sections, before adding notes in current section
 				part = note.Notes{note.New(secOffset)}
 			}
@@ -54,7 +57,7 @@ func Convert(s *score.Score) (*FlatScore, error) {
 			parts[partName] = part
 		}
 
-		secOffset = secOffset.Add(sec.Duration())
+		secOffset = rat.Add(secOffset, sec.Duration())
 	}
 
 	dc, err := computer.New(startDynamic, dynamicChanges)

@@ -1,124 +1,71 @@
 package rat
 
 import (
-	"encoding/json"
-	"fmt"
 	"math/big"
 )
 
-type Rat struct {
-	*big.Rat
-}
-
 var zero = big.NewRat(0, 1)
 
-func New(num, denom int64) *Rat {
-	return &Rat{Rat: big.NewRat(num, denom)}
+func FromFloat64(x float64) *big.Rat {
+	return new(big.Rat).SetFloat64(x)
 }
 
-func Zero() *Rat {
-	return New(0, 1)
+func FromInt64(x int64) *big.Rat {
+	return new(big.Rat).SetInt64(x)
 }
 
-func FromFloat64(x float64) *Rat {
-	return &Rat{Rat: new(big.Rat).SetFloat64(x)}
+func FromUint64(x uint64) *big.Rat {
+	return new(big.Rat).SetUint64(x)
 }
 
-func FromInt64(x int64) *Rat {
-	return &Rat{Rat: new(big.Rat).SetInt64(x)}
+func Zero() *big.Rat {
+	return new(big.Rat)
 }
 
-func FromUint64(x uint64) *Rat {
-	return &Rat{Rat: new(big.Rat).SetUint64(x)}
+func IsPositive(r *big.Rat) bool {
+	return r.Cmp(zero) == 1
 }
 
-func (r *Rat) String() string {
-	return r.Rat.RatString()
+func IsNegative(r *big.Rat) bool {
+	return r.Cmp(zero) == -1
 }
 
-func (r *Rat) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.String())
+func IsZero(r *big.Rat) bool {
+	return r.Cmp(zero) == 0
 }
 
-func (r *Rat) UnmarshalJSON(d []byte) error {
-	var str string
-
-	if err := json.Unmarshal(d, &str); err != nil {
-		return fmt.Errorf("failed to unmarshal '%s' as string: %w", string(d), err)
-	}
-
-	rat, ok := new(big.Rat).SetString(str)
-	if !ok {
-		return fmt.Errorf("failed to set rat from string '%s'", str)
-	}
-
-	r.Rat = rat
-
-	return nil
+func IsEqual(r1, r2 *big.Rat) bool {
+	return r1.Cmp(r2) == 0
 }
 
-func (r Rat) Float64() float64 {
-	f, _ := r.Rat.Float64()
-
-	return f
+func IsGreaterEqual(r1, r2 *big.Rat) bool {
+	return r1.Cmp(r2) >= 0
 }
 
-func (r Rat) Positive() bool {
-	return r.Rat.Cmp(zero) == 1
+func IsGreater(r1, r2 *big.Rat) bool {
+	return r1.Cmp(r2) == 1
 }
 
-func (r Rat) Negative() bool {
-	return r.Rat.Cmp(zero) == -1
+func IsLessEqual(r1, r2 *big.Rat) bool {
+	return r1.Cmp(r2) <= 0
 }
 
-func (r Rat) Zero() bool {
-	return r.Rat.Cmp(zero) == 0
+func IsLess(r1, r2 *big.Rat) bool {
+	return r1.Cmp(r2) == -1
 }
 
-func (r Rat) Less(other *Rat) bool {
-	return r.Rat.Cmp(other.Rat) == -1
+func Add(r1, r2 *big.Rat) *big.Rat {
+	return new(big.Rat).Add(r1, r2)
 }
 
-func (r Rat) LessEqual(other *Rat) bool {
-	return r.Rat.Cmp(other.Rat) <= 0
+func Sub(r1, r2 *big.Rat) *big.Rat {
+	return new(big.Rat).Sub(r1, r2)
 }
 
-func (r Rat) Equal(other *Rat) bool {
-	return r.Rat.Cmp(other.Rat) == 0
+func Mul(r1, r2 *big.Rat) *big.Rat {
+	return new(big.Rat).Mul(r1, r2)
 }
 
-func (r Rat) GreaterEqual(other *Rat) bool {
-	return r.Rat.Cmp(other.Rat) >= 0
-}
-
-func (r Rat) Greater(other *Rat) bool {
-	return r.Rat.Cmp(other.Rat) == 1
-}
-
-func (r Rat) Add(other *Rat) *Rat {
-	return &Rat{Rat: new(big.Rat).Add(r.Rat, other.Rat)}
-}
-
-func (r Rat) Sub(other *Rat) *Rat {
-	return &Rat{Rat: new(big.Rat).Sub(r.Rat, other.Rat)}
-}
-
-func (r Rat) Mul(other *Rat) *Rat {
-	return &Rat{Rat: new(big.Rat).Mul(r.Rat, other.Rat)}
-}
-
-func (r Rat) MulFloat64(x float64) *Rat {
-	return &Rat{Rat: new(big.Rat).Mul(r.Rat, new(big.Rat).SetFloat64(x))}
-}
-
-func (r Rat) MulInt64(i int64) *Rat {
-	return &Rat{Rat: new(big.Rat).Mul(r.Rat, new(big.Rat).SetInt64(i))}
-}
-
-func (r Rat) MulUint64(i uint64) *Rat {
-	return &Rat{Rat: new(big.Rat).Mul(r.Rat, new(big.Rat).SetUint64(i))}
-}
-
-func (r Rat) Div(other *Rat) *Rat {
-	return &Rat{Rat: new(big.Rat).Quo(r.Rat, other.Rat)}
+func Div(r1, r2 *big.Rat) *big.Rat {
+	return new(big.Rat).Quo(r1, r2)
 }

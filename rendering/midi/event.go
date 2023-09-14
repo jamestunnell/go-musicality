@@ -1,15 +1,15 @@
 package midi
 
 import (
+	"math/big"
 	"sort"
 
-	"gitlab.com/gomidi/midi/writer"
-
 	"github.com/jamestunnell/go-musicality/common/rat"
+	"gitlab.com/gomidi/midi/writer"
 )
 
 type Event interface {
-	Offset() rat.Rat
+	Offset() *big.Rat
 	Write(wr writer.ChannelWriter) error
 	Summary() string
 }
@@ -17,6 +17,6 @@ type Event interface {
 // Sort by offset, keeping original order for equal elements.
 func SortEvents(events []Event) {
 	sort.SliceStable(events, func(i, j int) bool {
-		return events[i].Offset().Less(events[j].Offset())
+		return rat.IsLess(events[i].Offset(), events[j].Offset())
 	})
 }
