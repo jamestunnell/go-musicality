@@ -92,6 +92,9 @@ const schemaStr = `
 				"partNotes"
 			],
 			"properties": {
+				"keyChange": {
+					"$ref": "#/definitions/key"
+				},
 				"meterChange": {
 					"$ref": "#/definitions/meter"
 				},
@@ -140,6 +143,30 @@ const schemaStr = `
 				"endValue": {"type": "number"},
 				"duration": {"$ref": "#/definitions/rational"}
 			}
+		},
+		"key": {
+			"$id": "#/definitions/key",
+			"type": "object",
+			"title": "Key",
+			"description": "Key signature",
+			"required": ["tonic","mode"],
+			"properties": {
+				"tonic": {
+					"type": "string",
+					"pattern": "^[A-G][#b]?$"	
+				},
+				"mode": {
+					"type": "string",
+					"enum": [
+						"major",
+						"minor"
+					]
+				}
+			},
+			"examples": [
+				{"tonic":"Eb","mode":"major"},
+				{"tonic":"C","mode":"minor"}
+			]
 		},
 		"meter": {
 			"$id": "#/definitions/meter",

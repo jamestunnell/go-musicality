@@ -6,7 +6,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/jamestunnell/go-musicality/notation/key"
 	"github.com/jamestunnell/go-musicality/notation/measure"
+	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/notation/pitch"
 	"github.com/jamestunnell/go-musicality/notation/score"
@@ -38,6 +40,9 @@ func ValidScore() *score.Score {
 	m.PartNotes[TestPartName] = []*note.Note{
 		note.New(big.NewRat(1, 1), pitch.C4),
 	}
+
+	m.MeterChange = meter.FourFour()
+	m.KeyChange = key.NewMajor("C")
 
 	sec.Measures = append(sec.Measures, m)
 

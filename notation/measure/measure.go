@@ -8,6 +8,7 @@ import (
 
 	"github.com/jamestunnell/go-musicality/common/rat"
 	"github.com/jamestunnell/go-musicality/notation/change"
+	"github.com/jamestunnell/go-musicality/notation/key"
 	"github.com/jamestunnell/go-musicality/notation/meter"
 	"github.com/jamestunnell/go-musicality/notation/note"
 	"github.com/jamestunnell/go-musicality/validation"
@@ -15,16 +16,17 @@ import (
 
 type Measure struct {
 	MeterChange    *meter.Meter
+	KeyChange      *key.Key
 	PartNotes      map[string]note.Notes
 	DynamicChanges change.Changes
 	TempoChanges   change.Changes
 }
 
 type measureJSON struct {
-	MeterChange    *meter.Meter          `json:"meterChange,omitempty"`
-	PartNotes      map[string]note.Notes `json:"partNotes"`
-	DynamicChanges changeLiteMap         `json:"dynamicChanges"`
-	TempoChanges   changeLiteMap         `json:"tempoChanges"`
+	KeyChange    *key.Key              `json:"keyChange,omitempty"`
+	MeterChange  *meter.Meter          `json:"meterChange,omitempty"`
+	PartNotes    map[string]note.Notes `json:"partNotes"`
+	TempoChanges changeLiteMap         `json:"tempoChanges"`
 }
 
 type changeLiteMap map[string]*changeLite
@@ -63,6 +65,12 @@ func (m *Measure) Validate(measureDur *big.Rat) *validation.Result {
 		measureDur = m.MeterChange.MeasureDuration()
 
 		if result := m.MeterChange.Validate(); result != nil {
+			results = append(results, result)
+		}
+	}
+
+	if m.KeyChange != nil {
+		if result := m.KeyChange.Validate(); result != nil {
 			results = append(results, result)
 		}
 	}
@@ -121,13 +129,6 @@ func (m *Measure) Validate(measureDur *big.Rat) *validation.Result {
 }
 
 func (m *Measure) MarshalJSON() ([]byte, error) {
-	dcs, err := toChangeLiteMap(m.DynamicChanges)
-	if err != nil {
-		err = fmt.Errorf("failed to convert dynamic changes: %w", err)
-
-		return []byte{}, err
-	}
-
 	tcs, err := toChangeLiteMap(m.TempoChanges)
 	if err != nil {
 		err = fmt.Errorf("failed to convert tempo changes: %w", err)
@@ -136,10 +137,10 @@ func (m *Measure) MarshalJSON() ([]byte, error) {
 	}
 
 	mj := &measureJSON{
-		MeterChange:    m.MeterChange,
-		PartNotes:      m.PartNotes,
-		DynamicChanges: dcs,
-		TempoChanges:   tcs,
+		KeyChange:    m.KeyChange,
+		MeterChange:  m.MeterChange,
+		PartNotes:    m.PartNotes,
+		TempoChanges: tcs,
 	}
 
 	d, err := json.Marshal(mj)
@@ -158,13 +159,6 @@ func (m *Measure) UnmarshalJSON(d []byte) error {
 		return err
 	}
 
-	dcs, err := fromChangeLiteMap(mj.DynamicChanges)
-	if err != nil {
-		err = fmt.Errorf("failed to convert dynamic changes: %w", err)
-
-		return err
-	}
-
 	tcs, err := fromChangeLiteMap(mj.TempoChanges)
 	if err != nil {
 		err = fmt.Errorf("failed to convert tempo changes: %w", err)
@@ -172,8 +166,8 @@ func (m *Measure) UnmarshalJSON(d []byte) error {
 		return err
 	}
 
-	m.DynamicChanges = dcs
 	m.TempoChanges = tcs
+	m.KeyChange = mj.KeyChange
 	m.MeterChange = mj.MeterChange
 	m.PartNotes = mj.PartNotes
 
